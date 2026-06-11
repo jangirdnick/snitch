@@ -1,0 +1,56 @@
+{
+  "name": "snitch",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:client": "pnpm -dir client dev",
+    "dev:server": "pnpm -dir server dev",
+    "dev": "concurrently \"pnpm dev:client\" \"pnpm dev:server\"",
+    "build:client": "pnpm -dir client build",
+    "build:server": "pnpm -dir server build",
+    "build": "pnpm run build:client && pnpm run build:server",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "type-check": "pnpm -dir client type-check && pnpm -dir server type-check",
+    "format": "prettier . --write",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "if [ -d .git ]; then husky; fi"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.5.0",
+      "onFail": "download"
+    }
+  },
+  "lint-staged": {
+    "server/**/*.{jsx,tsx,ts}": [
+      "pnpm -dir server lint --fix",
+      "prettier --write"
+    ],
+    "**/*.{json,yaml,yml,md}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/config-conventional": "^21.0.2",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.9.1",
+    "commitlint": "^21.0.2",
+    "concurrently": "^10.0.3",
+    "eslint": "^9.39.4",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-import": "^2.32.0",
+    "globals": "^17.6.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
+    "prettier": "^3.8.3",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.0"
+  },
+  "author": "jangir d nick",
+  "license": "ISC"
+}
