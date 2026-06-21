@@ -19,20 +19,20 @@ The server listens on `PORT` (default `4000`) once Mongo and Redis connect.
 
 ## Scripts
 
-| Script | What it does |
-| --- | --- |
-| `pnpm dev` | Run with `tsx watch` (auto-restart on file change). |
-| `pnpm build` | Type-check and emit JS to `dist/` via `tsc`. |
-| `pnpm start` | Run the compiled `dist/index.js` with Node. |
-| `pnpm start:prod` | Run compiled output with `NODE_ENV=production` set explicitly. |
-| `pnpm lint` | ESLint over `src/`. |
-| `pnpm lint:fix` | ESLint with `--fix`. |
-| `pnpm type-check` | `tsc --noEmit` only — no JS emitted, useful in CI. |
-| `pnpm format` | Prettier write across the directory. |
-| `pnpm format:check` | Prettier check (read-only) — used in CI. |
-| `pnpm clean` | Delete `dist/`. |
-| `pnpm test` | Jest test runner. |
-| `pnpm test:watch` | Jest watch mode. |
+| Script              | What it does                                                   |
+| ------------------- | -------------------------------------------------------------- |
+| `pnpm dev`          | Run with `tsx watch` (auto-restart on file change).            |
+| `pnpm build`        | Type-check and emit JS to `dist/` via `tsc`.                   |
+| `pnpm start`        | Run the compiled `dist/index.js` with Node.                    |
+| `pnpm start:prod`   | Run compiled output with `NODE_ENV=production` set explicitly. |
+| `pnpm lint`         | ESLint over `src/`.                                            |
+| `pnpm lint:fix`     | ESLint with `--fix`.                                           |
+| `pnpm type-check`   | `tsc --noEmit` only — no JS emitted, useful in CI.             |
+| `pnpm format`       | Prettier write across the directory.                           |
+| `pnpm format:check` | Prettier check (read-only) — used in CI.                       |
+| `pnpm clean`        | Delete `dist/`.                                                |
+| `pnpm test`         | Jest test runner.                                              |
+| `pnpm test:watch`   | Jest watch mode.                                               |
 
 Root-level equivalents exist: `pnpm dev:server`, `pnpm build:server`, `pnpm lint` (runs client + server).
 

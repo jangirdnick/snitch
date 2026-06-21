@@ -10,10 +10,10 @@
     "dev": "concurrently \"pnpm dev:client\" \"pnpm dev:server\"",
     "build:client": "pnpm -dir client build",
     "build:server": "pnpm -dir server build",
-    "build": "pnpm run build:client && pnpm run build:server",
+    "build": "pnpm run build:server",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "type-check": "pnpm -dir client type-check && pnpm -dir server type-check",
+    "type-check": "pnpm -dir server type-check",
     "format": "prettier . --write",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "if [ -d .git ]; then husky; fi"

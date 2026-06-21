@@ -8,5 +8,6 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
-  }
+  },
+  "include": ["*.config.ts", "server/server.ts"]
 }
