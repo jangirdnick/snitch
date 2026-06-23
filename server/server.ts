@@ -2,8 +2,10 @@ import http from 'node:http';
 import app from './src/app.js';
 import config from './src/config/config.js';
 import connectDB from './src/config/database.config.js';
-import { logger } from './src/utils/logger.js';
+import { createLogger } from './src/utils/logger.js';
+import { connectRedis } from './src/config/redis.config.js';
 
+const logger = createLogger('Server');
 let isShuttingDown = false;
 
 function getPort(): number {
@@ -17,9 +19,12 @@ function getPort(): number {
 }
 
 async function bootstrap() {
-  logger.info({ env: config.NODE_ENV }, '[SERVER] starting application...');
-  logger.info('[DATABASE] connectiong database...');
+  logger.info({ env: config.NODE_ENV }, 'starting application...');
+  logger.info('connectiong database...');
   await connectDB();
+
+  logger.info('connecting redis...');
+  await connectRedis();
 
   const port = getPort();
 
@@ -31,7 +36,7 @@ async function bootstrap() {
         env: config.NODE_ENV,
         pid: process.pid,
       },
-      '[SERVER] started successfully',
+      'started successfully',
     );
   });
 
@@ -40,18 +45,18 @@ async function bootstrap() {
 
     isShuttingDown = true;
 
-    logger.info({ signal }, '[SERVER] Shutting down server...');
+    logger.info({ signal }, 'Shutting down server...');
     server.close((err) => {
       if (err) {
-        logger.error({ error: err }, '[SERVER] Error closing server');
+        logger.error({ error: err }, 'Error closing server');
         process.exit(1);
       }
-      logger.info('[SERVER] closed successfully');
+      logger.info('closed successfully');
       process.exit(0);
     });
 
     setTimeout(() => {
-      logger.error('[SERVER] Graceful shutdown timeout exceeded');
+      logger.error('Graceful shutdown timeout exceeded');
       process.exit(1);
     }, 10_000).unref();
   };
@@ -61,16 +66,16 @@ async function bootstrap() {
 }
 
 process.on('uncaughtException', (error) => {
-  logger.error({ error }, '[SERVER] Uncaught exception');
+  logger.error({ error }, 'Uncaught exception');
   process.exit(1);
 });
 
 process.on('unhandledRejection', (reason: unknown) => {
-  logger.error({ reason }, '[SERVER] Unhandled rejection');
+  logger.error({ reason }, 'Unhandled rejection');
   process.exit(1);
 });
 
 bootstrap().catch((error) => {
-  logger.error({ error }, '[SERVER] Failed to application bootstrap');
+  logger.error({ error }, 'Failed to application bootstrap');
   process.exit(1);
 });
