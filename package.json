@@ -22,7 +22,7 @@
       "version": "^11.5.0",
       "onFail": "download"
     }
-  }, 
+  },
   "lint-staged": {
     "server/**/*.{jsx,tsx,ts}": [
       "pnpm --dir server lint --fix",
