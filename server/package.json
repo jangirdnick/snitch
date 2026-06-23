@@ -7,7 +7,7 @@
   "type": "module",
   "engines": {
     "node": ">=20.10.0",
-    "pnpm": ">=9.0.0"
+    "pnpm": ">=11.0.0"
   },
   "scripts": {
     "dev": "tsx watch server.ts",
@@ -23,7 +23,7 @@
     "format:check": "prettier --check \"src/**/*.{ts,js,json,md}\"",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage --passWithNoTests"
   },
   "keywords": [
     "express",
