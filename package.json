@@ -5,16 +5,19 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev:server": "pnpm --dir server dev",
-    "dev": "pnpm dev:server",
-    "build:server": "pnpm --dir server build",
+    "dev": "concurrently \"pnpm --filter server dev\" \"pnpm --filter client dev\"",
+    "dev:server": "pnpm --filter server dev",
+    "dev:client": "pnpm --filter client dev",
     "build": "pnpm -r build",
+    "build:server": "pnpm --filter server build",
+    "build:client": "pnpm --filter client build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "type-check": "pnpm -r type-check",
     "format": "prettier . --write",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "if [ -d .git ]; then husky; fi"
+    "prepare": "if [ -d .git ]; then husky; fi",
+    "clean": "pnpm -r exec rm -rf dist node_modules/.cache"
   },
   "devEngines": {
     "packageManager": {
@@ -24,11 +27,11 @@
     }
   },
   "lint-staged": {
-    "server/**/*.{jsx,tsx,ts}": [
-      "pnpm --dir server lint --fix",
+    "**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
       "prettier --write"
     ],
-    "**/*.{json,yaml,yml,md}": [
+    "**/*.{json,yaml,yml,md,css}": [
       "prettier --write"
     ]
   },
