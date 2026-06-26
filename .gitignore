@@ -71,4 +71,4 @@ coverage/
 *.pem
 .vercel
 .netlify
-gitCommit.md
+git

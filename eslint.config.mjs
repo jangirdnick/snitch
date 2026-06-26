@@ -10,14 +10,15 @@ export default tseslint.config(
 
   ...tseslint.configs.recommended.map((config) => ({
     ...config,
-    files: config.files ?? ['**/*.ts'],
+    files: config.files ?? ['**/*.{ts,tsx}'],
   })),
 
   {
-    files: ['**/*.ts'],
+    files: ['**/*.{ts,tsx}'],
     languageOptions: {
       globals: {
         ...globals.node,
+        ...globals.browser,
       },
       parserOptions: {
         projectService: true,
