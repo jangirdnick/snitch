@@ -27,11 +27,11 @@
     }
   },
   "lint-staged": {
-    "server/**/*.{jsx,tsx,ts}": [
-      "pnpm --filter server lint --fix",
+    "**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
       "prettier --write"
     ],
-    "**/*.{json,yaml,yml,md}": [
+    "**/*.{json,yaml,yml,md,css}": [
       "prettier --write"
     ]
   },
