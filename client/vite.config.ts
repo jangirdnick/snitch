@@ -20,4 +20,13 @@ export default defineConfig({
       '@utils': path.resolve(__dirname, './src/lib/utils'),
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });

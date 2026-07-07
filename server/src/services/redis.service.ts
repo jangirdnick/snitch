@@ -15,7 +15,7 @@ export async function redisGetObject<T>(key: string): Promise<T | null> {
 export async function redisSet(params: {
   key: string;
   value: string;
-  ttl?: string;
+  ttl?: number;
 }): Promise<void> {
   const { key, value, ttl } = params;
   if (ttl) await redis.set(key, value, 'EX', ttl);
@@ -25,7 +25,7 @@ export async function redisSet(params: {
 export async function redisSetObject<T>(params: {
   key: string;
   value: T;
-  ttl?: string;
+  ttl?: number;
 }): Promise<void> {
   const { key, value, ttl } = params;
   const stringValue = JSON.stringify(value);

@@ -11,7 +11,8 @@ import { verificationMailTemplate } from '@/emails/verification.email.js';
 import sendEmail from '@/services/email.service.js';
 import { redisDel, redisGet, redisSet } from '@/services/redis.service.js';
 import { welcomeEmail } from '@/emails/welcome.email.js';
-import { CreateUserDto, LoginUserDto } from '@snitch/types';
+import { CreateUserDto, LoginUserDto } from '@snitch/schemas';
+import { UserResponseDto } from '@snitch/types';
 import { compairJwtToken, generateJwtToken } from '@/utils/jwt.util.js';
 import { clearCookie, setCookie } from '@/utils/cookie.util.js';
 import {
@@ -19,15 +20,16 @@ import {
   validateAndExpireAllSessions,
   validateAndExpireSession,
 } from '@/services/session.service.js';
+import { IUser, UserWithoutPassword } from '@/models/user.model.js';
 
 /* ------------------------------------------------------------------ */
 /* Constants                                                          */
 /* ------------------------------------------------------------------ */
 
-const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
-const REFRESH_COOKIE_NAME = '__snitch_rt';
-const OTP_TTL_SECONDS = 5 * 60; // 5 minutes
-const MAX_OTP_ATTEMPTS = 5; // soft cap per email per TTL window
+export const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+export const REFRESH_COOKIE_NAME = '__snitch_rt';
+export const OTP_TTL_SECONDS = 5 * 60; // 5 minutes
+export const MAX_OTP_ATTEMPTS = 5; // soft cap per email per TTL window
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                            */
@@ -41,7 +43,7 @@ function generateDeviceId() {
   return crypto.randomBytes(16).toString('hex');
 }
 
-async function tokenChecker({
+export async function tokenChecker({
   sessionExp,
   req,
 }: {
@@ -70,8 +72,25 @@ async function tokenChecker({
     });
   }
 
-  return user;
+  return {
+    user,
+    token,
+  };
 }
+
+export const mapUserResponse = (user: IUser | UserWithoutPassword): UserResponseDto => ({
+  id: user.id,
+  firstName: user.firstName,
+  lastName: user.lastName,
+  avatar: user.avatar,
+  email: user.email,
+  emailVerified: user.emailVerified,
+  role: user.role,
+  contact: user.contact,
+  lastLoginAt: user.lastLoginAt,
+  createdAt: user.createdAt,
+  updatedAt: user.updatedAt,
+});
 
 /* ------------------------------------------------------------------ */
 /* Register                                                           */
@@ -104,7 +123,7 @@ export const authRegister = async (req: Request, res: Response, next: NextFuncti
       try {
         const attemptsRaw = await redisGet(attemptsKey);
         const attempts = attemptsRaw ? Number(attemptsRaw) + 1 : 1;
-        await redisSet({ key: attemptsKey, value: String(attempts), ttl: String(OTP_TTL_SECONDS) });
+        await redisSet({ key: attemptsKey, value: String(attempts), ttl: OTP_TTL_SECONDS });
         if (attempts >= MAX_OTP_ATTEMPTS) {
           await redisDel({ key: OTPKey });
           throw new Error('Too many incorrect attempts. Please request a new OTP');
@@ -170,7 +189,7 @@ export const authSendEmailVerification = async (
     await sendEmail({ to: email, subject: 'Verify your email', html: verificationTemplate });
 
     await Promise.all([
-      redisSet({ key: `otp:${email}`, value: `${OTP}`, ttl: String(OTP_TTL_SECONDS) }),
+      redisSet({ key: `otp:${email}`, value: `${OTP}`, ttl: OTP_TTL_SECONDS }),
       redisDel({ key: `otp:attempts:${email}` }),
     ]);
 
@@ -200,8 +219,6 @@ export const authLogin = async (req: Request, res: Response, next: NextFunction)
       userId: user.id,
       user: user._id,
       deviceId,
-      // refreshToken session me store karo — cookie me bhi yahi jaata hai
-      // aur compareHashToken() isi se compare karta hai
       hashToken: refreshToken,
       expiredAt: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
     });
@@ -213,6 +230,7 @@ export const authLogin = async (req: Request, res: Response, next: NextFunction)
       message: `${user.firstName} logged in successfully`,
       data: {
         accessToken,
+        user: mapUserResponse(user),
       },
     });
   } catch (error) {
@@ -225,14 +243,14 @@ export const authLogin = async (req: Request, res: Response, next: NextFunction)
 /* ------------------------------------------------------------------ */
 export const authRefreshToken = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = await tokenChecker({ sessionExp: 'SINGLE', req });
+    const { user } = await tokenChecker({ sessionExp: 'SINGLE', req });
 
     const deviceId = generateDeviceId();
     const { accessToken, refreshToken } = generateJwtToken({ user, deviceId });
     await createSession({
       userId: user.id,
       user: user._id,
-      hashToken: accessToken,
+      hashToken: refreshToken, // store refreshToken (not accessToken) — consistent with login
       deviceId,
       expiredAt: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
     });
@@ -256,7 +274,7 @@ export const authRefreshToken = async (req: Request, res: Response, next: NextFu
 /* ------------------------------------------------------------------ */
 export const authLogout = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = await tokenChecker({ sessionExp: 'SINGLE', req });
+    const { user } = await tokenChecker({ sessionExp: 'SINGLE', req });
 
     clearCookie({ name: REFRESH_COOKIE_NAME, res });
 
@@ -272,15 +290,34 @@ export const authLogout = async (req: Request, res: Response, next: NextFunction
 /* ------------------------------------------------------------------ */
 /* Logout all deviced                                                 */
 /* ------------------------------------------------------------------ */
-export const authLogoutAllDevidec = async (req: Request, res: Response, next: NextFunction) => {
+export const authLogoutAllDevices = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = await tokenChecker({ sessionExp: 'MULTIPAL', req });
+    const { user } = await tokenChecker({ sessionExp: 'MULTIPAL', req });
 
     clearCookie({ name: REFRESH_COOKIE_NAME, res });
 
     res.status(201).json({
       success: true,
       message: `${user.firstName} logout successful`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/* ------------------------------------------------------------------ */
+/* Get me ( user info )                                               */
+/* ------------------------------------------------------------------ */
+export const getMe = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user;
+
+    res.status(200).json({
+      success: true,
+      message: `${user.firstName} fetched successfully`,
+      data: {
+        user,
+      },
     });
   } catch (error) {
     next(error);

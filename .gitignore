@@ -1,74 +1,89 @@
-# OS files
+# ──────────────────────────────────────────────────────────────────────────────
+# Snitch Monorepo — Root .gitignore
+# All rules here apply to every package and app in the workspace.
+# Sub-package .gitignore files should ONLY contain rules unique to that package.
+# ──────────────────────────────────────────────────────────────────────────────
+
+# ─── OS & System ──────────────────────────────────────────────────────────────
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
-
-# IDE/Editors
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Docker
-docker-compose.override.yml
-.docker/
-
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-.env
-.env.local
-.env.*.local
-*.log
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.venv/
-venv/
-ENV/
-*.egg-info/
-dist/
-build/
-
-# Build artifacts
-dist/
-build/
-*.tsbuildinfo
-
-# Logs
-logs/
-*.log
-
-# Environment files
-.env
-.env.*
-!.env.example
-
-# IDE specific
-*.sublime-project
-*.sublime-workspace
-
-# OS specific
 *.orig
 *.bak
 *.tmp
 *.temp
 
-# Testing
+# ─── IDE & Editors ────────────────────────────────────────────────────────────
+.idea/
+*.swp
+*.swo
+*.suo
+*~
+*.sublime-project
+*.sublime-workspace
+# Allow .vscode/extensions.json so teammates share recommended extensions
+.vscode/*
+!.vscode/extensions.json
+
+# ─── Node.js & Package Managers ───────────────────────────────────────────────
+node_modules/
+.pnpm-store/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ─── Build & Compiled Output ──────────────────────────────────────────────────
+dist/
+dist-ssr/
+build/
+out/
+bin/
+*.tsbuildinfo
+
+# ─── Environment & Secrets ────────────────────────────────────────────────────
+# IMPORTANT: Always commit .env.example — never commit .env or any real secrets.
+.env
+.env.*
+!.env.example
+
+# ─── Test Coverage ────────────────────────────────────────────────────────────
 coverage/
 .nyc_output/
+.jest/
 
-# Misc
+# ─── Cache Directories ────────────────────────────────────────────────────────
+.turbo/
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+
+# ─── Docker ───────────────────────────────────────────────────────────────────
+# docker-compose.yml should be committed; only the local override is secret
+docker-compose.override.yml
+.docker/
+
+# ─── SSL / Keys ───────────────────────────────────────────────────────────────
 *.pem
+*.key
+*.cert
+*.pfx
+
+# ─── Deployment Platforms ─────────────────────────────────────────────────────
 .vercel
 .netlify
-git
+
+# ─── Root-Level Local Folders ─────────────────────────────────────────────────
+# Leading slash anchors to root only — won't affect nested packages.
+/git/
+/docs/

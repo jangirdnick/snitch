@@ -1,10 +1,10 @@
 import { validate } from '@/middlewares/validate.middleware.js';
 import { Router } from 'express';
-import { createUserSchema, emailVerified, loginUserSchema } from '@snitch/types';
+import { createUserSchema, emailVerified, loginUserSchema } from '@snitch/schemas';
 import {
   authLogin,
   authLogout,
-  authLogoutAllDevidec,
+  authLogoutAllDevices,
   authRefreshToken,
   authRegister,
   authSendEmailVerification,
@@ -16,6 +16,6 @@ router.post('/email/send-verification', validate(emailVerified), authSendEmailVe
 router.post('/login', validate(loginUserSchema), authLogin);
 router.post('/session/refresh', authRefreshToken);
 router.post('/logout', authLogout);
-router.post('/logout-all-deviced', authLogoutAllDevidec);
+router.post('/logout-all-deviced', authLogoutAllDevices);
 
 export default router;
