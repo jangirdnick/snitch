@@ -5,6 +5,7 @@ import {
   EmailNotVerifiedError,
   DatabaseOperationError,
   ValidationError,
+  UnauthorizedError,
   InvalidCredentialsError,
 } from '@/services/user.service.js';
 import { createLogger } from '@/utils/logger.js';
@@ -30,6 +31,7 @@ const DOMAIN_ERROR_MAP = new Map<ErrorClass, number>([
   [SessionCompareError, 401],
   [SessionInvalidError, 401],
   [EmailNotVerifiedError, 401],
+  [UnauthorizedError, 401],
   [ValidationError, 400],
   [DatabaseOperationError, 500],
   [EmailDeliveryError, 502],
@@ -48,6 +50,7 @@ export function globalErrorFilter(
       error: {
         name: 'ZodError',
         message: error.message,
+        // statusCode: res.statusCode,
         fields: error.errors.map((e) => ({
           field: e.path.join('.'),
           message: e.message,

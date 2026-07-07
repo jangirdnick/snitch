@@ -1,9 +1,9 @@
-import { RequestUser } from './user.type.ts';
+import { UserResponseDto } from './user.type.ts';
 
 declare global {
   namespace Express {
     interface Request {
-      user: RequestUser;
+      user: UserResponseDto;
       userId: string;
       requestId: string;
     }

@@ -2,7 +2,7 @@ import config from '@/config/config.js';
 import jwt from 'jsonwebtoken';
 import type { JwtAccessTokenPayload, JwtCookiePayload } from '@snitch/types';
 import type { UserWithoutPassword } from '@/models/user.model.js';
-import { ValidationError } from '@/services/user.service.js';
+import { UnauthorizedError } from '@/services/user.service.js';
 
 interface GeneratedJwtTokens {
   accessToken: string;
@@ -43,7 +43,22 @@ export function compairJwtToken(token: string): JwtCookiePayload {
   const result = jwt.verify(token, config.JWT_SECRET) as JwtCookiePayload;
 
   if (!result) {
-    throw new ValidationError('Authorization token is wrong');
+    throw new UnauthorizedError('Authorization token is wrong');
   }
   return result;
+}
+
+export function verifyAccessToken(token: string): JwtAccessTokenPayload {
+  try {
+    const result = jwt.verify(token, config.JWT_SECRET) as JwtAccessTokenPayload;
+    if (!result || !result.sub) {
+      throw new UnauthorizedError('Invalid access token');
+    }
+    return result;
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new UnauthorizedError('Access token expired');
+    }
+    throw new UnauthorizedError('Invalid access token');
+  }
 }

@@ -5,6 +5,7 @@ import cors from 'cors';
 import { httpLogger } from './middlewares/pino.middleware.js';
 import { globalErrorFilter } from './filters/http-exception.filter.js';
 import authRoute from './routes/auth.route.js';
+import userRoute from './routes/user.route.js';
 
 const app: Application = express();
 
@@ -26,7 +27,8 @@ app.get('/health', (_req: Request, res: Response) => {
   res.json({ success: true, status: 'ok' });
 });
 
-app.use('/auth', authRoute);
+app.use('/api/auth', authRoute);
+app.use('/api/user', userRoute);
 
 app.use(globalErrorFilter);
 export default app;

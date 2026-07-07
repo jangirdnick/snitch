@@ -24,7 +24,7 @@
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "^11.5.0",
+      "version": "^11.8.0",
       "onFail": "download"
     }
   },
@@ -45,21 +45,21 @@
     ]
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "^21.0.2",
+    "@commitlint/config-conventional": "^21.2.0",
     "@eslint/js": "^10.0.1",
-    "@types/node": "^25.9.1",
-    "commitlint": "^21.0.2",
+    "@types/node": "^25.9.4",
+    "commitlint": "^21.2.0",
     "concurrently": "^10.0.3",
     "eslint": "^9.39.4",
     "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-import": "^2.32.0",
-    "globals": "^17.6.0",
+    "globals": "^17.7.0",
     "husky": "^9.1.7",
-    "lint-staged": "^17.0.7",
-    "prettier": "^3.8.3",
-    "tsx": "^4.22.4",
+    "lint-staged": "^17.0.8",
+    "prettier": "^3.9.4",
+    "tsx": "^4.23.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.61.0"
+    "typescript-eslint": "^8.63.0"
   },
   "author": "jangir d nick",
   "license": "ISC"

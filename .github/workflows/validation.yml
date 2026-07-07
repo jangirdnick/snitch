@@ -20,7 +20,7 @@ concurrency:
 
 env:
   NODE_VERSION: '22'
-  PNPM_VERSION: '11'
+  PNPM_VERSION: '11.8.0'
 
 # -----------------------------------------------
 # Job 1: Install ( shared install + cache foundation )
