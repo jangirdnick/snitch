@@ -4,10 +4,10 @@ import type {
   ApiSuccess,
   ApiErrorResponse,
   AuthLoginResponse,
-  CreateUserDto,
-  LoginUserDto,
   UserResponseDto,
 } from '@snitch/types';
+
+import { type CreateUserDto, type LoginUserDto } from '@snitch/schemas';
 
 export async function getMe(): Promise<ApiSuccess<{ user: UserResponseDto }> | ApiErrorResponse> {
   const { data } = await api.get('/user/get/me');

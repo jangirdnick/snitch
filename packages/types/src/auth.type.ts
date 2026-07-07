@@ -1,5 +1,5 @@
-import { ApiErrorResponse, ApiSuccess } from './api.type.js';
-import { UserResponseDto } from './user.type.js';
+import { type ApiErrorResponse, type ApiSuccess } from './api.type.js';
+import type { UserResponseDto } from './user.type.js';
 
 export interface AuthLogin {
   accessToken: string;
