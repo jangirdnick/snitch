@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { useNavigate, useLocation } from 'react-router';
+import { useNavigate } from 'react-router';
 import { X } from 'lucide-react';
+import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { LoginForm } from './LoginForm';
 import { RegisterForm } from './RegisterForm';
@@ -13,16 +14,7 @@ interface AuthModalProps {
 
 export function AuthModal({ mode }: AuthModalProps) {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [closing, setClosing] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false);
   const overlayRef = React.useRef<HTMLDivElement>(null);
-
-  // Trigger enter animation on mount
-  React.useEffect(() => {
-    const raf = requestAnimationFrame(() => setMounted(true));
-    return () => cancelAnimationFrame(raf);
-  }, []);
 
   // Close on Escape key
   React.useEffect(() => {
@@ -42,24 +34,12 @@ export function AuthModal({ mode }: AuthModalProps) {
     };
   }, []);
 
-  // Focus trap — focus first interactive element in modal
-  const panelRef = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
-    if (mounted && panelRef.current) {
-      const first = panelRef.current.querySelector<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      );
-      first?.focus();
-    }
-  }, [mounted]);
-
   function handleClose() {
-    setClosing(true);
-    setTimeout(() => {
-      // Navigate back — preserve previous location or go home
-      const background = (location.state as { background?: Location } | null)?.background;
-      navigate(background ?? '/', { replace: true });
-    }, 250);
+    if (window.history.length > 2) {
+      navigate(-1);
+    } else {
+      navigate('/', { replace: true });
+    }
   }
 
   function handleOverlayClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -67,42 +47,60 @@ export function AuthModal({ mode }: AuthModalProps) {
   }
 
   return (
-    <div
+    <motion.div
       ref={overlayRef}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={cn(
-        'auth-modal-overlay',
-        mounted && !closing && 'auth-modal-overlay--visible',
-        closing && 'auth-modal-overlay--closing',
+        'fixed inset-0 z-200',
+        'flex items-end sm:items-center justify-center',
+        'bg-[#08060d]/10 backdrop-blur-md',
       )}
       role="dialog"
       aria-modal="true"
       aria-label={mode === 'login' ? 'Sign in' : 'Create account'}
       onClick={handleOverlayClick}
     >
-      <div
-        ref={panelRef}
+      <motion.div
+        initial={{ opacity: 0, y: 40, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 16, scale: 0.96 }}
+        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
         className={cn(
-          'auth-modal-panel',
-          mounted && !closing && 'auth-modal-panel--visible',
-          closing && 'auth-modal-panel--closing',
+          'w-2/5 max-h-[90svh] sm:max-h-fit overflow-y-auto',
+          'bg-[#08060d]/85 backdrop-blur-[5px]',
+          'rounded-t-[28px] sm:rounded-[32px]',
+          'border-t sm:border border-white/8',
+          'shadow-[0_-24px_80px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.03)]',
+          'sm:shadow-[0_32px_80px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.03)]',
+          'text-white',
         )}
       >
         {/* Modal header */}
-        <div className="auth-modal-topbar">
-          <span className="auth-modal-brand">SNITCH</span>
+        <div className="flex items-center justify-between px-8 pt-7 pb-5 border-b border-white/6">
+          <span className="text-[11px] font-medium tracking-[0.32em] text-white/40 uppercase">
+            SNITCH
+          </span>
           <button
             type="button"
             onClick={handleClose}
-            className="auth-modal-close"
+            className={cn(
+              'flex items-center justify-center w-8 h-8 rounded-full',
+              'text-white/40 hover:text-white hover:bg-white/10',
+              'transition-colors duration-200',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20',
+            )}
             aria-label="Close"
           >
-            <X size={18} />
+            <X size={18} strokeWidth={1.5} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="auth-modal-body">{mode === 'login' ? <LoginForm /> : <RegisterForm />}</div>
-      </div>
-    </div>
+        <div className="px-8 pt-8 pb-10">{mode === 'login' ? <LoginForm /> : <RegisterForm />}</div>
+      </motion.div>
+    </motion.div>
   );
 }

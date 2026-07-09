@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import { motion } from 'motion/react';
 
 interface OTPInputProps {
   value: string;
@@ -48,14 +49,16 @@ export function OTPInput({ value, onChange, error, disabled = false, length = 6 
   }
 
   return (
-    <div className="otp-root">
-      <div
-        className={cn('otp-inputs', error && 'otp-inputs--error')}
+    <div className="flex flex-col items-center gap-3">
+      <motion.div
+        className="flex gap-1/75 sm:gap-2.5 justify-center"
         role="group"
         aria-label="One-time password"
+        animate={error ? { x: [-4, 4, -3, 3, 0] } : {}}
+        transition={{ duration: 0.35, ease: 'easeInOut' }}
       >
         {digits.map((digit, index) => (
-          <input
+          <motion.input
             key={index}
             ref={(el) => {
               inputRefs.current[index] = el;
@@ -67,7 +70,19 @@ export function OTPInput({ value, onChange, error, disabled = false, length = 6 
             value={digit}
             disabled={disabled}
             aria-label={`Digit ${index + 1}`}
-            className={cn('otp-cell', digit && 'otp-cell--filled', error && 'otp-cell--error')}
+            initial={false}
+            animate={digit && !error ? { scale: [1, 1.1, 1] } : {}}
+            transition={{ duration: 0.15, ease: [0.34, 1.56, 0.64, 1] }}
+            className={cn(
+              'w-12 h-14 sm:w-14 sm:h-16 text-center text-[24px] sm:text-[28px] font-light tracking-normal text-white',
+              'bg-white/20',
+              'border rounded-[14px] outline-none caret-transparent transition-all duration-300',
+              error
+                ? 'border-red-500/50 text-red-400'
+                : digit
+                  ? 'border-white/60 bg-white/50'
+                  : 'border-white/10 hover:border-white/20 focus-visible:border-white/40 focus-visible:bg-white/40 focus-visible:ring-4 focus-visible:ring-white/40',
+            )}
             onChange={(e) => handleChange(index, e.target.value)}
             onKeyDown={(e) => handleKeyDown(index, e)}
             onPaste={handlePaste}
@@ -75,12 +90,17 @@ export function OTPInput({ value, onChange, error, disabled = false, length = 6 
             autoComplete={index === 0 ? 'one-time-code' : 'off'}
           />
         ))}
-      </div>
+      </motion.div>
 
       {error && (
-        <p role="alert" className="otp-error">
+        <motion.p
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          role="alert"
+          className="text-[12px] text-red-500 font-medium"
+        >
           {error}
-        </p>
+        </motion.p>
       )}
     </div>
   );

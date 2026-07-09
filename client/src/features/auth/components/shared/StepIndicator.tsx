@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { motion } from 'motion/react';
 
 interface StepIndicatorProps {
   totalSteps: number;
@@ -8,7 +8,7 @@ interface StepIndicatorProps {
 export function StepIndicator({ totalSteps, currentStep }: StepIndicatorProps) {
   return (
     <div
-      className="step-indicator"
+      className="flex items-center justify-center gap-2 mb-1"
       role="progressbar"
       aria-valuenow={currentStep + 1}
       aria-valuemin={1}
@@ -16,14 +16,16 @@ export function StepIndicator({ totalSteps, currentStep }: StepIndicatorProps) {
       aria-label={`Step ${currentStep + 1} of ${totalSteps}`}
     >
       {Array.from({ length: totalSteps }).map((_, i) => (
-        <div
+        <motion.div
           key={i}
-          className={cn(
-            'step-dot',
-            i < currentStep && 'step-dot--done',
-            i === currentStep && 'step-dot--active',
-            i > currentStep && 'step-dot--upcoming',
-          )}
+          initial={false}
+          animate={{
+            width: i === currentStep ? 24 : 6,
+            opacity: i < currentStep ? 0.3 : 1,
+            backgroundColor: i <= currentStep ? '#ffffff' : 'rgba(255, 255, 255, 0.15)',
+          }}
+          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="h-1 rounded-full"
           aria-hidden="true"
         />
       ))}

@@ -14,6 +14,190 @@ Design philosophy ka core teen pillars hain:
 
 ---
 
+## AI Skills — `.agents/skills/`
+
+> ⚠️ **MANDATORY:** Koi bhi UI, animation, ya React component kaam shuru karne se pehle relevant skill file ZAROOR padho. Skills ke bina kaam karna = generic, template-level output.
+
+Is project mein **3 specialized skill files** hain `client/.agents/skills/` folder mein. Ye skills AI agent ko project-specific, production-quality decisions lene mein help karti hain.
+
+---
+
+### Skill 1 — `frontend-design`
+
+**File:** `.agents/skills/frontend-design/SKILL.md`
+
+**Kab use karo:**
+
+- Naya page ya section design karna ho
+- Existing UI ko visually improve karna ho
+- Color palette, typography, layout decisions leni ho
+- Hero section, landing page, marketing page banana ho
+- Design feel generic ya templated lag rahi ho
+
+**Kya sikhata hai:**
+
+- Opinionated, distinctive visual choices kaise karo
+- Typography pairs (display + body face)
+- Layout planning — ASCII wireframes + design tokens
+- Writing copy that serves design (labels, CTAs, empty states)
+- Self-critique process — design review before building
+
+```
+Trigger examples:
+- "Naya ProductPage banana hai"
+- "LoginPage ka UI improve karo"
+- "Hero section redesign karo"
+- "Ye design generic lag raha hai, improve karo"
+```
+
+---
+
+### Skill 2 — `motion-design`
+
+**File:** `.agents/skills/motion-design/SKILL.md`
+
+**Kab use karo:**
+
+- Koi bhi animation banana ho (entry, exit, hover, press)
+- Page transitions implement karna ho
+- Scroll-triggered reveals, parallax effects
+- Loading states, success/error animations
+- Marquee, carousel, infinite scroll animations
+- Motion ke liye easing ya duration decide karna ho
+
+**Kya sikhata hai:**
+
+- Motion Personality archetypes: **Premium** (is project ke liye default), Playful, Corporate, Energetic
+- Duration table — kab kitna time lagao
+- Easing selection — entrance = ease-out, exit = ease-in
+- Disney animation principles (anticipation, follow-through, squash/stretch)
+- 3 motion layers: Primary + Secondary + Ambient
+- 1/3 rule — ek waqt mein kitne elements animate ho sakate hain
+
+**Is project ka Motion Personality: `Premium`**
+
+```
+Duration: 350–600ms
+Easing: cubic-bezier(0.4, 0, 0.2, 1)
+Overshoot: 0%
+Feel: elegant, minimal, luxury, sophisticated
+```
+
+```
+Trigger examples:
+- "Animation add karo is button pe"
+- "Page transition implement karo"
+- "Marquee smooth karo"
+- "Hover micro-interaction chahiye"
+- "Loading state banana hai"
+```
+
+---
+
+### Skill 3 — `vercel-react-best-practices`
+
+**File:** `.agents/skills/vercel-react-best-practices/SKILL.md`
+
+**Kab use karo:**
+
+- Naya React component likhna ho
+- Data fetching implement karna ho (API calls, useEffect)
+- Bundle size optimize karna ho
+- Re-render issues fix karne ho
+- Performance improve karna ho
+- Heavy component lazy load karna ho
+
+**Kya sikhata hai (70 rules, 8 categories):**
+
+| Priority | Category                  | Impact   |
+| -------- | ------------------------- | -------- |
+| 1        | Eliminating Waterfalls    | CRITICAL |
+| 2        | Bundle Size Optimization  | CRITICAL |
+| 3        | Server-Side Performance   | HIGH     |
+| 4        | Client-Side Data Fetching | MED-HIGH |
+| 5        | Re-render Optimization    | MEDIUM   |
+| 6        | Rendering Performance     | MEDIUM   |
+| 7        | JavaScript Performance    | LOW-MED  |
+| 8        | Advanced Patterns         | LOW      |
+
+```
+Trigger examples:
+- "useEffect mein API call hai"
+- "Component slow lag raha hai"
+- "Bundle size bahut bada ho gaya"
+- "Re-render zyada ho rahe hain"
+- "Lazy load karna hai"
+```
+
+---
+
+### Skill 4 — `tailwind-design-system`
+
+**File:** `.agents/skills/tailwind-design-system/SKILL.md`
+
+**Kab use karo:**
+
+- Tailwind v4 `@theme` mein naye design tokens add karne ho
+- Color palette, radius, spacing, animation tokens define karne ho
+- Dark mode implement karna ho (`@custom-variant dark`)
+- Component variants CVA se banana ho
+- Tailwind v3 se v4 mein migrate karna ho
+- `global.css` / `index.css` ka design system structure improve karna ho
+- OKLCH colors use karne ho
+
+**Kya sikhata hai:**
+
+- Tailwind v4 ka CSS-first configuration (`@theme {}` block)
+- v3 → v4 migration — `tailwind.config.ts` → `@theme` mein
+- Semantic color tokens OKLCH format mein
+- `@keyframes` inside `@theme` for animation tokens
+- Dark mode: `@custom-variant dark (&:where(.dark, .dark *))`
+- Design token hierarchy: Brand → Semantic → Component
+
+**Tailwind v3 vs v4 quick reference:**
+
+| v3 Pattern                       | v4 Pattern                    |
+| -------------------------------- | ----------------------------- |
+| `tailwind.config.ts`             | `@theme {}` in CSS            |
+| `@tailwind base/components`      | `@import "tailwindcss"`       |
+| `darkMode: "class"`              | `@custom-variant dark (...)`  |
+| `theme.extend.colors`            | `@theme { --color-*: value }` |
+| `require("tailwindcss-animate")` | `@keyframes` inside `@theme`  |
+
+```
+Trigger examples:
+- "Naya color token add karna hai @theme mein"
+- "Dark mode implement karo"
+- "OKLCH color system banana hai"
+- "Tailwind mein custom radius/spacing add karo"
+- "Animation token define karna hai"
+- "Design system consistent nahi lag raha"
+```
+
+---
+
+### Quick Decision — Kaunsi Skill Kab?
+
+| Task                                    | Skill                               |
+| --------------------------------------- | ----------------------------------- |
+| Naya UI page/section banana             | `frontend-design`                   |
+| Existing component ka look improve karo | `frontend-design`                   |
+| Animation, transition, motion add karo  | `motion-design`                     |
+| Hover, press, scroll effects            | `motion-design`                     |
+| Infinite marquee, carousel              | `motion-design`                     |
+| React component banana                  | `vercel-react-best-practices`       |
+| API call / data fetching                | `vercel-react-best-practices`       |
+| Performance optimize karna              | `vercel-react-best-practices`       |
+| Bundle size ghataani hai                | `vercel-react-best-practices`       |
+| Complex animated UI section             | `frontend-design` + `motion-design` |
+| Tailwind token add karna (@theme)       | `tailwind-design-system`            |
+| Dark mode implement karna               | `tailwind-design-system`            |
+| OKLCH colors, radius, spacing           | `tailwind-design-system`            |
+| Component variants (CVA) banana         | `tailwind-design-system`            |
+| Design system consistent banana         | `tailwind-design-system`            |
+
+---
+
 ## Monorepo Architecture — FUNDAMENTAL RULES
 
 > ⚠️ Ye section sabse important hai. Inhe todna = architecture break karna.
@@ -395,22 +579,54 @@ import { z } from 'zod'; // seedha zod mat import karo
 
 ## Dev Commands
 
+> ⚠️ **MANDATORY: Sirf `pnpm` use karo. `npm` ya `yarn` bilkul mat use karo.**
+> Is project mein `pnpm` workspace hai — `npm` se install karne par lockfile corrupt ho sakta hai aur workspace links toot sakte hain.
+
 ```bash
+# ─── Client commands (client/ folder se) ─────────────────────────────────────
+
 # Dev server start karo (http://localhost:5173)
-npm run dev
+pnpm dev
 
 # TypeScript type check (no emit)
-npm run type-check
+pnpm type-check
 
 # Production build (tsc + vite build)
-npm run build
+pnpm build
 
 # ESLint run karo
-npm run lint
+pnpm lint
 
 # Prettier format karo
-npm run format
+pnpm format
+
+# ─── Root-level commands (root snitch/ folder se) ─────────────────────────────
+
+# Client + Server dono saath start karo
+pnpm dev
+
+# Sirf client start karo
+pnpm dev:client
+
+# Sirf server start karo
+pnpm dev:server
+
+# Sab packages mein type-check
+pnpm type-check
+
+# Naya package install karo (hamesha root se)
+pnpm add <package-name> --filter client
+
+# shadcn component add karo
+pnpm dlx shadcn add <component-name>
 ```
+
+| Command           | Galat ❌             | Sahi ✅                   |
+| ----------------- | -------------------- | ------------------------- |
+| Dev server        | `npm run dev`        | `pnpm dev`                |
+| Package install   | `npm install axios`  | `pnpm add axios`          |
+| shadcn component  | `npx shadcn add ...` | `pnpm dlx shadcn add ...` |
+| One-time tool run | `npx some-tool`      | `pnpm dlx some-tool`      |
 
 ---
 
