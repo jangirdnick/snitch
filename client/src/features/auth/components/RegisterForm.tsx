@@ -9,6 +9,8 @@ import { StepDetails } from './steps/StepDetails';
 import { StepOTP } from './steps/StepOTP';
 import { StepIndicator } from './shared/StepIndicator';
 import { AuthErrorBanner } from './AuthErrorBanner';
+import { motion, AnimatePresence, type Variants } from 'motion/react';
+import { cn } from '@/lib/utils';
 
 type Step = 'details' | 'otp';
 
@@ -77,38 +79,74 @@ export function RegisterForm() {
 
   const stepIndex = step === 'details' ? 0 : 1;
 
+  const variants: Variants = {
+    initial: (dir: 'forward' | 'back') => ({
+      x: dir === 'forward' ? 32 : -32,
+      opacity: 0,
+    }),
+    animate: {
+      x: 0,
+      opacity: 1,
+      transition: { duration: 0.4, ease: [0.05, 0.7, 0.1, 1] },
+    },
+    exit: (dir: 'forward' | 'back') => ({
+      x: dir === 'forward' ? -32 : 32,
+      opacity: 0,
+      transition: { duration: 0.3, ease: [0.3, 0, 1, 1] },
+    }),
+  };
+
   return (
-    <div className="register-form-root">
+    <div className="flex flex-col">
       <StepIndicator totalSteps={2} currentStep={stepIndex} />
 
       {error && step === 'otp' && (
         <AuthErrorBanner message={error} type="error" onDismiss={() => dispatch(clearError())} />
       )}
 
-      <div className={`register-step-wrapper register-step-wrapper--${direction}`} key={step}>
-        {step === 'details' && (
-          <StepDetails
-            defaultValues={stepData ?? undefined}
-            onNext={handleStep1Next}
-            loading={loading}
-          />
-        )}
-        {step === 'otp' && (
-          <StepOTP
-            email={stepData?.email ?? ''}
-            onVerify={handleOTPVerify}
-            onBack={handleBack}
-            onResend={handleResend}
-            loading={loading}
-            success={success}
-          />
-        )}
+      <div className="relative overflow-hidden w-full">
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={step}
+            custom={direction}
+            variants={variants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="w-full"
+          >
+            {step === 'details' && (
+              <StepDetails
+                defaultValues={stepData ?? undefined}
+                onNext={handleStep1Next}
+                loading={loading}
+              />
+            )}
+            {step === 'otp' && (
+              <StepOTP
+                email={stepData?.email ?? ''}
+                onVerify={handleOTPVerify}
+                onBack={handleBack}
+                onResend={handleResend}
+                loading={loading}
+                success={success}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {step === 'details' && (
-        <p className="auth-form-switch">
+        <p className="mt-6 text-[13px] text-white/50 text-center font-light">
           Already have an account?{' '}
-          <Link to="/login" className="auth-link auth-link--bold">
+          <Link
+            to="/login"
+            className={cn(
+              'font-medium text-white underline underline-offset-4',
+              'decoration-white/30 hover:decoration-white hover:text-white',
+              'transition-colors duration-300',
+            )}
+          >
             Sign in
           </Link>
         </p>

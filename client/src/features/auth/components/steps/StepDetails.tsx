@@ -5,6 +5,7 @@ import { registerStep1Schema, type RegisterStep1Values } from '../../schema/auth
 import { FormField } from '../shared/FormField';
 import { PasswordInput } from '../shared/PasswordInput';
 import { Button } from '@components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface StepDetailsProps {
   defaultValues?: Partial<RegisterStep1Values>;
@@ -26,17 +27,21 @@ export function StepDetails({ defaultValues, onNext, loading = false }: StepDeta
     <form
       id="register-step-details"
       onSubmit={handleSubmit(onNext)}
-      className="auth-form"
+      className="flex flex-col gap-6"
       noValidate
     >
-      <div className="auth-form-header">
-        <h2 className="auth-form-title">Create your account</h2>
-        <p className="auth-form-subtitle">Join Snitch for exclusive access</p>
+      <div className="flex flex-col gap-1 text-center">
+        <h2 className="text-[24px] font-light tracking-[-0.02em] text-white leading-[1.2]">
+          Create your account
+        </h2>
+        <p className="text-[13px] text-white/50 leading-relaxed font-light">
+          Join Snitch for exclusive access
+        </p>
       </div>
 
-      <div className="auth-form-fields">
+      <div className="flex flex-col gap-5 mt-2">
         {/* Name row */}
-        <div className="auth-form-row">
+        <div className="grid grid-cols-2 gap-4">
           <FormField
             label="First Name"
             placeholder="Alex"
@@ -65,14 +70,13 @@ export function StepDetails({ defaultValues, onNext, loading = false }: StepDeta
         />
 
         {/* Phone row */}
-        <div className="auth-form-row auth-form-row--phone">
+        <div className="grid grid-cols-[96px_1fr] gap-4">
           <FormField
             label="Code"
             placeholder="+91"
             autoComplete="tel-country-code"
             required
             error={errors.contact?.countryCode?.message}
-            className="auth-phone-code"
             {...register('contact.countryCode')}
           />
           <FormField
@@ -82,14 +86,13 @@ export function StepDetails({ defaultValues, onNext, loading = false }: StepDeta
             autoComplete="tel-national"
             required
             error={errors.contact?.phoneNumber?.message}
-            className="auth-phone-number"
             {...register('contact.phoneNumber')}
           />
         </div>
 
         <PasswordInput
           label="Password"
-          placeholder="Min. 6 chars — include A, a, 1, @"
+          placeholder="Min. 6 chars"
           autoComplete="new-password"
           required
           error={errors.password?.message}
@@ -98,7 +101,17 @@ export function StepDetails({ defaultValues, onNext, loading = false }: StepDeta
         />
       </div>
 
-      <Button type="submit" disabled={loading} className="auth-submit-btn">
+      <Button
+        type="submit"
+        disabled={loading}
+        className={cn(
+          'w-full h-12 mt-2 text-[13px] font-semibold tracking-widest uppercase rounded-full gap-2',
+          'bg-white text-[#08060d]',
+          'hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_8px_32px_rgba(255,255,255,0.15)]',
+          'transition-all duration-500 ease-out active:scale-[0.98]',
+          'disabled:opacity-50 disabled:pointer-events-none disabled:scale-100 disabled:shadow-none',
+        )}
+      >
         {loading ? (
           <>
             <Loader2 className="animate-spin" size={16} />

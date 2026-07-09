@@ -11,6 +11,7 @@ import { FormField } from './shared/FormField';
 import { PasswordInput } from './shared/PasswordInput';
 import { AuthErrorBanner } from './AuthErrorBanner';
 import { Button } from '@components/ui/button';
+import { cn } from '@/lib/utils';
 
 export function LoginForm() {
   const dispatch = useAppDispatch();
@@ -42,16 +43,31 @@ export function LoginForm() {
     await handleLogin(values);
   }
 
+  const linkClass = cn(
+    'text-white/80 underline underline-offset-4',
+    'decoration-white/30 hover:decoration-white hover:text-white',
+    'transition-colors duration-300 text-[13px] font-light',
+  );
+
   return (
-    <form id="login-form" onSubmit={handleSubmit(onSubmit)} className="auth-form" noValidate>
-      <div className="auth-form-header">
-        <h2 className="auth-form-title">Welcome back</h2>
-        <p className="auth-form-subtitle">Sign in to your Snitch account</p>
+    <form
+      id="login-form"
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex flex-col gap-6"
+      noValidate
+    >
+      <div className="flex flex-col gap-1 text-center">
+        <h2 className="text-[24px] font-light tracking-[-0.02em] text-white leading-[1.2]">
+          Welcome back
+        </h2>
+        <p className="text-[13px] text-white/50 leading-relaxed font-light">
+          Sign in to your Snitch account
+        </p>
       </div>
 
       <AuthErrorBanner message={error} type="error" onDismiss={() => dispatch(clearError())} />
 
-      <div className="auth-form-fields">
+      <div className="flex flex-col gap-5 mt-2">
         <FormField
           label="Email"
           type="email"
@@ -72,13 +88,23 @@ export function LoginForm() {
         />
       </div>
 
-      <div className="auth-form-forgot">
-        <Link to="/forgot-password" className="auth-link" tabIndex={0}>
+      <div className="flex justify-end -mt-3">
+        <Link to="/forgot-password" className={linkClass} tabIndex={0}>
           Forgot password?
         </Link>
       </div>
 
-      <Button type="submit" disabled={loading} className="auth-submit-btn">
+      <Button
+        type="submit"
+        disabled={loading}
+        className={cn(
+          'w-full h-12 mt-2 text-[13px] font-semibold tracking-widest uppercase rounded-full gap-2',
+          'bg-white text-[#08060d]',
+          'hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_8px_32px_rgba(255,255,255,0.15)]',
+          'transition-all duration-500 ease-out active:scale-[0.98]',
+          'disabled:opacity-50 disabled:pointer-events-none disabled:scale-100 disabled:shadow-none',
+        )}
+      >
         {loading ? (
           <>
             <Loader2 className="animate-spin" size={16} />
@@ -92,9 +118,9 @@ export function LoginForm() {
         )}
       </Button>
 
-      <p className="auth-form-switch">
+      <p className="text-[13px] text-white/50 text-center mt-2 font-light">
         New to Snitch?{' '}
-        <Link to="/register" className="auth-link auth-link--bold">
+        <Link to="/register" className={cn(linkClass, 'font-medium text-white')}>
           Create an account
         </Link>
       </p>
