@@ -8,7 +8,6 @@ import { type RegisterStep1Values } from '../schema/auth.form.schema';
 import { StepDetails } from './steps/StepDetails';
 import { StepOTP } from './steps/StepOTP';
 import { StepIndicator } from './shared/StepIndicator';
-import { AuthErrorBanner } from './AuthErrorBanner';
 import { motion, AnimatePresence, type Variants } from 'motion/react';
 import { cn } from '@/lib/utils';
 
@@ -18,21 +17,14 @@ export function RegisterForm() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { handleRegister, handleVerifyEmail } = useAuth();
-  const { loading, error, message } = useAppSelector((s) => s.auth);
+  const { loading } = useAppSelector((s) => s.auth);
 
   const [step, setStep] = React.useState<Step>('details');
   const [stepData, setStepData] = React.useState<RegisterStep1Values | null>(null);
   const [success, setSuccess] = React.useState(false);
   const [direction, setDirection] = React.useState<'forward' | 'back'>('forward');
 
-  // Auto-close on register success — register doesn't set isAuthenticated,
-  // so watch for the success message from the server
-  React.useEffect(() => {
-    if (!message) return;
-    setSuccess(true);
-    const timer = setTimeout(() => navigate('/login', { replace: true }), 2000);
-    return () => clearTimeout(timer);
-  }, [message, navigate]);
+  // Success state is now handled locally after handleRegister succeeds
 
   async function handleStep1Next(values: RegisterStep1Values) {
     dispatch(clearError());
@@ -61,7 +53,11 @@ export function RegisterForm() {
       otp,
     };
 
-    await handleRegister(payload);
+    const success = await handleRegister(payload);
+    if (success) {
+      setSuccess(true);
+      setTimeout(() => navigate('/login', { replace: true }), 2000);
+    }
   }
 
   function handleBack() {
@@ -99,10 +95,6 @@ export function RegisterForm() {
   return (
     <div className="flex flex-col">
       <StepIndicator totalSteps={2} currentStep={stepIndex} />
-
-      {error && step === 'otp' && (
-        <AuthErrorBanner message={error} type="error" onDismiss={() => dispatch(clearError())} />
-      )}
 
       <div className="relative overflow-hidden w-full">
         <AnimatePresence mode="wait" custom={direction}>

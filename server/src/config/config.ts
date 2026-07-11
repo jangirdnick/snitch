@@ -10,6 +10,8 @@ interface ConfigEnv {
   REDIS_HOST: string;
   REDIS_PORT: number;
   REDIS_PASSWORD: string;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
 }
 
 function requireENV(key: string): string {
@@ -39,6 +41,8 @@ const config: ConfigEnv = {
   REDIS_HOST: requireENV('REDIS_HOST'),
   REDIS_PORT: requireENVNumber('REDIS_PORT'),
   REDIS_PASSWORD: requireENV('REDIS_PASSWORD'),
+  GOOGLE_CLIENT_ID: requireENV('GOOGLE_CLIENT_ID'),
+  GOOGLE_CLIENT_SECRET: requireENV('GOOGLE_CLIENT_SECRET'),
 };
 
 export default config;

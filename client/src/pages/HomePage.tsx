@@ -22,10 +22,14 @@
  */
 
 import { motion, AnimatePresence } from 'motion/react';
-import { useLocation, useOutlet } from 'react-router';
+import { useEffect } from 'react';
+import { useLocation, useOutlet, useSearchParams, useNavigate } from 'react-router';
+import { useDispatch } from 'react-redux';
+import { setAccessToken } from '@/features/auth/state/auth.slice';
 import { HeroMarquee } from '@/features/home/components/HeroMarquee';
 import { HeroEditorialFrames } from '@/features/home/components/HeroEditorialFrames';
 import type { HeroImage } from '@/features/home/components/HeroCard';
+import { showToast } from '@/lib/toast';
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
 // offset creates an editorial staggered rhythm — cards aren't all at the same
@@ -67,6 +71,36 @@ const HERO_IMAGES: HeroImage[] = [
 export default function HomePage() {
   const location = useLocation();
   const outlet = useOutlet();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const accessToken = searchParams.get('accessToken');
+    const message = searchParams.get('message');
+    const reason = searchParams.get('reason');
+
+    if (message) {
+      showToast.success(message, {
+        duration: 6000,
+      });
+    }
+
+    if (accessToken) {
+      // Google OAuth success — store token and clean URL
+      dispatch(setAccessToken(accessToken));
+      navigate(location.pathname, { replace: true });
+    }
+
+    if (reason) {
+      // Google OAuth error — show toast and clean URL
+      showToast.error('Google login failed', {
+        description: decodeURIComponent(reason),
+        duration: 6000,
+      });
+      navigate(location.pathname, { replace: true });
+    }
+  }, [searchParams, dispatch, navigate, location.pathname]);
 
   return (
     <>

@@ -9,7 +9,8 @@ import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { clearError } from '../state/auth.slice';
 import { FormField } from './shared/FormField';
 import { PasswordInput } from './shared/PasswordInput';
-import { AuthErrorBanner } from './AuthErrorBanner';
+import { GoogleAuthButton } from './shared/GoogleAuthButton';
+
 import { Button } from '@components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -18,7 +19,7 @@ export function LoginForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const { handleLogin } = useAuth();
-  const { loading, error, isAuthenticated } = useAppSelector((s) => s.auth);
+  const { loading, isAuthenticated } = useAppSelector((s) => s.auth);
 
   // Auto-close modal when login succeeds
   React.useEffect(() => {
@@ -64,8 +65,6 @@ export function LoginForm() {
           Sign in to your Snitch account
         </p>
       </div>
-
-      <AuthErrorBanner message={error} type="error" onDismiss={() => dispatch(clearError())} />
 
       <div className="flex flex-col gap-5 mt-2">
         <FormField
@@ -117,6 +116,8 @@ export function LoginForm() {
           </>
         )}
       </Button>
+
+      <GoogleAuthButton />
 
       <p className="text-[13px] text-white/50 text-center mt-2 font-light">
         New to Snitch?{' '}

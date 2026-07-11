@@ -4,6 +4,7 @@ import { ArrowRight, Loader2 } from 'lucide-react';
 import { registerStep1Schema, type RegisterStep1Values } from '../../schema/auth.form.schema';
 import { FormField } from '../shared/FormField';
 import { PasswordInput } from '../shared/PasswordInput';
+import { GoogleAuthButton } from '../shared/GoogleAuthButton';
 import { Button } from '@components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -124,6 +125,8 @@ export function StepDetails({ defaultValues, onNext, loading = false }: StepDeta
           </>
         )}
       </Button>
+
+      <GoogleAuthButton />
     </form>
   );
 }

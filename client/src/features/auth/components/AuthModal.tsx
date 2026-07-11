@@ -98,7 +98,7 @@ export function AuthModal({ mode }: AuthModalProps) {
           </button>
         </div>
 
-        {/* Content */}
+        {/* Form content */}
         <div className="px-8 pt-8 pb-10">{mode === 'login' ? <LoginForm /> : <RegisterForm />}</div>
       </motion.div>
     </motion.div>

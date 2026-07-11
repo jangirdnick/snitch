@@ -124,6 +124,7 @@ export interface IUser extends Document {
 }
 
 export interface IUserCreate {
+  id?: string;
   firstName: string;
   lastName?: string;
   avatar?: string | null;

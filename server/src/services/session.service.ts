@@ -24,7 +24,7 @@ export class SessionCompareError extends Error {
   public readonly statusCode = 401;
   constructor() {
     super('Session token comparison failed');
-    this.name = 'SessionCompairError';
+    this.name = 'SessionCompareError';
   }
 }
 
