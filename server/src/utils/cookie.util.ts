@@ -4,7 +4,7 @@ import { createLogger } from './logger.js';
 
 const logger = createLogger('COOKIE-SERVICE');
 
-const REFRESH_TOKEN_TTL = 24 * 60 * 60 * 1000;
+const REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days — matches REFRESH_TOKEN_TTL_MS in auth.controller
 const isProd = config.NODE_ENV === 'production';
 
 type SameSite = 'lax' | 'strict' | 'none';

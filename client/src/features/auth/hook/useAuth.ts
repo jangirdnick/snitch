@@ -12,12 +12,16 @@ import { useAppDispatch } from '@/store/hooks';
 import { AxiosError } from 'axios';
 import type { CreateUserDto, LoginUserDto } from '@snitch/schemas';
 
-function getErrorMessage(error: unknown) {
-  return error instanceof Error
-    ? error.message
-    : error instanceof AxiosError
-      ? (error.response?.data.error.message as string)
-      : 'An unknown error occurred';
+function getErrorMessage(error: unknown): string {
+  // AxiosError must be checked BEFORE Error — AxiosError extends Error,
+  // so `instanceof Error` would always match first and lose the server message.
+  if (error instanceof AxiosError) {
+    return (error.response?.data?.error?.message as string) ?? error.message;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return 'An unknown error occurred';
 }
 
 export const useAuth = () => {
@@ -29,11 +33,14 @@ export const useAuth = () => {
       const data = await register(payload);
       if (data.success) {
         dispatch(setMessage(data.message));
+        return true;
       } else {
         dispatch(setError(data.error.message));
+        return false;
       }
     } catch (error: unknown) {
       dispatch(setError(getErrorMessage(error)));
+      return false;
     } finally {
       dispatch(setLoading(false));
     }
@@ -46,12 +53,15 @@ export const useAuth = () => {
       console.warn(data);
       if (data.success) {
         dispatch(setMessage(data.message));
+        return true;
       } else {
         dispatch(setError(data.error.message));
+        return false;
       }
     } catch (error: unknown) {
       console.log(error);
       dispatch(setError(getErrorMessage(error)));
+      return false;
     } finally {
       dispatch(setLoading(false));
     }
@@ -66,11 +76,14 @@ export const useAuth = () => {
         dispatch(setUser(data.data.user));
         dispatch(setAccessToken(data.data.accessToken));
         dispatch(setIsAuthenticated(true));
+        return true;
       } else {
         dispatch(setError(data.error.message));
+        return false;
       }
     } catch (error: unknown) {
       dispatch(setError(getErrorMessage(error)));
+      return false;
     } finally {
       dispatch(setLoading(false));
     }
@@ -81,13 +94,16 @@ export const useAuth = () => {
       dispatch(setLoading(true));
       const data = await logout();
       if (data.success) {
-        dispatch(setMessage(data.message));
         dispatch(setLogout());
+        dispatch(setMessage(data.message));
+        return true;
       } else {
         dispatch(setError(data.error.message));
+        return false;
       }
     } catch (error: unknown) {
       dispatch(setError(getErrorMessage(error)));
+      return false;
     } finally {
       dispatch(setLoading(false));
     }
@@ -98,13 +114,16 @@ export const useAuth = () => {
       dispatch(setLoading(true));
       const data = await logoutAllDevices();
       if (data.success) {
-        dispatch(setMessage(data.message));
         dispatch(setLogout());
+        dispatch(setMessage(data.message));
+        return true;
       } else {
         dispatch(setError(data.error.message));
+        return false;
       }
     } catch (error: unknown) {
       dispatch(setError(getErrorMessage(error)));
+      return false;
     } finally {
       dispatch(setLoading(false));
     }
@@ -117,13 +136,14 @@ export const useAuth = () => {
       if (data.success) {
         dispatch(setUser(data.data.user));
         dispatch(setIsAuthenticated(true));
+        return true;
       } else {
-        dispatch(setError(data.error.message));
         dispatch(setLogout());
+        return false;
       }
-    } catch (error: unknown) {
+    } catch {
       dispatch(setLogout());
-      dispatch(setError(getErrorMessage(error)));
+      return false;
     } finally {
       dispatch(setLoading(false));
     }

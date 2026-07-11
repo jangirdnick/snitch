@@ -4,6 +4,8 @@ import {
   userFindByEmailPassword,
   userFindById,
   ValidationError,
+  UnauthorizedError,
+  userFindByEmail,
 } from '@/services/user.service.js';
 import type { NextFunction, Request, Response } from 'express';
 import crypto from 'crypto';
@@ -20,7 +22,9 @@ import {
   validateAndExpireAllSessions,
   validateAndExpireSession,
 } from '@/services/session.service.js';
-import { IUser, UserWithoutPassword } from '@/models/user.model.js';
+import userModel, { IUser, UserWithoutPassword } from '@/models/user.model.js';
+import config from '@/config/config.js';
+import { GoogleUser } from '@/types/auth.type.js';
 
 /* ------------------------------------------------------------------ */
 /* Constants                                                          */
@@ -311,6 +315,9 @@ export const authLogoutAllDevices = async (req: Request, res: Response, next: Ne
 export const getMe = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
+    if (!user) {
+      throw new UnauthorizedError('User not authenticated');
+    }
 
     res.status(200).json({
       success: true,
@@ -321,5 +328,83 @@ export const getMe = async (req: Request, res: Response, next: NextFunction) => 
     });
   } catch (error) {
     next(error);
+  }
+};
+
+/* ------------------------------------------------------------------ */
+/* Google login                                                       */
+/* ------------------------------------------------------------------ */
+
+export const googleCallback = async (req: Request, res: Response) => {
+  try {
+    const requestUser = req.user as unknown as GoogleUser;
+    const email = requestUser.emails?.[0]?.value;
+
+    if (!email) {
+      throw new ValidationError('Email not provided by Google');
+    }
+
+    let userDetail: UserWithoutPassword | undefined;
+    try {
+      userDetail = await userFindByEmail(email);
+      // Update lastLoginAt for existing user
+      await userModel.updateOne({ _id: userDetail._id }, { lastLoginAt: new Date() });
+    } catch (error) {
+      const { name } = error as Error;
+      const isNewUserError = name === 'InvalidCredentialsError' || name === 'UserNotFoundError';
+
+      const isUnverifiedUser = name === 'EmailNotVerifiedError';
+
+      if (isNewUserError) {
+        // New user — create account with Google profile data
+        userDetail = await userCreate({
+          id: requestUser.id,
+          firstName: requestUser.name?.givenName || requestUser.displayName,
+          lastName: requestUser.name?.familyName || undefined,
+          email: email,
+          emailVerified: requestUser.emails[0]?.verified || false,
+          avatar: requestUser.photos?.[0]?.value || '',
+          contact: {
+            countryCode: '+00',
+            phoneNumber: '0000000000',
+          },
+          password: crypto.randomBytes(16).toString('hex') + 'A1@',
+          lastLoginAt: new Date(),
+        });
+      } else if (isUnverifiedUser) {
+        // Existing user with unverified email — Google has verified it, so mark verified
+        await userModel.updateOne(
+          { email: email.toLowerCase().trim() },
+          { emailVerified: true, lastLoginAt: new Date() },
+        );
+        userDetail = await userFindByEmail(email);
+      } else {
+        throw error;
+      }
+    }
+
+    if (!userDetail) {
+      throw new ValidationError('Failed to resolve user from Google profile');
+    }
+
+    const deviceId = generateDeviceId();
+
+    const { accessToken, refreshToken } = generateJwtToken({ user: userDetail as IUser, deviceId });
+    await createSession({
+      userId: userDetail.id,
+      user: userDetail._id,
+      deviceId,
+      hashToken: refreshToken,
+      expiredAt: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
+    });
+
+    setCookie({ name: REFRESH_COOKIE_NAME, refreshToken, res });
+
+    res.redirect(
+      `${config.CORS_ORIGIN}?accessToken=${accessToken}&message=${userDetail.firstName} Login successful`,
+    );
+  } catch (error) {
+    const message = encodeURIComponent((error as Error)?.message ?? 'Google login failed');
+    res.redirect(`${config.CORS_ORIGIN}/auth/error?reason=${message}`);
   }
 };
