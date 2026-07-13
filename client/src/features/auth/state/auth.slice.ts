@@ -1,8 +1,8 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { UserResponseDto } from '@snitch/types';
+import type { JwtAccessTokenPayload } from '@snitch/types';
 
-interface AuthState {
-  user: UserResponseDto | null;
+export interface AuthState {
+  user: JwtAccessTokenPayload | null;
   access_token: string;
   isAuthenticated: boolean;
   loading: boolean;
@@ -25,7 +25,7 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<UserResponseDto | null>) => {
+    setUser: (state, action: PayloadAction<JwtAccessTokenPayload | null>) => {
       state.user = action.payload;
     },
 
@@ -56,7 +56,7 @@ const authSlice = createSlice({
     setAuth: (
       state,
       action: PayloadAction<{
-        user: UserResponseDto;
+        user: JwtAccessTokenPayload;
         access_token: string;
       }>,
     ) => {

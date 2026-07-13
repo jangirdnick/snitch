@@ -1,7 +1,7 @@
 /**
- * -----------------------------------------------------------------------
+ * ----------------------------------------------------------------------------
  * User Model
- * -----------------------------------------------------------------------
+ * ----------------------------------------------------------------------------
  *
  * MongoDB user document schema and model definition
  *
@@ -116,7 +116,7 @@ export interface IUser extends Document {
     phoneNumber: string;
   };
   password: string;
-  role: 'USER' | 'SELLER';
+  role: 'USER' | 'ADMIN';
   lastLoginAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -253,7 +253,7 @@ const userSchema: Schema<IUser> = new Schema(
 
     role: {
       type: String,
-      enum: ['USER', 'SELLER'],
+      enum: ['USER', 'ADMIN'],
       default: 'USER',
     },
 
@@ -307,6 +307,33 @@ userSchema.pre('save', async function () {
   this.password = await bcrypt.hash(this.password, 12);
 });
 
+/**
+ * Verify user password.
+ *
+ * Compares the provided plain-text password against
+ * the stored bcrypt hash.
+ *
+ * Common Usage:
+ *
+ * const valid =
+ *   await user.comparePassword(
+ *     password,
+ *   );
+ *
+ * if (!valid) {
+ *   throw new UnauthorizedError('Invalid credentials');
+ * }
+ *
+ * @param password
+ * Plain-text password received from the login request.
+ *
+ * @returns
+ * Promise<boolean>
+ *
+ * Returns:
+ * - true  -> password matches
+ * - false -> password mismatch
+ */
 userSchema.methods.comparePassword = async function (password: string): Promise<boolean> {
   return await bcrypt.compare(password, this.password);
 };

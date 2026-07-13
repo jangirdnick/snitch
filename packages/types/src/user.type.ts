@@ -10,7 +10,7 @@ export interface User {
     phoneNumber: string;
   };
   password: string;
-  role: 'USER' | 'SELLER';
+  role: 'USER' | 'ADMIN';
   lastLoginAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -23,7 +23,7 @@ export interface UserResponseDto {
   avatar?: string | null;
   email: string;
   emailVerified: boolean;
-  role: 'USER' | 'SELLER';
+  role: 'USER' | 'ADMIN';
   contact: {
     countryCode: string;
     phoneNumber: string;

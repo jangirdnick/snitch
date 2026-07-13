@@ -259,3 +259,35 @@ export async function userExistByEmail(params: { email: string }): Promise<void>
     throw new DatabaseOperationError('userCheckByEmail', error);
   }
 }
+
+export async function userExistByIdRole(params: {
+  id: string;
+  role: 'USER' | 'ADMIN';
+}): Promise<void> {
+  const { id, role } = params;
+  if (!id || typeof id !== 'string') {
+    throw new ValidationError('Id must be a non-empty string');
+  }
+
+  try {
+    const exists = await userModel.exists({ id, role });
+    if (!exists) {
+      throw new UserNotFoundError(id);
+    }
+    return;
+  } catch (error) {
+    if (isUserError(error)) throw error;
+
+    logger.error(
+      {
+        err: {
+          error,
+          userId: id,
+          userRole: role,
+        },
+      },
+      'Unexpected error checking user by id and role',
+    );
+    throw new DatabaseOperationError('userExistByIdRole', error);
+  }
+}

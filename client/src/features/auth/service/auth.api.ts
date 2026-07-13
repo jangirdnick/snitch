@@ -1,15 +1,9 @@
 import { api } from '@/lib/axiosInstance';
-import type {
-  ApiResponse,
-  ApiSuccess,
-  ApiErrorResponse,
-  AuthLoginResponse,
-  UserResponseDto,
-} from '@snitch/types';
+import type { ApiResponse, AuthLoginResponse, AuthUserResponse } from '@snitch/types';
 
 import { type CreateUserDto, type LoginUserDto } from '@snitch/schemas';
 
-export async function getMe(): Promise<ApiSuccess<{ user: UserResponseDto }> | ApiErrorResponse> {
+export async function getMe(): Promise<AuthUserResponse> {
   const { data } = await api.get('/user/get/me');
   return data;
 }

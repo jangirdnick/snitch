@@ -134,15 +134,18 @@ export const useAuth = () => {
       dispatch(setLoading(true));
       const data = await getMe();
       if (data.success) {
+        console.log(data);
         dispatch(setUser(data.data.user));
         dispatch(setIsAuthenticated(true));
         return true;
       } else {
         dispatch(setLogout());
+        dispatch(setError(data.error.message));
         return false;
       }
-    } catch {
+    } catch (error: unknown) {
       dispatch(setLogout());
+      dispatch(setError(getErrorMessage(error)));
       return false;
     } finally {
       dispatch(setLoading(false));

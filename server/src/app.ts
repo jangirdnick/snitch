@@ -1,4 +1,4 @@
-import express, { type Application, Response, Request } from 'express';
+import express, { type Application, Response, Request, Router } from 'express';
 import config from './config/config.js';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -10,6 +10,7 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 // ROUTES
 import authRoute from './routes/auth.route.js';
 import userRoute from './routes/user.route.js';
+import useProduct from './routes/product.route.js';
 
 const app: Application = express();
 
@@ -41,12 +42,17 @@ passport.use(
   ),
 );
 
-app.get('/health', (_req: Request, res: Response) => {
+const apiRouter = Router();
+
+apiRouter.get('/health', (_req: Request, res: Response) => {
   res.json({ success: true, status: 'ok' });
 });
 
-app.use('/api/auth', authRoute);
-app.use('/api/user', userRoute);
+apiRouter.use('/auth', authRoute);
+apiRouter.use('/user', userRoute);
+apiRouter.use('/product', useProduct);
+
+app.use('/api', apiRouter);
 
 app.use(globalErrorFilter);
 export default app;
