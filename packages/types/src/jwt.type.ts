@@ -14,7 +14,7 @@ export interface JwtAccessTokenPayload {
     countryCode: string;
     phoneNumber: string;
   };
-  role: 'USER' | 'SELLER';
+  role: 'USER' | 'ADMIN';
   lastLoginAt: Date;
   createdAt: Date;
   updatedAt: Date;

@@ -16,11 +16,12 @@
 
 import * as React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
-import { ShoppingBag, Heart, Search, Menu, X, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut, LayoutDashboard, Search, Heart, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { useAppSelector } from '@/store/hooks';
 import { useAuth } from '@/features/auth/hook/useAuth';
+import type { AuthState } from '@/features/auth/state/auth.slice';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -37,7 +38,7 @@ const EASE = [0.25, 0.46, 0.45, 0.94] as const;
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-/** Circular icon button — matches hero CTA ghost style */
+/** Generic circular icon button */
 function IconButton({
   label,
   onClick,
@@ -48,22 +49,171 @@ function IconButton({
   children: React.ReactNode;
 }) {
   return (
-    <motion.button
+    <button
       type="button"
       aria-label={label}
       onClick={onClick}
       className={cn(
-        'relative flex items-center justify-center w-9 h-9 rounded-full',
-        'text-white/60 transition-colors duration-150',
-        'hover:text-white hover:bg-white/10',
+        'flex items-center justify-center w-9 h-9 rounded-full',
+        'text-white/70 transition-all duration-300',
+        'hover:text-white hover:bg-white/10 active:scale-95',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50',
-        'active:scale-95',
       )}
-      whileTap={{ scale: 0.9 }}
-      transition={{ duration: 0.1 }}
     >
       {children}
-    </motion.button>
+    </button>
+  );
+}
+
+/**
+ * ProfileDropdown - Premium authenticated user menu
+ * Handles both User and Admin states with distinguishable styling
+ */
+
+type ProfileDropdownProps = {
+  user: AuthState['user'];
+  onLogout: () => void;
+};
+
+function ProfileDropdown({ user, onLogout }: ProfileDropdownProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const isAdmin = user?.role === 'ADMIN';
+
+  return (
+    <div className="relative z-50" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-label="User profile menu"
+        className={cn(
+          'relative flex items-center justify-center w-9 h-9 rounded-full transition-all duration-300',
+          'hover:bg-white/10 active:scale-95',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50',
+          isAdmin && 'shadow-[0_0_12px_rgba(255,255,255,0.06)] bg-white/5',
+        )}
+      >
+        {/* Avatar or fallback icon */}
+        <div className="relative w-7.5 h-7.5 rounded-full overflow-hidden flex items-center justify-center bg-white/10">
+          {user?.avatar ? (
+            <img
+              src={user.avatar}
+              alt={user.firstName || 'Profile'}
+              loading="lazy"
+              width={32}
+              height={32}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <User size={15} strokeWidth={1.5} className="text-white/70" />
+          )}
+        </div>
+        {/* Online indicator */}
+        <div className="absolute bottom-1 right-1 w-2 h-2 rounded-full bg-emerald-400 border border-[#08060d]" />
+        {/* Admin accent ring */}
+        {isAdmin && <div className="absolute inset-0 rounded-full ring-1 ring-white/20" />}
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.96 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className={cn(
+              'absolute right-0 top-full mt-2 w-56 rounded-2xl overflow-hidden',
+              'bg-[rgba(15,13,20,0.95)] backdrop-blur-3xl border border-white/10',
+              'shadow-[0_10px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05)]',
+            )}
+          >
+            {/* Header info in dropdown */}
+            <div className="px-4 py-4 border-b border-white/10 bg-white/2">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 shrink-0 border border-white/5 relative">
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt="Avatar"
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <User size={18} strokeWidth={1.5} className="text-white/80" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col overflow-hidden">
+                  <span className="text-sm font-medium text-white truncate w-full">
+                    {user?.firstName} {user?.lastName}
+                  </span>
+                  <span className="text-[11px] text-white/50 truncate w-full text-left">
+                    {user?.email}
+                  </span>
+                </div>
+              </div>
+              {isAdmin && (
+                <div className="mt-3 inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/10 border border-white/5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+                  <span className="text-[10px] font-bold tracking-widest uppercase text-white">
+                    Admin Privileges
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Menu Items */}
+            <div className="p-1.5 flex flex-col gap-0.5">
+              <Link
+                to="/profile"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-white/70 transition-colors hover:text-white hover:bg-white/10"
+              >
+                <User size={16} strokeWidth={1.5} />
+                Profile
+              </Link>
+
+              {isAdmin && (
+                <Link
+                  to="/admin/dashboard"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-white/70 transition-colors hover:text-white hover:bg-white/10"
+                >
+                  <LayoutDashboard size={16} strokeWidth={1.5} />
+                  Dashboard
+                </Link>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  onLogout();
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 mt-1 rounded-xl text-sm font-medium text-red-400 transition-colors hover:bg-red-400/10 hover:text-red-300 w-full text-left"
+              >
+                <LogOut size={16} strokeWidth={1.5} />
+                Sign out
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -74,6 +224,7 @@ export function Navbar() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
+
   const { isAuthenticated, user } = useAppSelector((s) => s.auth);
   const { handleLogout } = useAuth();
 
@@ -124,65 +275,81 @@ export function Navbar() {
             : 'bg-transparent border-b border-transparent',
         )}
       >
-        <div className="w-full mx-auto h-full flex items-center px-5 sm:px-6 gap-8">
+        <div className="w-full mx-auto h-full flex items-center px-5 sm:px-6 relative">
           {/* Logo */}
           <Link
             to="/"
             aria-label="Snitch home"
             className={cn(
-              'shrink-0 text-[15px] font-bold tracking-[0.22em] uppercase text-white',
-              'transition-opacity duration-150',
+              'shrink-0 z-10',
+              'transition-opacity duration-150 hover:opacity-70',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-sm',
             )}
           >
-            <img src="./SNITCH_LOGO_NEW_BLACK.webp" className="w-20 invert" />
+            <img src="./SNITCH_LOGO_NEW_BLACK.webp" alt="Snitch Logo" className="w-20 invert" />
           </Link>
 
-          {/* Desktop nav links — centered */}
-          {/* <nav
-            className="hidden lg:flex flex-1 items-center justify-center gap-1"
+          {/* Desktop Nav Links — absolutely centered in header */}
+          <nav
+            className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-0"
             aria-label="Main navigation"
           >
-            {NAV_LINKS.map((link) => (
-              <NavLink
-                key={link.href}
-                href={link.href}
-                label={link.label}
-                isActive={location.pathname === link.href}
-                accent={link.accent}
-              />
-            ))}
-          </nav> */}
+            {NAV_LINKS.map((link) => {
+              const isActive = location.pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={cn(
+                    'relative px-4 py-2 text-[11px] font-medium tracking-[0.14em] uppercase transition-colors duration-300',
+                    link.accent
+                      ? 'text-red-400 hover:text-red-300'
+                      : isActive
+                        ? 'text-white'
+                        : 'text-white/45 hover:text-white',
+                  )}
+                >
+                  {link.label}
+                  {isActive && !link.accent && (
+                    <motion.div
+                      layoutId="nav-underline"
+                      className="absolute bottom-0 left-4 right-4 h-px bg-white/60"
+                      transition={{ duration: 0.35, ease: EASE }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
 
           {/* Right actions */}
-          <div className="flex items-center gap-0.5 ml-auto">
-            {/* Icon buttons — always visible */}
-            <IconButton label="Search">
-              <Search size={18} strokeWidth={1.5} />
-            </IconButton>
-            <IconButton label="Wishlist">
-              <Heart size={18} strokeWidth={1.5} />
-            </IconButton>
-            <IconButton label="Cart">
-              <ShoppingBag size={18} strokeWidth={1.5} />
-            </IconButton>
+          <div className="flex items-center gap-0.5 ml-auto z-10">
+            {/* Desktop Storefront Icons */}
+            <div className="hidden sm:flex items-center gap-0.5 mr-2">
+              <IconButton label="Search">
+                <Search size={18} strokeWidth={1.5} />
+              </IconButton>
+              <IconButton label="Wishlist">
+                <Heart size={18} strokeWidth={1.5} />
+              </IconButton>
+              <IconButton label="Cart">
+                <ShoppingBag size={18} strokeWidth={1.5} />
+              </IconButton>
+            </div>
+
+            <div className="w-px h-4 bg-white/15 mx-1.5 hidden sm:block" />
 
             {/* Auth — hidden on mobile (shown in drawer) */}
             <div className="hidden sm:flex items-center gap-2 ml-1">
               {isAuthenticated ? (
                 <>
-                  <IconButton label={`Signed in as ${user?.firstName ?? 'you'}`}>
-                    <User size={18} strokeWidth={1.5} />
-                  </IconButton>
-                  <IconButton label="Sign out" onClick={handleLogout}>
-                    <LogOut size={18} strokeWidth={1.5} />
-                  </IconButton>
+                  <ProfileDropdown user={user} onLogout={handleLogout} />
                 </>
               ) : (
                 <>
                   <button
                     type="button"
-                    id="navbar-login-btn"
                     onClick={() => openAuthModal('login')}
                     className={cn(
                       'text-[11px] font-medium tracking-widest uppercase text-white/55',
@@ -195,7 +362,6 @@ export function Navbar() {
                   </button>
                   <button
                     type="button"
-                    id="navbar-register-btn"
                     onClick={() => openAuthModal('register')}
                     className={cn(
                       'text-[11px] font-semibold tracking-widest uppercase',
@@ -304,8 +470,26 @@ export function Navbar() {
               ))}
             </nav>
 
+            {/* Mobile Storefront Icons */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.3 }}
+              className="mt-8 flex gap-4"
+            >
+              <IconButton label="Search">
+                <Search size={22} strokeWidth={1.5} />
+              </IconButton>
+              <IconButton label="Wishlist">
+                <Heart size={22} strokeWidth={1.5} />
+              </IconButton>
+              <IconButton label="Cart">
+                <ShoppingBag size={22} strokeWidth={1.5} />
+              </IconButton>
+            </motion.div>
+
             {/* Mobile auth — bottom */}
-            {!isAuthenticated && (
+            {!isAuthenticated ? (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -337,32 +521,69 @@ export function Navbar() {
                   Sign in
                 </button>
               </motion.div>
-            )}
-
-            {/* Authenticated mobile actions */}
-            {isAuthenticated && (
+            ) : (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, ease: EASE, delay: 0.38 }}
                 className="mt-auto pt-8 flex flex-col gap-3"
               >
-                <div className="flex items-center gap-3 px-1 py-2">
-                  <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center">
-                    <User size={18} strokeWidth={1.5} className="text-white/70" />
+                <div className="flex items-center gap-4 px-3 py-3 rounded-2xl bg-white/5 border border-white/10 relative overflow-hidden">
+                  <div className="relative w-12 h-12 rounded-full bg-white/10 flex items-center justify-center overflow-hidden shrink-0 border border-white/5 z-10">
+                    {user?.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.firstName}
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User size={22} strokeWidth={1.5} className="text-white/70" />
+                    )}
+                    <div className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#08060d]" />
                   </div>
-                  <span className="text-white/60 text-sm tracking-wide">{user?.firstName}</span>
+                  <div className="flex flex-col z-10">
+                    <span className="text-white font-medium tracking-wide">
+                      {user?.firstName} {user?.lastName}
+                    </span>
+                    <span className="text-white/50 text-xs truncate max-w-37.5">{user?.email}</span>
+                  </div>
+                  {user?.role === 'ADMIN' && (
+                    <div className="ml-auto px-2 py-1 rounded-md bg-white/10 border border-white/10 text-[10px] font-bold tracking-widest uppercase text-white z-10">
+                      Admin
+                    </div>
+                  )}
+                  {user?.role === 'ADMIN' && (
+                    <div className="absolute right-0 top-0 w-32 h-32 bg-white opacity-5 blur-[50px] pointer-events-none" />
+                  )}
                 </div>
+
+                {user?.role === 'ADMIN' && (
+                  <Link
+                    to="/admin/dashboard"
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      'w-full h-12 flex items-center justify-center gap-2 rounded-full',
+                      'bg-white/10 text-white text-sm font-medium tracking-[0.08em] uppercase',
+                      'transition-all duration-200 hover:bg-white/20 active:scale-[0.98]',
+                    )}
+                  >
+                    <LayoutDashboard size={18} strokeWidth={1.5} />
+                    Dashboard
+                  </Link>
+                )}
+
                 <button
                   type="button"
                   onClick={handleLogout}
                   className={cn(
-                    'w-full h-12 rounded-full',
+                    'w-full h-12 rounded-full flex justify-center items-center gap-2',
                     'border border-white/15 text-white/60 text-sm font-medium tracking-[0.08em] uppercase',
-                    'transition-all duration-200 hover:border-white/30 hover:text-white active:scale-[0.98]',
+                    'transition-all duration-200 hover:text-red-400 hover:border-red-500/30 active:scale-[0.98]',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50',
                   )}
                 >
+                  <LogOut size={18} strokeWidth={1.5} />
                   Sign out
                 </button>
               </motion.div>
