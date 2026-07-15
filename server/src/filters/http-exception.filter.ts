@@ -17,6 +17,13 @@ import {
   SessionInvalidError,
   SessionNotFoundError,
 } from '@/services/session.service.js';
+import { ProductNotFoundError, ProductOprstionFailed } from '@/services/product.service.js';
+import {
+  ImageProcessingError,
+  MediaNotFoundError,
+  MediaOperationError,
+} from '@/services/media.service.js';
+import { ProductFieldsError } from '@/controllers/product.controller.js';
 
 const logger = createLogger('HttpExceptionFilter');
 
@@ -30,12 +37,18 @@ const DOMAIN_ERROR_MAP = new Map<ErrorClass, number>([
   [SessionNotFoundError, 404],
   [SessionCompareError, 401],
   [SessionInvalidError, 401],
+  [ProductNotFoundError, 404],
+  [ProductOprstionFailed, 500],
+  [ProductFieldsError, 400],
   [EmailNotVerifiedError, 401],
   [UnauthorizedError, 401],
   [ValidationError, 400],
   [DatabaseOperationError, 500],
   [EmailDeliveryError, 502],
   [CookieOprationError, 500],
+  [MediaNotFoundError, 404],
+  [MediaOperationError, 500],
+  [ImageProcessingError, 500],
 ]);
 
 export function globalErrorFilter(

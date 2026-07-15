@@ -50,7 +50,6 @@ export const useAuth = () => {
     try {
       dispatch(setLoading(true));
       const data = await verifyEmail(email);
-      console.warn(data);
       if (data.success) {
         dispatch(setMessage(data.message));
         return true;
@@ -59,7 +58,6 @@ export const useAuth = () => {
         return false;
       }
     } catch (error: unknown) {
-      console.log(error);
       dispatch(setError(getErrorMessage(error)));
       return false;
     } finally {
@@ -134,7 +132,6 @@ export const useAuth = () => {
       dispatch(setLoading(true));
       const data = await getMe();
       if (data.success) {
-        console.log(data);
         dispatch(setUser(data.data.user));
         dispatch(setIsAuthenticated(true));
         return true;

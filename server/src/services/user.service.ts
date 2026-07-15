@@ -95,15 +95,6 @@ function isUserError(error: unknown): boolean {
 export async function userCreate(params: IUserCreate): Promise<UserWithoutPassword> {
   try {
     const createdUser = await userModel.create(params);
-    logger.info(
-      {
-        message: {
-          userId: createdUser.id,
-          email: createdUser.email,
-        },
-      },
-      'User created successfully',
-    );
     return createdUser.toObject();
   } catch (error) {
     if (isDuplicateKeyError(error)) {

@@ -12,6 +12,9 @@ interface ConfigEnv {
   REDIS_PASSWORD: string;
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
+  PIXKIT_PUBLIC_KEY: string;
+  PIXKIT_SECRET_KEY: string;
+  PIXKIT_PROJECT_ID: string;
 }
 
 function requireENV(key: string): string {
@@ -43,6 +46,9 @@ const config: ConfigEnv = {
   REDIS_PASSWORD: requireENV('REDIS_PASSWORD'),
   GOOGLE_CLIENT_ID: requireENV('GOOGLE_CLIENT_ID'),
   GOOGLE_CLIENT_SECRET: requireENV('GOOGLE_CLIENT_SECRET'),
+  PIXKIT_PUBLIC_KEY: requireENV('PIXKIT_PUBLIC_KEY'),
+  PIXKIT_SECRET_KEY: requireENV('PIXKIT_SECRET_KEY'),
+  PIXKIT_PROJECT_ID: requireENV('PIXKIT_PROJECT_ID'),
 };
 
 export default config;

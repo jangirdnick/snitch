@@ -87,3 +87,4 @@ docker-compose.override.yml
 # Leading slash anchors to root only — won't affect nested packages.
 /git/
 /docs/
+/jsonData
