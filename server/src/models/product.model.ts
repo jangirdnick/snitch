@@ -30,6 +30,7 @@
 
 import mongoose, { Document, Schema, Types } from 'mongoose';
 import { Model } from 'mongoose';
+import { randomUUID } from 'node:crypto';
 
 // ─── Sub-interfaces ───────────────────────────────────────
 
@@ -125,9 +126,6 @@ interface IRatings {
  * @property stock
  * Total inventory count. Must be non-negative.
  *
- * @property seller
- * Reference to the User document of the merchant selling the product.
- *
  * --------------------------------------------------------------------------
  * Optional / Default Fields
  * --------------------------------------------------------------------------
@@ -162,9 +160,6 @@ interface IRatings {
  * @property dimensions
  * Physical weight and sizes of the product.
  *
- * @property returnPolicy
- * Store policies on returns. Default returnable: true, days: 7.
- *
  * @property warranty
  * Duration in months and policy description.
  *
@@ -197,44 +192,30 @@ interface IRatings {
  */
 
 export interface IProduct extends Document {
+  id: string;
   title: string;
   slug: string;
   description: string;
   shortDescription?: string;
   sku: string;
-  brand?: string;
 
-  category: Types.ObjectId;
-  subCategory?: Types.ObjectId;
+  category?: Types.ObjectId;
   tags: string[];
 
   price: IPrice;
 
   stock: number;
   lowStockThreshold: number;
-  variants: IVariant[];
-  hasVariants: boolean;
+  variants?: IVariant[];
+  hasVariants?: boolean;
 
   images: IImage[];
-
-  seller: Types.ObjectId;
 
   specifications: Map<string, string>;
   dimensions?: IDimensions;
 
-  returnPolicy: {
-    isReturnable: boolean;
-    days: number;
-    conditions?: string;
-  };
-  warranty?: {
-    duration: number;
-    description: string;
-  };
-
   status: 'draft' | 'active' | 'inactive' | 'out_of_stock';
   isFeatured: boolean;
-  isDigital: boolean;
 
   ratings: IRatings;
   viewCount: number;
@@ -256,6 +237,12 @@ export interface IProduct extends Document {
 
 const ProductSchema: Schema<IProduct> = new Schema(
   {
+    id: {
+      type: String,
+      default: () => randomUUID(),
+      unique: true,
+      index: true,
+    },
     title: {
       type: String,
       required: true,
@@ -291,18 +278,11 @@ const ProductSchema: Schema<IProduct> = new Schema(
       trim: true,
     },
 
-    brand: { type: String, trim: true },
-
     category: {
       type: Schema.Types.ObjectId,
       ref: 'Category',
       required: true,
       index: true,
-    },
-
-    subCategory: {
-      type: Schema.Types.ObjectId,
-      ref: 'Category',
     },
 
     tags: [{ type: String, lowercase: true, trim: true }],
@@ -349,13 +329,6 @@ const ProductSchema: Schema<IProduct> = new Schema(
       },
     ],
 
-    seller: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-      index: true,
-    },
-
     specifications: {
       type: Map,
       of: String, // { "Material": "100% Cotton" }
@@ -368,17 +341,6 @@ const ProductSchema: Schema<IProduct> = new Schema(
       height: Number,
     },
 
-    returnPolicy: {
-      isReturnable: { type: Boolean, default: true },
-      days: { type: Number, default: 7 },
-      conditions: String,
-    },
-
-    warranty: {
-      duration: Number,
-      description: String,
-    },
-
     status: {
       type: String,
       enum: ['draft', 'active', 'inactive', 'out_of_stock'],
@@ -387,7 +349,6 @@ const ProductSchema: Schema<IProduct> = new Schema(
     },
 
     isFeatured: { type: Boolean, default: false },
-    isDigital: { type: Boolean, default: false },
 
     ratings: {
       average: { type: Number, default: 0, min: 0, max: 5 },
@@ -441,7 +402,6 @@ ProductSchema.index({ title: 'text', description: 'text', tags: 'text' });
  */
 ProductSchema.index({ 'price.amount': 1 });
 ProductSchema.index({ status: 1, category: 1 });
-ProductSchema.index({ seller: 1, status: 1 });
 ProductSchema.index({ isFeatured: 1, status: 1 });
 
 // ─── Virtuals ─────────────────────────────────────────────
@@ -526,7 +486,9 @@ ProductSchema.pre('save', function () {
  * Primary entry point for all product-related
  * database operations.
  */
-export const Product: Model<IProduct, Record<string, never>> = (mongoose.models.Product as Model<
+const Product: Model<IProduct, Record<string, never>> = (mongoose.models.Product as Model<
   IProduct,
   Record<string, never>
 >) || mongoose.model<IProduct, Record<string, never>>('Product', ProductSchema);
+
+export default Product;

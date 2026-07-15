@@ -45,10 +45,6 @@ export const createUserSchema = z.object({
   password: passwordField,
   // confirmPassword: z.string({ required_error: 'Confirm password is required' }),
 });
-// .refine((data) => data.password === data.confirmPassword, {
-//   message: 'Passwords do not match',
-//   path: ['confirmPassword'],
-// });
 
 export const loginUserSchema = z.object({
   email: emailField,
