@@ -1,45 +1,119 @@
-/**
- * ----------------------------------------------------------------------------
- * Product Model
- * ----------------------------------------------------------------------------
- *
- * MongoDB product document schema and model definition
- *
- * Responsibilities:
- * - Product catalog metadata management
- * - Inventory & stock level tracking
- * - Currency, pricing, and discount calculations
- * - Variant configuration (attributes & price modifiers)
- * - Ratings metrics and reviews analytics
- * - SEO meta tags optimization
- *
- * Indexes:
- * - Text index: title, description, tags (for search queries)
- * - Compound/Single indexes: price.amount, status/category, seller/status, isFeatured/status
- *
- * Middleware:
- * - Pre-save: Auto-generate slugs from the title
- * - Pre-save: Auto-update status to 'out_of_stock' when stock drops to 0
- *
- * Virtuals:
- * - salePrice: discounted amount based on active promotions
- * - stockStatus: calculated inventory status ('out_of_stock', 'low_stock', 'in_stock')
- * - primaryImage: fallback URL resolver for product thumbnail
- *
- */
-
-import mongoose, { Document, Schema, Types } from 'mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Document, Schema, Types, Model } from 'mongoose';
 import { randomUUID } from 'node:crypto';
 
-// ─── Sub-interfaces ───────────────────────────────────────
+// ─── Clothing Enums ───────────────────────────────────────
 
-/**
- * Interface representing product pricing structure, including discounts and comparison rates.
- */
+export const GENDER = ['men', 'women', 'unisex', 'kids'] as const;
+export const AGE_GROUP = ['adult', 'teen', 'kids'] as const;
+
+export const CLOTHING_SIZE = [
+  'XS',
+  'S',
+  'M',
+  'L',
+  'XL',
+  'XXL',
+  'XXXL', // tops, dresses
+  '28',
+  '30',
+  '32',
+  '34',
+  '36',
+  '38',
+  '40', // bottoms (waist)
+  'FREE_SIZE',
+] as const;
+
+export const FIT_TYPE = ['slim', 'regular', 'oversized', 'relaxed', 'skinny', 'straight'] as const;
+
+export const OCCASION = [
+  'casual',
+  'formal',
+  'party',
+  'ethnic',
+  'sports',
+  'beach',
+  'workwear',
+  'loungewear',
+] as const;
+
+export const SEASON = ['summer', 'winter', 'monsoon', 'all_season'] as const;
+
+export const PATTERN = [
+  'solid',
+  'striped',
+  'printed',
+  'checked',
+  'embroidered',
+  'colorblock',
+  'graphic',
+  'floral',
+] as const;
+
+export const NECK_TYPE = [
+  'round',
+  'v_neck',
+  'polo',
+  'collar',
+  'hooded',
+  'turtle',
+  'square',
+  'off_shoulder',
+] as const;
+
+export const SLEEVE_TYPE = [
+  'full',
+  'half',
+  'sleeveless',
+  'three_quarter',
+  'cap',
+  'puff',
+  'raglan',
+] as const;
+
+export const CLOTHING_LENGTH = [
+  'crop',
+  'regular',
+  'longline', // tops
+  'mini',
+  'midi',
+  'maxi', // dresses/skirts
+  'ankle',
+  'full', // bottoms
+] as const;
+
+export const CATEGORY_TYPE = [
+  // Men
+  't_shirt',
+  'shirt',
+  'jeans',
+  'trousers',
+  'shorts',
+  'jacket',
+  'hoodie',
+  'sweatshirt',
+  'suit',
+  'kurta',
+  // Women
+  'dress',
+  'top',
+  'saree',
+  'lehenga',
+  'kurti',
+  'skirt',
+  'leggings',
+  'palazzo',
+  // Both
+  'co_ord_set',
+  'tracksuit',
+  'activewear',
+] as const;
+
+// ─── Sub Interfaces ───────────────────────────────────────
+
 interface IPrice {
   amount: number;
-  compareAtAmount?: number; // original price (strike-through)
+  compareAtAmount?: number;
   currency: 'INR' | 'USD' | 'EUR';
   discount?: {
     type: 'percentage' | 'flat';
@@ -48,180 +122,71 @@ interface IPrice {
   };
 }
 
-/**
- * Interface representing a product image asset.
- */
 interface IImage {
   url: string;
   alt: string;
-  isPrimary: boolean; // thumbnail ke liye
-  order: number; // display order
+  isPrimary: boolean;
+  order: number;
 }
 
-/**
- * Interface representing product variants like size and color.
- */
-interface IVariant {
-  name: string; // "Size", "Color"
-  options: {
-    label: string; // "XL", "Red"
-    stock: number;
-    priceModifier?: number; // +200 agar XL costly ho
-    sku: string; // variant-specific SKU
-  }[];
+// ⭐ Clothing specific — size + stock per size
+interface ISizeStock {
+  size: (typeof CLOTHING_SIZE)[number];
+  stock: number;
+  sku: string; // SNT-BLU-SHIRT-L
 }
 
-/**
- * Interface representing the physical dimensions of the product.
- */
-interface IDimensions {
-  weight: number; // grams me
-  length: number; // cm
-  width: number;
-  height: number;
-}
-
-/**
- * Interface representing ratings metrics and score breakdown.
- */
-interface IRatings {
-  average: number; // 4.5
-  count: number; // 120 reviews
-  breakdown: {
-    1: number;
-    2: number;
-    3: number;
-    4: number;
-    5: number;
-  };
+// ⭐ Color variant — har color ke apne images
+interface IColorVariant {
+  name: string; // "Navy Blue"
+  hex: string; // "#1B2A6B"
+  images: IImage[]; // is color ki specific images
+  sizes: ISizeStock[]; // is color me available sizes
+  isDefault: boolean; // product open hone pe kaun sa color dikhao
 }
 
 // ─── Main Interface ───────────────────────────────────────
 
-/**
- * Product document interface representing a catalog item.
- *
- * --------------------------------------------------------------------------
- * Required Fields
- * --------------------------------------------------------------------------
- *
- * @property title
- * The descriptive name of the product. Max length: 200 chars.
- *
- * @property slug
- * URL-friendly unique identifier generated from the title. Must be lowercase.
- *
- * @property description
- * Detailed description of the product. Max length: 5000 chars.
- *
- * @property sku
- * Unique Stock Keeping Unit identifier. Must be uppercase.
- *
- * @property category
- * Reference to the primary Category document.
- *
- * @property price
- * Pricing metadata including amounts, currency, and discounts.
- *
- * @property stock
- * Total inventory count. Must be non-negative.
- *
- * --------------------------------------------------------------------------
- * Optional / Default Fields
- * --------------------------------------------------------------------------
- *
- * @property shortDescription
- * Brief summary of the product for catalog cards. Max length: 300 chars.
- *
- * @property brand
- * Brand name of the product.
- *
- * @property subCategory
- * Optional reference to the sub-category Category document.
- *
- * @property tags
- * Search tags or labels associated with the product.
- *
- * @property lowStockThreshold
- * Threshold value under which a low stock alert is triggered. Default: 5.
- *
- * @property variants
- * List of configurable attributes (e.g. Size, Color) with options.
- *
- * @property hasVariants
- * Flag indicating if the product has variant properties. Default: false.
- *
- * @property images
- * Collection of image URLs and metadata for the product.
- *
- * @property specifications
- * Map of arbitrary product specifications (e.g. {"Material": "Cotton"}).
- *
- * @property dimensions
- * Physical weight and sizes of the product.
- *
- * @property warranty
- * Duration in months and policy description.
- *
- * @property status
- * Visibility status: 'draft', 'active', 'inactive', 'out_of_stock'. Default: 'draft'.
- *
- * @property isFeatured
- * Flag indicating if the product is featured on the homepage. Default: false.
- *
- * @property isDigital
- * Flag indicating if the product is downloadable/virtual. Default: false.
- *
- * @property ratings
- * Analytics data storing score averages and breakdown counts.
- *
- * @property viewCount
- * Total views counter.
- *
- * @property soldCount
- * Total sales counter.
- *
- * @property wishlistCount
- * Total times added to wishlists.
- *
- * @property seo
- * Search Engine Optimization metadata including metaTitle and metaDescription.
- *
- * @property publishedAt
- * Optional date when the product status was set to active.
- */
-
 export interface IProduct extends Document {
   id: string;
+
+  // ─── Basic Info ─────────────────────────────────────────
   title: string;
   slug: string;
   description: string;
   shortDescription?: string;
-  sku: string;
+  sku: string; // master SKU (per color+size alag hoga)
 
-  category?: Types.ObjectId;
+  // ─── Classification ─────────────────────────────────────
+  category: Types.ObjectId;
   tags: string[];
 
+  // ─── Clothing Specific ──────────────────────────────────
+  gender: (typeof GENDER)[number];
+  ageGroup: (typeof AGE_GROUP)[number];
+
+  colors: IColorVariant[]; // ⭐ size+stock color ke andar hai
+  totalStock: number; // all colors + sizes ka sum
+
+  fit?: (typeof FIT_TYPE)[number];
+  fabric?: string; // "100% Cotton", "Polyester Blend"
+  pattern?: (typeof PATTERN)[number];
+  occasion?: (typeof OCCASION)[number][];
+  season?: (typeof SEASON)[number][];
+  neckType?: (typeof NECK_TYPE)[number];
+  sleeveType?: (typeof SLEEVE_TYPE)[number];
+  clothingLength?: (typeof CLOTHING_LENGTH)[number];
+  countryOfOrigin: string; // "India"
+
+  // ─── Pricing ────────────────────────────────────────────
   price: IPrice;
 
-  stock: number;
+  // ─── Threshold & Status ─────────────────────────────────
   lowStockThreshold: number;
-  variants?: IVariant[];
-  hasVariants?: boolean;
-
-  images: IImage[];
-
-  specifications: Map<string, string>;
-  dimensions?: IDimensions;
 
   status: 'draft' | 'active' | 'inactive' | 'out_of_stock';
-  isFeatured: boolean;
 
-  ratings: IRatings;
-  viewCount: number;
-  soldCount: number;
-  wishlistCount: number;
-
+  // ─── SEO ────────────────────────────────────────────────
   seo?: {
     metaTitle?: string;
     metaDescription?: string;
@@ -243,11 +208,12 @@ const ProductSchema: Schema<IProduct> = new Schema(
       unique: true,
       index: true,
     },
+
     title: {
       type: String,
-      required: true,
+      required: [true, 'Product title is required'],
       trim: true,
-      maxlength: [200, 'Title 200 chars se zyada nahi'],
+      maxlength: [200, 'Title must be under 200 characters'],
     },
 
     slug: {
@@ -256,37 +222,94 @@ const ProductSchema: Schema<IProduct> = new Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      index: true, // URL lookup fast hoga
+      index: true,
     },
 
     description: {
       type: String,
-      required: true,
-      maxlength: [5000, 'Description 5000 chars se zyada nahi'],
+      required: [true, 'Product description is required'],
+      maxlength: [5000, 'Description must be under 5000 characters'],
     },
 
     shortDescription: {
       type: String,
-      maxlength: 300,
+      maxlength: [300, 'Short description must be under 300 characters'],
     },
 
     sku: {
       type: String,
-      required: true,
+      required: [true, 'SKU is required'],
       unique: true,
       uppercase: true,
       trim: true,
     },
 
+    // ─── Classification ─────────────────────────────────────
     category: {
       type: Schema.Types.ObjectId,
       ref: 'Category',
-      required: true,
+      required: [true, 'Category is required'],
       index: true,
     },
 
     tags: [{ type: String, lowercase: true, trim: true }],
 
+    // ─── Clothing Specific ──────────────────────────────────
+    gender: {
+      type: String,
+      enum: GENDER,
+      required: [true, 'Gender is required'],
+      index: true,
+    },
+
+    ageGroup: {
+      type: String,
+      enum: AGE_GROUP,
+      default: 'adult',
+    },
+
+    // ⭐ Colors — sizes stock color ke andar
+    colors: [
+      {
+        name: { type: String, required: true, trim: true },
+        hex: {
+          type: String,
+          required: true,
+          match: [/^#([A-Fa-f0-9]{6})$/, 'Invalid hex color code'],
+        },
+        images: [
+          {
+            url: { type: String, required: true },
+            alt: { type: String, default: '' },
+            isPrimary: { type: Boolean, default: false },
+            order: { type: Number, default: 0 },
+          },
+        ],
+        sizes: [
+          {
+            size: { type: String, enum: CLOTHING_SIZE, required: true },
+            stock: { type: Number, default: 0, min: 0 },
+            sku: { type: String, required: true, uppercase: true },
+          },
+        ],
+        isDefault: { type: Boolean, default: false },
+      },
+    ],
+
+    totalStock: { type: Number, default: 0, min: 0 },
+    lowStockThreshold: { type: Number, default: 5 },
+
+    fit: { type: String, enum: FIT_TYPE },
+    fabric: { type: String, trim: true },
+    pattern: { type: String, enum: PATTERN },
+    occasion: [{ type: String, enum: OCCASION }],
+    season: [{ type: String, enum: SEASON }],
+    neckType: { type: String, enum: NECK_TYPE },
+    sleeveType: { type: String, enum: SLEEVE_TYPE },
+    clothingLength: { type: String, enum: CLOTHING_LENGTH },
+    countryOfOrigin: { type: String, trim: true, default: 'India' },
+
+    // ─── Pricing ────────────────────────────────────────────
     price: {
       amount: { type: Number, required: true, min: 0 },
       compareAtAmount: { type: Number, min: 0 },
@@ -302,45 +325,6 @@ const ProductSchema: Schema<IProduct> = new Schema(
       },
     },
 
-    stock: { type: Number, required: true, min: 0, default: 0 },
-    lowStockThreshold: { type: Number, default: 5 },
-
-    hasVariants: { type: Boolean, default: false },
-    variants: [
-      {
-        name: { type: String, required: true },
-        options: [
-          {
-            label: { type: String, required: true },
-            stock: { type: Number, default: 0 },
-            priceModifier: { type: Number, default: 0 },
-            sku: { type: String, required: true },
-          },
-        ],
-      },
-    ],
-
-    images: [
-      {
-        url: { type: String, required: true },
-        alt: { type: String, default: '' },
-        isPrimary: { type: Boolean, default: false },
-        order: { type: Number, default: 0 },
-      },
-    ],
-
-    specifications: {
-      type: Map,
-      of: String, // { "Material": "100% Cotton" }
-    },
-
-    dimensions: {
-      weight: Number,
-      length: Number,
-      width: Number,
-      height: Number,
-    },
-
     status: {
       type: String,
       enum: ['draft', 'active', 'inactive', 'out_of_stock'],
@@ -348,27 +332,9 @@ const ProductSchema: Schema<IProduct> = new Schema(
       index: true,
     },
 
-    isFeatured: { type: Boolean, default: false },
-
-    ratings: {
-      average: { type: Number, default: 0, min: 0, max: 5 },
-      count: { type: Number, default: 0 },
-      breakdown: {
-        1: { type: Number, default: 0 },
-        2: { type: Number, default: 0 },
-        3: { type: Number, default: 0 },
-        4: { type: Number, default: 0 },
-        5: { type: Number, default: 0 },
-      },
-    },
-
-    viewCount: { type: Number, default: 0 },
-    soldCount: { type: Number, default: 0 },
-    wishlistCount: { type: Number, default: 0 },
-
     seo: {
-      metaTitle: String,
-      metaDescription: String,
+      metaTitle: { type: String, maxlength: 60 },
+      metaDescription: { type: String, maxlength: 160 },
       keywords: [String],
     },
 
@@ -383,90 +349,19 @@ const ProductSchema: Schema<IProduct> = new Schema(
 
 // ─── Indexes ──────────────────────────────────────────────
 
-/**
- * Text Search Index.
- *
- * Optimizes text-based search queries across title,
- * description, and tags fields.
- */
 ProductSchema.index({ title: 'text', description: 'text', tags: 'text' });
+ProductSchema.index({ gender: 1, status: 1 });
 
-/**
- * Product Query Filters Indexes.
- *
- * Optimizes performance for common query paths:
- * - Price filtering
- * - Category listing
- * - Merchant catalog retrieval
- * - Featured product queries
- */
 ProductSchema.index({ 'price.amount': 1 });
 ProductSchema.index({ status: 1, category: 1 });
-ProductSchema.index({ isFeatured: 1, status: 1 });
 
-// ─── Virtuals ─────────────────────────────────────────────
-
-/**
- * Calculated Sale Price Virtual.
- *
- * Computes the final discounted selling price
- * based on flat or percentage deductions.
- *
- * Returns:
- * - number -> discounted sale price
- */
-ProductSchema.virtual('salePrice').get(function () {
-  const { amount, discount } = this.price;
-  if (!discount?.value) return amount;
-
-  if (discount.type === 'percentage') {
-    return amount - (amount * discount.value) / 100;
-  }
-  return amount - discount.value;
-});
-
-/**
- * Inventory Stock Status Virtual.
- *
- * Resolves the current stock availability level.
- *
- * Returns:
- * - 'out_of_stock' -> stock is 0
- * - 'low_stock'    -> stock is at or below threshold
- * - 'in_stock'     -> stock is above threshold
- */
-ProductSchema.virtual('stockStatus').get(function () {
-  if (this.stock === 0) return 'out_of_stock';
-  if (this.stock <= this.lowStockThreshold) return 'low_stock';
-  return 'in_stock';
-});
-
-/**
- * Primary Product Image Virtual.
- *
- * Resolves the primary preview image URL, falling back
- * to the first image if no primary is specified.
- *
- * Returns:
- * - string -> image URL
- */
-ProductSchema.virtual('primaryImage').get(function () {
-  return this.images.find((img) => img.isPrimary)?.url || this.images[0]?.url;
-});
+ProductSchema.index({ occasion: 1, status: 1 });
+ProductSchema.index({ season: 1, status: 1 });
 
 // ─── Pre-save Hooks ───────────────────────────────────────
 
-/**
- * Product Lifecycle Pre-Save Middleware.
- *
- * Purpose:
- * - Automatically generate URL-friendly slug from title if not set.
- * - Automatically update visibility status to 'out_of_stock' if inventory drops to 0.
- *
- * Behavior:
- * - Runs before saving the product document.
- */
-ProductSchema.pre('save', function () {
+ProductSchema.pre('validate', function () {
+  // Auto slug generate
   if (this.isModified('title') && !this.slug) {
     this.slug = this.title
       .toLowerCase()
@@ -474,21 +369,56 @@ ProductSchema.pre('save', function () {
       .replace(/(^-|-$)/g, '');
   }
 
-  // Stock 0 ho gaya toh status update karo
-  if (this.isModified('stock') && this.stock === 0) {
+  // ⭐ totalStock — sab colors + sizes ka sum auto-calculate
+  if (this.isModified('colors')) {
+    this.totalStock = this.colors.reduce((total, color) => {
+      return total + color.sizes.reduce((sum, s) => sum + s.stock, 0);
+    }, 0);
+  }
+
+  // totalStock 0 → out_of_stock
+  if (this.isModified('colors') && this.totalStock === 0) {
     this.status = 'out_of_stock';
+  }
+
+  // Sirf ek default color hona chahiye
+  if (this.isModified('colors')) {
+    const defaults = this.colors.filter((c) => c.isDefault);
+    if (defaults.length === 0 && this.colors.length > 0) {
+      this.colors[0].isDefault = true; // pehla color default
+    }
   }
 });
 
-/**
- * Product Model
- *
- * Primary entry point for all product-related
- * database operations.
- */
-const Product: Model<IProduct, Record<string, never>> = (mongoose.models.Product as Model<
-  IProduct,
-  Record<string, never>
->) || mongoose.model<IProduct, Record<string, never>>('Product', ProductSchema);
+// ─── Virtuals ─────────────────────────────────────────────
+
+// Sale price
+ProductSchema.virtual('salePrice').get(function () {
+  const { amount, discount } = this.price;
+  if (!discount?.value) return amount;
+  if (discount.type === 'percentage') {
+    return amount - (amount * discount.value) / 100;
+  }
+  return amount - discount.value;
+});
+
+// Stock status
+ProductSchema.virtual('stockStatus').get(function () {
+  if (this.totalStock === 0) return 'out_of_stock';
+  if (this.totalStock <= this.lowStockThreshold) return 'low_stock';
+  return 'in_stock';
+});
+
+// Default color ka primary image
+ProductSchema.virtual('primaryImage').get(function () {
+  const defaultColor = this.colors.find((c) => c.isDefault) || this.colors[0];
+  return defaultColor?.images.find((img) => img.isPrimary)?.url || defaultColor?.images[0]?.url;
+});
+
+// ─── Model ────────────────────────────────────────────────
+
+const Product: Model<IProduct> =
+  (mongoose.models.Product as Model<IProduct>) ||
+  mongoose.model<IProduct>('Product', ProductSchema);
 
 export default Product;

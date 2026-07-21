@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import {
   setMessage,
   setLoading,
@@ -27,67 +28,76 @@ function getErrorMessage(error: unknown): string {
 export const useAuth = () => {
   const dispatch = useAppDispatch();
 
-  async function handleRegister(payload: CreateUserDto) {
-    try {
-      dispatch(setLoading(true));
-      const data = await register(payload);
-      if (data.success) {
-        dispatch(setMessage(data.message));
-        return true;
-      } else {
-        dispatch(setError(data.error.message));
+  const handleRegister = useCallback(
+    async (payload: CreateUserDto) => {
+      try {
+        dispatch(setLoading(true));
+        const data = await register(payload);
+        if (data.success) {
+          dispatch(setMessage(data.message));
+          return true;
+        } else {
+          dispatch(setError(data.error.message));
+          return false;
+        }
+      } catch (error: unknown) {
+        dispatch(setError(getErrorMessage(error)));
         return false;
+      } finally {
+        dispatch(setLoading(false));
       }
-    } catch (error: unknown) {
-      dispatch(setError(getErrorMessage(error)));
-      return false;
-    } finally {
-      dispatch(setLoading(false));
-    }
-  }
+    },
+    [dispatch],
+  );
 
-  async function handleVerifyEmail(email: string) {
-    try {
-      dispatch(setLoading(true));
-      const data = await verifyEmail(email);
-      if (data.success) {
-        dispatch(setMessage(data.message));
-        return true;
-      } else {
-        dispatch(setError(data.error.message));
+  const handleVerifyEmail = useCallback(
+    async (email: string) => {
+      try {
+        dispatch(setLoading(true));
+        const data = await verifyEmail(email);
+        if (data.success) {
+          dispatch(setMessage(data.message));
+          return true;
+        } else {
+          dispatch(setError(data.error.message));
+          return false;
+        }
+      } catch (error: unknown) {
+        dispatch(setError(getErrorMessage(error)));
         return false;
+      } finally {
+        dispatch(setLoading(false));
       }
-    } catch (error: unknown) {
-      dispatch(setError(getErrorMessage(error)));
-      return false;
-    } finally {
-      dispatch(setLoading(false));
-    }
-  }
+    },
+    [dispatch],
+  );
 
-  async function handleLogin(payload: LoginUserDto) {
-    try {
-      dispatch(setLoading(true));
-      const data = await login(payload);
-      if (data.success) {
-        dispatch(setMessage(data.message));
-        dispatch(setUser(data.data.user));
-        dispatch(setAccessToken(data.data.accessToken));
-        dispatch(setIsAuthenticated(true));
-        return true;
-      } else {
-        dispatch(setError(data.error.message));
+  const handleLogin = useCallback(
+    async (payload: LoginUserDto) => {
+      try {
+        dispatch(setLoading(true));
+        const data = await login(payload);
+        if (data.success) {
+          dispatch(setMessage(data.message));
+          dispatch(setUser(data.data.user));
+          dispatch(setAccessToken(data.data.accessToken));
+          dispatch(setIsAuthenticated(true));
+          return true;
+        } else {
+          dispatch(setError(data.error.message));
+          return false;
+        }
+      } catch (error: unknown) {
+        dispatch(setError(getErrorMessage(error)));
         return false;
+      } finally {
+        dispatch(setLoading(false));
       }
-    } catch (error: unknown) {
-      dispatch(setError(getErrorMessage(error)));
-      return false;
-    } finally {
-      dispatch(setLoading(false));
-    }
-  }
+    },
+    [dispatch],
+  );
 
-  async function handleLogout() {
+  const handleLogout = useCallback(async () => {
     try {
       dispatch(setLoading(true));
       const data = await logout();
@@ -105,9 +115,9 @@ export const useAuth = () => {
     } finally {
       dispatch(setLoading(false));
     }
-  }
+  }, [dispatch]);
 
-  async function handleLogoutAllDevices() {
+  const handleLogoutAllDevices = useCallback(async () => {
     try {
       dispatch(setLoading(true));
       const data = await logoutAllDevices();
@@ -125,9 +135,9 @@ export const useAuth = () => {
     } finally {
       dispatch(setLoading(false));
     }
-  }
+  }, [dispatch]);
 
-  async function handleGetMe() {
+  const handleGetMe = useCallback(async () => {
     try {
       dispatch(setLoading(true));
       const data = await getMe();
@@ -147,7 +157,7 @@ export const useAuth = () => {
     } finally {
       dispatch(setLoading(false));
     }
-  }
+  }, [dispatch]);
 
   return {
     handleRegister,

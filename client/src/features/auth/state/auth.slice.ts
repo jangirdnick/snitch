@@ -15,7 +15,11 @@ const initialState: AuthState = {
   user: null,
   access_token: '',
   isAuthenticated: false,
-  loading: false,
+  // Start as true so ProtectedRoute waits for the session-restore call
+  // (handleGetMe) to finish before making any auth decisions.
+  // Without this, the first synchronous render sees isAuthenticated=false
+  // and redirects away before the async /me request completes.
+  loading: true,
   sessionExpired: false,
   error: null,
   message: '',
