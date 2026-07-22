@@ -165,17 +165,6 @@ jobs:
         # New workspaces (client, admin, etc.) are picked up automatically.
         run: pnpm -r build
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: dist-${{ github.sha }}
-          # Upload every dist/ folder produced by any workspace, ignoring node_modules
-          path: |
-            **/dist/
-            !node_modules/**
-          if-no-files-found: warn
-          retention-days: 7
-
   # -----------------------------------------------
   # Job 6: Test
   # -----------------------------------------------
@@ -204,13 +193,6 @@ jobs:
 
       - name: Run tests with coverage
         run: pnpm --filter server test:coverage
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v7
-        with:
-          name: coverage-${{ github.sha }}
-          path: server/coverage/
-          retention-days: 7
 
   # -----------------------------------------------
   # Job 7: Security audit
