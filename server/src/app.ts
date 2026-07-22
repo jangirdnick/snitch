@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { httpLogger } from './middlewares/pino.middleware.js';
 import { globalErrorFilter } from './filters/http-exception.filter.js';
+import { requestTracingMiddleware } from './middlewares/request-tracing.middleware.js';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 
@@ -27,6 +28,7 @@ app.use(
 );
 app.use(passport.initialize());
 
+app.use(requestTracingMiddleware);
 app.use(httpLogger);
 
 passport.use(

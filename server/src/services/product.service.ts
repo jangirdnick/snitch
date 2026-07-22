@@ -1,129 +1,235 @@
+import mongoose from 'mongoose';
 import productModel, { IProduct } from '@/models/product.model.js';
 import { createLogger } from '@/utils/logger.js';
 import { DatabaseOperationError } from './user.service.js';
-import { CreateProductDto, UpdateProductDto } from '@snitch/schemas';
+import { CreateProductDto, ProductQueryDto, UpdateProductDto } from '@snitch/schemas';
 
 const logger = createLogger('PRODUCT-SERVICE');
 
-// ------ Custom Errors ----------------------------
+// ─── Custom Errors ─────────────────────────────────────────────────────────────
 
 export class ProductNotFoundError extends Error {
   public readonly statusCode = 404;
   public readonly identifier: string;
 
   constructor(identifier: string, message?: string) {
-    super(message || `Product not found: ${identifier}`);
+    super(message ?? `Product not found: ${identifier}`);
     this.name = 'ProductNotFoundError';
     this.identifier = identifier;
+    Object.setPrototypeOf(this, new.target.prototype);
   }
 }
 
-export class ProductOprstionFailed extends Error {
+export class ProductOperationError extends Error {
   public readonly statusCode = 500;
 
   constructor(operation: string, cause?: unknown) {
     super(`Product operation failed: ${operation}`);
-    this.name = 'ProductOperationFailed';
+    this.name = 'ProductOperationError';
     this.cause = cause;
+    Object.setPrototypeOf(this, new.target.prototype);
   }
 }
 
 function isProductError(error: unknown): boolean {
   return (
     error instanceof ProductNotFoundError ||
-    error instanceof ProductOprstionFailed ||
+    error instanceof ProductOperationError ||
     error instanceof DatabaseOperationError
   );
 }
 
-// ------ Service Functions --------------------
+// ─── Pagination Result Type ────────────────────────────────────────────────────
 
+export interface PaginatedProducts {
+  products: IProduct[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// ─── Service Functions ─────────────────────────────────────────────────────────
+
+/**
+ * Paginated, filtered, sorted product list.
+ * Matches the full productQuerySchema interface.
+ */
+export async function getProducts(query: ProductQueryDto): Promise<PaginatedProducts> {
+  try {
+    const filter: Record<string, unknown> = {};
+
+    // Full-text search (requires text index on title, description, tags)
+    if (query.search) filter.$text = { $search: query.search };
+
+    // Exact-match filters
+    if (query.category) filter.category = new mongoose.Types.ObjectId(query.category);
+    if (query.gender) filter.gender = query.gender;
+    if (query.ageGroup) filter.ageGroup = query.ageGroup;
+    if (query.fit) filter.fit = query.fit;
+    if (query.pattern) filter.pattern = query.pattern;
+    if (query.status) filter.status = query.status;
+
+    // Array membership filters ($in because fields are arrays on the model)
+    if (query.occasion) filter.occasion = { $in: [query.occasion] };
+    if (query.season) filter.season = { $in: [query.season] };
+
+    // Nested path filters (colors sub-documents)
+    if (query.size) filter['colors.sizes.size'] = query.size;
+    if (query.color) filter['colors.name'] = { $regex: query.color, $options: 'i' };
+
+    // Price range
+    if (query.minPrice !== undefined || query.maxPrice !== undefined) {
+      const priceFilter: Record<string, number> = {};
+      if (query.minPrice !== undefined) priceFilter.$gte = query.minPrice;
+      if (query.maxPrice !== undefined) priceFilter.$lte = query.maxPrice;
+      filter['price.amount'] = priceFilter;
+    }
+
+    // Sort
+    const sortFieldMap: Record<string, string> = {
+      price: 'price.amount',
+      createdAt: 'createdAt',
+      soldCount: 'soldCount',
+      ratings: 'ratings.average',
+      viewCount: 'viewCount',
+    };
+    const sortField = sortFieldMap[query.sortBy] ?? 'createdAt';
+    const sortDir = query.sortOrder === 'asc' ? 1 : -1;
+
+    // Pagination
+    const skip = (query.page - 1) * query.limit;
+
+    const [products, total] = await Promise.all([
+      productModel
+        .find(filter)
+        .sort({ [sortField]: sortDir })
+        .skip(skip)
+        .limit(query.limit)
+        .lean()
+        .exec() as unknown as IProduct[],
+      productModel.countDocuments(filter),
+    ]);
+
+    return {
+      products,
+      total,
+      page: query.page,
+      limit: query.limit,
+      totalPages: Math.ceil(total / query.limit),
+    };
+  } catch (error) {
+    if (isProductError(error)) throw error;
+    logger.error({ err: error, query }, 'Error fetching products');
+    throw new DatabaseOperationError('While fetching products');
+  }
+}
+
+/**
+ * Single product by URL slug — used for public product detail pages.
+ */
 export async function getProductBySlug(slug: string): Promise<IProduct> {
   try {
-    const product = await productModel.findOne({ slug }).populate('').lean();
-    if (!product) {
-      throw new ProductNotFoundError(slug);
-    }
+    const product = (await productModel
+      .findOne({ slug })
+      .populate('category', 'name slug')
+      .populate('subCategory', 'name slug')
+      .lean()) as unknown as IProduct | null;
+
+    if (!product) throw new ProductNotFoundError(slug);
     return product;
   } catch (error) {
     if (isProductError(error)) throw error;
-    logger.error({ err: error, slug }, 'Error occurred while fetching product by slug');
+    logger.error({ err: error, slug }, 'Error fetching product by slug');
     throw new DatabaseOperationError('While fetching product by slug');
   }
 }
 
+/**
+ * Fetch a limited set of products — lightweight for homepage / featured strips.
+ */
 export async function getLimitProducts(limit: number): Promise<IProduct[]> {
   try {
-    const product = await productModel.find().limit(limit).lean().exec();
-    if (!product) {
-      throw new ProductOprstionFailed('No products found');
-    }
-    return product;
+    const products = (await productModel
+      .find({ status: 'active' })
+      .limit(limit)
+      .lean()
+      .exec()) as unknown as IProduct[];
+
+    return products;
   } catch (error) {
     if (isProductError(error)) throw error;
-    logger.error({ err: error, limit }, 'Error occurred while fetching limited products');
+    logger.error({ err: error, limit }, 'Error fetching limited products');
     throw new DatabaseOperationError('While fetching limited products');
   }
 }
 
+/**
+ * Full-text search returning lightweight product cards.
+ * Bug fixed: $searc → $search.
+ * Bug fixed: select now includes `colors` (images live in colors sub-doc).
+ */
 export async function getSearchProduct(
   search: string,
   limit = 20,
-): Promise<Pick<IProduct, '_id' | 'id' | 'title' | 'slug' | 'price' | 'ratings' | 'category'>[]> {
+): Promise<Pick<IProduct, '_id' | 'id' | 'title' | 'slug' | 'price' | 'category' | 'colors'>[]> {
   try {
-    const products = await productModel
+    const products = (await productModel
       .find(
-        {
-          $text: { $searc: search },
-        },
+        { $text: { $search: search } }, // ← fixed typo ($searc → $search)
         { score: { $meta: 'textScore' } },
       )
       .sort({ score: { $meta: 'textScore' } })
       .limit(limit)
-      .select('id title slug images price ratings category')
+      .select('id title slug colors price category') // ← fixed: colors not images
       .lean()
-      .exec();
+      .exec()) as unknown as IProduct[];
 
-    if (!products) {
-      throw new ProductNotFoundError(`Matching ${search}`);
-    }
-
-    const formattedProducts = products.map((product) => ({
+    // Map to lightweight card shape — safe access on nested colors
+    return products.map((product) => ({
       _id: product._id,
       id: product.id,
       title: product.title,
       slug: product.slug,
       price: product.price,
-      ratings: product.ratings,
       category: product.category,
-      image:
-        product.images && product.images.length > 0
-          ? product.images[0] // Sirf first image
-          : null,
+      colors: product.colors,
+      // Convenience: primary image URL derived from default color
+      primaryImage:
+        product.colors?.find((c) => c.isDefault)?.images?.find((img) => img.isPrimary)?.url ??
+        product.colors?.[0]?.images?.[0]?.url,
     }));
-
-    return formattedProducts;
   } catch (error) {
     if (isProductError(error)) throw error;
-    logger.error({ err: error, search }, 'Error occurred while fetching search products');
-    throw new DatabaseOperationError('While fetching search products');
+    logger.error({ err: error, search }, 'Error in product search');
+    throw new DatabaseOperationError('While searching products');
   }
 }
 
-export async function productCreate(params: CreateProductDto): Promise<IProduct> {
+/**
+ * Create a new product.
+ * Caller (controller) is responsible for uploading images first and passing
+ * a fully-formed CreateProductDto with URL-based color images.
+ */
+export async function productCreate(
+  params: CreateProductDto,
+  session?: mongoose.ClientSession,
+): Promise<IProduct> {
   try {
-    const createProduct = await productModel.create(params);
-    if (!createProduct) {
-      throw new ProductOprstionFailed('While creating product');
-    }
-    return createProduct;
+    const [created] = await productModel.create([params], { session });
+    return created as unknown as IProduct;
   } catch (error) {
     if (isProductError(error)) throw error;
-    logger.error({ err: error }, 'Unexpected error while creating product:');
+    logger.error({ err: error }, 'Error creating product');
     throw new DatabaseOperationError('Failed to create product');
   }
 }
 
+/**
+ * Partial update of a product by MongoDB _id.
+ * Bug fixed: was calling updateOne() without await and returning stale data.
+ * Now uses findByIdAndUpdate with { new: true, runValidators: true }.
+ */
 export async function productUpdate({
   productId,
   product,
@@ -132,35 +238,30 @@ export async function productUpdate({
   product: UpdateProductDto;
 }): Promise<IProduct> {
   try {
-    const existingProduct = await productModel.findOne({
-      _id: productId,
-    });
-    if (!existingProduct) {
-      throw new ProductNotFoundError(`Product not found: ${productId}`);
-    }
-    existingProduct.updateOne({ $set: { ...product } });
+    const updated = (await productModel
+      .findByIdAndUpdate(productId, { $set: product }, { new: true, runValidators: true })
+      .lean()) as unknown as IProduct | null;
 
-    return existingProduct;
+    if (!updated) throw new ProductNotFoundError(productId);
+    return updated;
   } catch (error) {
     if (isProductError(error)) throw error;
-    logger.error({ err: error }, 'Unexpected error while updating product:');
+    logger.error({ err: error, productId }, 'Error updating product');
     throw new DatabaseOperationError('Failed to update product');
   }
 }
 
-export async function productDeleteById(productid: string): Promise<void> {
+/**
+ * Hard delete a product by MongoDB _id.
+ * Bug fixed: was calling deleteOne() without await — document was never removed.
+ */
+export async function productDeleteById(productId: string): Promise<void> {
   try {
-    const existingProduct = await productModel.findOne({
-      _id: productid,
-    });
-    if (!existingProduct) {
-      throw new ProductNotFoundError(`Product not found: ${productid}`);
-    }
-    existingProduct.deleteOne();
-    return;
+    const result = await productModel.findByIdAndDelete(productId);
+    if (!result) throw new ProductNotFoundError(productId);
   } catch (error) {
     if (isProductError(error)) throw error;
-    logger.error({ err: error }, 'Unexpected error while deleting product:');
+    logger.error({ err: error, productId }, 'Error deleting product');
     throw new DatabaseOperationError('Failed to delete product');
   }
 }

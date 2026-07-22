@@ -7,6 +7,8 @@ import NotFoundPage from '@/pages/404Page';
 import Dashboard from '@/pages/(admin)/Dashboard';
 import AdminLayout from '@/layouts/AdminLayout';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import InventoryPage from '@/pages/(admin)/InventoryPage';
+import CreateProductPage from '@/pages/(admin)/CreateProductPage';
 
 const router = createBrowserRouter([
   {
@@ -40,6 +42,42 @@ const router = createBrowserRouter([
           {
             path: 'dashboard',
             element: <Dashboard />,
+          },
+          {
+            path: 'inventory',
+            element: <InventoryPage />,
+          },
+          {
+            path: 'inventory/create',
+            element: <CreateProductPage />,
+          },
+          {
+            path: 'products',
+            element: <div>Products</div>,
+          },
+          {
+            path: 'categories',
+            element: <div>Categories</div>,
+          },
+          {
+            path: 'orders',
+            element: <div>Orders</div>,
+          },
+          {
+            path: 'customers',
+            element: <div>Customers</div>,
+          },
+          {
+            path: 'reviews',
+            element: <div>Reviews</div>,
+          },
+          {
+            path: 'coupons',
+            element: <div>Coupons</div>,
+          },
+          {
+            path: 'analytics',
+            element: <div>Analytics</div>,
           },
         ],
       },

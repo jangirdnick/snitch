@@ -17,13 +17,19 @@ import {
   SessionInvalidError,
   SessionNotFoundError,
 } from '@/services/session.service.js';
-import { ProductNotFoundError, ProductOprstionFailed } from '@/services/product.service.js';
+import { ProductNotFoundError } from '@/services/product.service.js';
 import {
   ImageProcessingError,
   MediaNotFoundError,
   MediaOperationError,
 } from '@/services/media.service.js';
-import { ProductFieldsError } from '@/controllers/product.controller.js';
+import {
+  ProductFieldsError,
+  ProductRequestError,
+  ProductCreateError,
+  ProductUpdateError,
+  ProductConflictError,
+} from '@/controllers/product.controller.js';
 
 const logger = createLogger('HttpExceptionFilter');
 
@@ -38,8 +44,11 @@ const DOMAIN_ERROR_MAP = new Map<ErrorClass, number>([
   [SessionCompareError, 401],
   [SessionInvalidError, 401],
   [ProductNotFoundError, 404],
-  [ProductOprstionFailed, 500],
   [ProductFieldsError, 400],
+  [ProductRequestError, 400],
+  [ProductCreateError, 500],
+  [ProductUpdateError, 500],
+  [ProductConflictError, 409],
   [EmailNotVerifiedError, 401],
   [UnauthorizedError, 401],
   [ValidationError, 400],
@@ -57,17 +66,30 @@ export function globalErrorFilter(
   res: Response,
   _next: NextFunction,
 ): void {
+  let formattedFields: { field: string; message: string }[] | undefined;
+
+  if (error instanceof ZodError) {
+    formattedFields = error.errors.map((e) => ({
+      field: e.path.join('.'),
+      message: e.message,
+    }));
+  } else if ('fields' in error && typeof error.fields === 'object' && error.fields !== null) {
+    const fieldsObj = error.fields as Record<string, string[] | undefined>;
+    formattedFields = Object.entries(fieldsObj)
+      .filter(([_, messages]) => messages !== undefined)
+      .map(([field, messages]) => ({
+        field,
+        message: Array.isArray(messages) ? messages[0] : String(messages),
+      }));
+  }
+
   if (error instanceof ZodError) {
     res.status(400).json({
       success: false,
       error: {
         name: 'ZodError',
-        message: error.message,
-        // statusCode: res.statusCode,
-        fields: error.errors.map((e) => ({
-          field: e.path.join('.'),
-          message: e.message,
-        })),
+        message: 'Validation failed',
+        fields: formattedFields,
       },
     });
 
@@ -79,10 +101,15 @@ export function globalErrorFilter(
     ('statusCode' in error ? (error as { statusCode: number }).statusCode : null) ??
     500;
 
+  const requestLogger = req.logger ?? logger;
+
   if (statusCode >= 500) {
-    logger.error({ err: error, path: req.path, method: req.method }, 'Internal server error');
+    requestLogger.error(
+      { err: error, path: req.path, method: req.method },
+      'Internal server error',
+    );
   } else {
-    logger.warn({ err: error, path: req.path, method: req.method }, 'Client error');
+    requestLogger.warn({ err: error, path: req.path, method: req.method }, 'Client error');
   }
 
   res.status(statusCode).json({
@@ -90,6 +117,7 @@ export function globalErrorFilter(
     error: {
       name: error.name,
       message: error.message,
+      ...(formattedFields && { fields: formattedFields }),
       ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
     },
   });
