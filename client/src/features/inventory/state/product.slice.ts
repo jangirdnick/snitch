@@ -21,7 +21,7 @@ const initialState: ProductState = {
   totalItems: 0,
   totalPages: 1,
   currentPage: 1,
-  pageSize: 20,
+  pageSize: 10,
   hasNextPage: false,
   hasPreviousPage: false,
 
@@ -89,7 +89,7 @@ const productSlice = createSlice({
       state.totalItems = 0;
       state.totalPages = 1;
       state.currentPage = 1;
-      state.pageSize = 20;
+      state.pageSize = 10;
       state.hasNextPage = false;
       state.hasPreviousPage = false;
       state.currentProduct = null;

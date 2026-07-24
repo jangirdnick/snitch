@@ -27,10 +27,8 @@
  */
 
 import { memo } from 'react';
-import { Link } from 'react-router';
 import { useFormContext, useWatch } from 'react-hook-form';
 import {
-  ChevronRight,
   Loader2,
   ArrowLeft,
   SendHorizonal,
@@ -45,6 +43,16 @@ import {
 import { Form } from '@components/ui/form';
 import { Button } from '@components/ui/button';
 import { Separator } from '@components/ui/separator';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { useCreateProduct } from '../hook/useCreateProduct';
 import type { ProductFormValues } from '../schema/product.form.schema';
@@ -147,7 +155,9 @@ function BentoCard({
       {accent ? ACCENT_LINE : TOP_GLOW}
 
       {/* ── Card Header ── */}
-      <div className={cn('flex items-start gap-3.5 px-6', compact ? 'py-4' : 'py-5')}>
+      <div
+        className={cn('flex items-start gap-3.5 px-4 md:px-6', compact ? 'py-4' : 'py-4 md:py-5')}
+      >
         {/* Icon badge */}
         <div
           className={cn(
@@ -184,7 +194,9 @@ function BentoCard({
       <Separator className="bg-[oklch(1_0_0_/_0.04)]" />
 
       {/* ── Card Body ── */}
-      <div className={cn('px-6', compact ? 'py-5' : 'py-6')}>{children}</div>
+      <div className={cn('px-4 md:px-6', compact ? 'py-4 md:py-5' : 'py-5 md:py-6')}>
+        {children}
+      </div>
     </section>
   );
 }
@@ -231,8 +243,8 @@ const StatusActionCard = memo(function StatusActionCard() {
           id="publish-product-btn"
           disabled={isSubmitting}
           className={cn(
-            'group relative w-full h-10 overflow-hidden rounded-xl',
-            'bg-[oklch(0.96_0_0)] text-[oklch(0.08_0_0)] hover:bg-white',
+            'group relative w-full min-h-[44px] md:min-h-0 md:h-10 overflow-hidden rounded-xl',
+            'bg-orange-700 text-[oklch(0.98_0_0)] hover:bg-orange-600',
             'font-semibold text-[12.5px] tracking-wide',
             'shadow-[0_2px_12px_oklch(1_0_0_/_0.12)] hover:shadow-[0_6px_20px_oklch(1_0_0_/_0.22)]',
             'transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
@@ -272,20 +284,47 @@ const StatusActionCard = memo(function StatusActionCard() {
 // ─── CreateProductForm (root) ─────────────────────────────────────────────────
 
 export const CreateProductForm = memo(function CreateProductForm() {
-  const { form, onSubmit, handleCancel } = useCreateProduct();
+  const { form, onSubmit, handleCancel, confirmDiscard, cancelDiscard, isBlocked } =
+    useCreateProduct();
 
   return (
     <div className="flex flex-col gap-2 lg:gap-4 h-full bg-[oklch(0.08_0.005_260)] selection:bg-[oklch(0.95_0_0)] selection:text-[oklch(0.1_0_0)]">
+      {/* ── Discard Confirmation Dialog ──────────────────────────────────────── */}
+      <AlertDialog open={isBlocked} onOpenChange={(open) => !open && cancelDiscard()}>
+        <AlertDialogContent className="bg-[oklch(0.12_0.005_260)] border border-[oklch(1_0_0_/_0.08)]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[oklch(0.95_0_0)]">Discard Changes?</AlertDialogTitle>
+            <AlertDialogDescription className="text-[oklch(0.55_0_0)]">
+              You have unsaved changes. Are you sure you want to discard them? This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={cancelDiscard}
+              className="bg-transparent text-[oklch(0.85_0_0)] hover:bg-[oklch(1_0_0_/_0.05)] border-[oklch(1_0_0_/_0.15)]"
+            >
+              Keep Editing
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDiscard}
+              className="bg-[oklch(0.65_0.22_22)]! text-white hover:bg-[oklch(0.55_0.22_22)]!"
+            >
+              Discard Changes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {/* ── Page Header ────────────────────────────────────────────────────── */}
       <header
         className={cn(
-          'sticky top-0 z-40 flex-shrink-0',
+          'sticky top-0 z-40 shrink-0 px-4 md:px-6 mx-0 lg:-mx-6 lg:px-6 -mt-6 lg:-mt-6 mb-2 max-md:py-3 md:pb-4',
           'border-b border-[oklch(1_0_0_/_0.05)]',
           'bg-[oklch(0.08_0.005_260_/_0.88)] backdrop-blur-2xl',
         )}
       >
         {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 mb-2.5">
+        {/* <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 mb-2.5">
           <Link
             to="/admin/inventory"
             className="text-[9.5px] font-bold text-[oklch(0.40_0_0)] hover:text-[oklch(0.80_0_0)] uppercase tracking-[0.18em] transition-colors duration-200 focus-visible:outline-none focus-visible:text-[oklch(0.80_0_0)]"
@@ -304,7 +343,7 @@ export const CreateProductForm = memo(function CreateProductForm() {
           >
             New Product
           </span>
-        </nav>
+        </nav> */}
 
         {/* Title row */}
         <div className="flex items-center justify-between gap-6">
@@ -323,7 +362,7 @@ export const CreateProductForm = memo(function CreateProductForm() {
             size="sm"
             onClick={handleCancel}
             className={cn(
-              'group flex items-center gap-1.5 h-8 px-3.5 rounded-lg',
+              'group flex items-center gap-1.5 min-h-[44px] md:min-h-0 md:h-8 px-3.5 rounded-lg',
               'text-[11.5px] font-medium text-[oklch(0.50_0_0)]',
               'hover:text-[oklch(0.92_0_0)] hover:bg-[oklch(1_0_0_/_0.055)]',
               'transition-all duration-300',
@@ -341,7 +380,7 @@ export const CreateProductForm = memo(function CreateProductForm() {
       </header>
 
       {/* ── Main Content ───────────────────────────────────────────────────── */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pb-32 md:pb-0">
         <Form {...form}>
           <form id="create-product-form" onSubmit={form.handleSubmit(onSubmit)} noValidate>
             {/*
@@ -416,8 +455,10 @@ export const CreateProductForm = memo(function CreateProductForm() {
                * forms that don't need the same visual weight as content sections.
                */}
               <div className="flex flex-col gap-5 lg:sticky lg:top-0">
-                {/* Sticky wrapper only kicks in on xl+ where col C is fixed-width */}
-                <StatusActionCard />
+                {/* Sticky bottom on mobile, regular flow on md+ */}
+                <div className="fixed bottom-4 inset-x-4 z-50 md:static md:inset-auto md:z-auto">
+                  <StatusActionCard />
+                </div>
 
                 <BentoCard
                   id="publishing"

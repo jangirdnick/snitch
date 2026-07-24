@@ -45,7 +45,7 @@ export default function InventoryPage() {
 
   const handleEditClick = useCallback(
     (product: Product) => {
-      const idToUse = product.id;
+      const idToUse = product._id;
       navigate(`/admin/inventory/edit/${idToUse}`);
     },
     [navigate],
@@ -59,7 +59,7 @@ export default function InventoryPage() {
   );
 
   return (
-    <div className="flex flex-col gap-5 lg:gap-6 min-h-screen bg-[oklch(0.08_0.005_260)] selection:bg-[oklch(0.95_0_0)] selection:text-[oklch(0.1_0_0)] pb-4">
+    <div className="flex flex-col gap-3.5 sm:gap-5 lg:gap-6 h-screen bg-[oklch(0.08_0.005_260)] selection:bg-[oklch(0.95_0_0)] selection:text-[oklch(0.1_0_0)] pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pb-1 overflow-y-scroll">
       <InventoryHeader onCreateClick={handleCreateClick} />
 
       <InventoryStats

@@ -21,8 +21,8 @@ const TOP_GLOW = (
 function StatCard({ icon: Icon, label, value, sub, iconAccent, loading }: StatCardProps) {
   if (loading) {
     return (
-      <div className="bg-[oklch(0.145_0.005_260)] border border-[oklch(1_0_0_/_0.055)] rounded-2xl p-5 flex items-start gap-4 animate-pulse">
-        <div className="w-10 h-10 rounded-xl bg-[oklch(1_0_0_/_0.04)]" />
+      <div className="bg-[oklch(0.145_0.005_260)] border border-[oklch(1_0_0_/_0.055)] rounded-2xl p-3.5 sm:p-5 flex items-start gap-3 sm:gap-4 animate-pulse">
+        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[oklch(1_0_0_/_0.04)]" />
         <div className="flex-1 space-y-2 mt-1">
           <div className="h-3 w-20 bg-[oklch(1_0_0_/_0.04)] rounded" />
           <div className="h-6 w-12 bg-[oklch(1_0_0_/_0.04)] rounded" />
@@ -39,14 +39,14 @@ function StatCard({ icon: Icon, label, value, sub, iconAccent, loading }: StatCa
         'border border-[oklch(1_0_0_/_0.055)] hover:border-[oklch(1_0_0_/_0.11)]',
         'transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]',
         'shadow-[0_4px_24px_oklch(0_0_0_/_0.35)] hover:shadow-[0_8px_32px_oklch(0_0_0_/_0.5)]',
-        'hover:-translate-y-px p-5 flex items-start gap-4',
+        'hover:-translate-y-px p-3.5 sm:p-5 flex items-start gap-3 sm:gap-4',
       )}
     >
       {TOP_GLOW}
 
       <div
         className={cn(
-          'flex-shrink-0 flex items-center justify-center rounded-xl size-10',
+          'flex-shrink-0 flex items-center justify-center rounded-xl size-8 sm:size-10',
           'transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:scale-105',
           'bg-[oklch(1_0_0_/_0.045)] shadow-[inset_0_1px_0_oklch(1_0_0_/_0.08)]',
           iconAccent,
@@ -55,12 +55,18 @@ function StatCard({ icon: Icon, label, value, sub, iconAccent, loading }: StatCa
         <Icon size={18} strokeWidth={1.8} />
       </div>
 
-      <div className="pt-0.5">
-        <p className="text-[10px] text-[oklch(0.55_0_0)] font-semibold uppercase tracking-[0.15em] mb-1">
+      <div className="pt-0.5 min-w-0 flex-1">
+        <p className="text-[9.5px] sm:text-[10px] text-[oklch(0.55_0_0)] font-semibold uppercase tracking-[0.12em] sm:tracking-[0.15em] mb-1 truncate">
           {label}
         </p>
-        <p className="text-2xl font-semibold text-[oklch(0.95_0_0)] leading-none">{value}</p>
-        {sub && <p className="text-[11px] text-[oklch(0.42_0_0)] mt-1.5 font-light">{sub}</p>}
+        <p className="text-xl sm:text-2xl font-semibold text-[oklch(0.95_0_0)] leading-none">
+          {value}
+        </p>
+        {sub && (
+          <p className="text-[10px] sm:text-[11px] text-[oklch(0.42_0_0)] mt-1 sm:mt-1.5 font-light leading-tight truncate">
+            {sub}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -82,7 +88,7 @@ export function InventoryStats({
   loading,
 }: InventoryStatsProps) {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 shrink-0 px-4 md:px-6 lg:px-0">
       <StatCard
         loading={loading}
         icon={ShoppingBag}

@@ -24,11 +24,13 @@ export function InventoryPagination({
   hasPreviousPage,
   onPageChange,
 }: InventoryPaginationProps) {
+  console.log('[Pagination Render]', { currentPage, totalPages, hasNextPage, hasPreviousPage });
   if (totalPages <= 1) return null;
 
   const handlePrevious = (e: React.MouseEvent) => {
     e.preventDefault();
     if (hasPreviousPage) {
+      console.log('going previous to:', currentPage - 1);
       onPageChange(currentPage - 1);
     }
   };
@@ -36,12 +38,14 @@ export function InventoryPagination({
   const handleNext = (e: React.MouseEvent) => {
     e.preventDefault();
     if (hasNextPage) {
+      console.log('going next to:', currentPage + 1);
       onPageChange(currentPage + 1);
     }
   };
 
   const handlePageClick = (e: React.MouseEvent, page: number) => {
     e.preventDefault();
+    console.log('clicked page:', page);
     onPageChange(page);
   };
 
@@ -66,15 +70,15 @@ export function InventoryPagination({
   };
 
   const linkClass =
-    'cursor-pointer text-[oklch(0.85_0_0)]/50 hover:bg-[oklch(1_0_0_/_0.06)] hover:text-[oklch(0.95_0_0)] border-[oklch(1_0_0_/_0.08)] bg-[oklch(1_0_0_/_0.03)]';
+    'cursor-pointer text-[oklch(0.85_0_0)]/50 hover:bg-[oklch(1_0_0_/_0.06)] hover:text-[oklch(0.95_0_0)] border-[oklch(1_0_0_/_0.08)] bg-[oklch(1_0_0_/_0.03)] h-11 md:h-9 min-w-[44px] md:min-w-[36px] px-3';
   const activeClass =
-    'cursor-pointer bg-[oklch(0.95_0_0)] text-[oklch(0.85_0_0)] hover:bg-white hover:text-[oklch(0.1_0_0)] border-transparent';
+    'cursor-pointer bg-[oklch(0.95_0_0)] text-[oklch(0.85_0_0)] hover:bg-white hover:text-[oklch(0.1_0_0)] border-transparent h-11 md:h-9 min-w-[44px] md:min-w-[36px] px-3';
   const disabledClass =
-    'pointer-events-none opacity-40 text-[oklch(0.85_0_0)] bg-[oklch(1_0_0_/_0.02)] border-[oklch(1_0_0_/_0.04)]';
+    'pointer-events-none opacity-40 text-[oklch(0.85_0_0)] bg-[oklch(1_0_0_/_0.02)] border-[oklch(1_0_0_/_0.04)] h-11 md:h-9 min-w-[44px] md:min-w-[36px] px-3';
 
   return (
-    <Pagination className="justify-end">
-      <PaginationContent className="gap-1.5">
+    <Pagination className="justify-center md:justify-end">
+      <PaginationContent className="gap-1.5 flex-wrap justify-center md:justify-end">
         <PaginationItem>
           <PaginationPrevious
             href="#"

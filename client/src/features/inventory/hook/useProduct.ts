@@ -6,7 +6,7 @@
  * Inspired by useAuth.ts pattern.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { useAppDispatch } from '@/store/hooks';
 import { AxiosError } from 'axios';
 import {
@@ -53,14 +53,20 @@ function getErrorFields(error: unknown): FieldErrorItem[] | undefined {
 
 export const useProduct = () => {
   const dispatch = useAppDispatch();
+  const requestCountRef = useRef(0);
 
   /** Fetch paginated/filtered products and store in Redux */
   const handleGetAllProducts = useCallback(
     async (params?: Record<string, string | number>) => {
+      const currentRequestId = ++requestCountRef.current;
       try {
         dispatch(setLoading(true));
         dispatch(clearError());
         const response = await getAllProducts(params);
+
+        // Prevent race condition: ignore if a newer request was dispatched
+        if (currentRequestId !== requestCountRef.current) return false;
+
         if (response.success) {
           dispatch(setProducts(response.data));
           return true;

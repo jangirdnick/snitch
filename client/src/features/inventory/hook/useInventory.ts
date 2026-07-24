@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAppSelector } from '@/store/hooks';
 import { useProduct } from './useProduct';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -23,12 +23,17 @@ export function useInventory() {
 
   const debouncedSearch = useDebounce(searchTerm, 500);
 
+  const pageSizeRef = useRef(pageSize);
+  useEffect(() => {
+    pageSizeRef.current = pageSize;
+  }, [pageSize]);
+
   const fetchProducts = useCallback(
-    (page = 1) => {
+    (page: number = 1) => {
       const [sortBy, sortOrder] = sortValue.split('-');
       const params: Record<string, string | number> = {
         page,
-        limit: pageSize,
+        limit: pageSizeRef.current,
         sortBy,
         sortOrder,
       };
@@ -38,7 +43,7 @@ export function useInventory() {
 
       handleGetAllProducts(params);
     },
-    [debouncedSearch, statusFilter, sortValue, pageSize, handleGetAllProducts],
+    [debouncedSearch, statusFilter, sortValue, handleGetAllProducts],
   );
 
   useEffect(() => {
@@ -61,7 +66,6 @@ export function useInventory() {
     [handleDeleteProduct, fetchProducts, currentPage],
   );
 
-  // Compute derived state memoized
   const activeCount = useMemo(
     () => items.filter((p: Product) => p.status === 'active').length,
     [items],
@@ -78,7 +82,6 @@ export function useInventory() {
   );
 
   return {
-    // Redux State
     items: items as Product[],
     loading,
     currentPage,
@@ -86,8 +89,6 @@ export function useInventory() {
     totalItems,
     hasNextPage,
     hasPreviousPage,
-
-    // Local State
     searchTerm,
     setSearchTerm,
     debouncedSearch,
@@ -95,13 +96,9 @@ export function useInventory() {
     setStatusFilter,
     sortValue,
     setSortValue,
-
-    // Derived State
     activeCount,
     outOfStockCount,
     draftCount,
-
-    // Actions
     fetchProducts,
     handleClearFilters,
     handleDeleteConfirm,
