@@ -38,7 +38,7 @@ export function useCreateProduct() {
   } = form;
 
   // ─── Block navigation when form has unsaved changes ───────────────────────────
-  useBlocker(
+  const blocker = useBlocker(
     useCallback(
       ({ currentLocation, nextLocation }) =>
         isDirty && !isSubmitting && currentLocation.pathname !== nextLocation.pathname,
@@ -73,17 +73,30 @@ export function useCreateProduct() {
   );
 
   const handleCancel = useCallback(() => {
-    if (isDirty) {
-      const confirmed = window.confirm('You have unsaved changes. Are you sure you want to leave?');
-      if (!confirmed) return;
-    }
     navigate('/admin/inventory');
-  }, [isDirty, navigate]);
+  }, [navigate]);
+
+  const confirmDiscard = useCallback(() => {
+    if (blocker.state === 'blocked') {
+      blocker.proceed();
+    } else {
+      navigate('/admin/inventory');
+    }
+  }, [blocker, navigate]);
+
+  const cancelDiscard = useCallback(() => {
+    if (blocker.state === 'blocked') {
+      blocker.reset();
+    }
+  }, [blocker]);
 
   return {
     form,
     onSubmit,
     handleCancel,
+    confirmDiscard,
+    cancelDiscard,
+    isBlocked: blocker.state === 'blocked',
     isSubmitting,
     isDirty,
   };

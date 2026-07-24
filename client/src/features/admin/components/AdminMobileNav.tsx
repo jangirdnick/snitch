@@ -504,10 +504,19 @@ export const AdminMobileNav = memo(function AdminMobileNav() {
     return menuRoutes.some((route) => location.pathname.startsWith(route));
   }, [location.pathname]);
 
+  // Hide bottom navigation on full-page flows (e.g., product creation)
+  const isHiddenRoute = useMemo(() => {
+    return location.pathname.startsWith('/admin/inventory/create');
+  }, [location.pathname]);
+
   // Close menu on route change
   useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
+
+  if (isHiddenRoute) {
+    return null;
+  }
 
   return (
     <>

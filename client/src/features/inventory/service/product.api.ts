@@ -8,6 +8,7 @@
 
 import { api } from '@/lib/axiosInstance';
 import type { ProductFormValues } from '../schema/product.form.schema';
+import type { Product, ProductDetailResponse, ProductListResponse } from '@snitch/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -19,14 +20,19 @@ export interface ApiResponse<T = undefined> {
 }
 
 export interface ProductResponse {
-  product: Record<string, string>;
+  product: Product;
 }
 
 export interface ProductsResponse {
-  products: Record<string, string>[];
-  total: number;
-  page: number;
-  limit: number;
+  items: Product[];
+  pagination: {
+    currentPage: number;
+    itemsPerPage: number;
+    totalItems: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
 }
 
 // ─── Transform: FormValues → FormData ────────────────────────────────────────
@@ -98,8 +104,9 @@ function buildFormData(values: ProductFormValues): FormData {
 
 /** GET /api/product — paginated list with optional filters */
 export async function getAllProducts(
+  // ): Promise<ApiResponse<ProductsResponse>> {
   params?: Record<string, string | number>,
-): Promise<ApiResponse<ProductsResponse>> {
+): Promise<ProductListResponse> {
   const { data } = await api.get('/product', { params });
   return data;
 }
@@ -117,7 +124,7 @@ export async function getLimitedProducts(limit: number): Promise<ApiResponse<Pro
 }
 
 /** GET /api/product/:slug */
-export async function getProductBySlug(slug: string): Promise<ApiResponse<ProductResponse>> {
+export async function getProductBySlug(slug: string): Promise<ProductDetailResponse> {
   const { data } = await api.get(`/product/${slug}`);
   return data;
 }

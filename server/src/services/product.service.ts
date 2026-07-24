@@ -42,11 +42,17 @@ function isProductError(error: unknown): boolean {
 // ─── Pagination Result Type ────────────────────────────────────────────────────
 
 export interface PaginatedProducts {
-  products: IProduct[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  items: IProduct[];
+  pagination: {
+    // page: number;
+    // limit: number;
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    itemsPerPage: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
 }
 
 // ─── Service Functions ─────────────────────────────────────────────────────────
@@ -64,6 +70,7 @@ export async function getProducts(query: ProductQueryDto): Promise<PaginatedProd
 
     // Exact-match filters
     if (query.category) filter.category = new mongoose.Types.ObjectId(query.category);
+    if (query.brand) filter.brand = query.brand;
     if (query.gender) filter.gender = query.gender;
     if (query.ageGroup) filter.ageGroup = query.ageGroup;
     if (query.fit) filter.fit = query.fit;
@@ -100,10 +107,13 @@ export async function getProducts(query: ProductQueryDto): Promise<PaginatedProd
     // Pagination
     const skip = (query.page - 1) * query.limit;
 
-    const [products, total] = await Promise.all([
+    const [items, total] = await Promise.all([
       productModel
         .find(filter)
-        .sort({ [sortField]: sortDir })
+        .select(
+          'id title slug sku category colors price lowStockThreshold status publishedAt createdAt updatedAt',
+        )
+        .sort({ [sortField]: sortDir, _id: 1 })
         .skip(skip)
         .limit(query.limit)
         .lean()
@@ -111,12 +121,18 @@ export async function getProducts(query: ProductQueryDto): Promise<PaginatedProd
       productModel.countDocuments(filter),
     ]);
 
+    const totalPages = Math.ceil(total / query.limit);
+
     return {
-      products,
-      total,
-      page: query.page,
-      limit: query.limit,
-      totalPages: Math.ceil(total / query.limit),
+      items,
+      pagination: {
+        currentPage: query.page,
+        itemsPerPage: query.limit,
+        totalItems: total,
+        totalPages,
+        hasNextPage: query.page < totalPages,
+        hasPreviousPage: query.page > 1,
+      },
     };
   } catch (error) {
     if (isProductError(error)) throw error;
@@ -132,9 +148,8 @@ export async function getProductBySlug(slug: string): Promise<IProduct> {
   try {
     const product = (await productModel
       .findOne({ slug })
-      .populate('category', 'name slug')
-      .populate('subCategory', 'name slug')
-      .lean()) as unknown as IProduct | null;
+      .lean()
+      .exec()) as unknown as IProduct | null;
 
     if (!product) throw new ProductNotFoundError(slug);
     return product;
