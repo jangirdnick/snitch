@@ -62,7 +62,7 @@ export const useProduct = () => {
         dispatch(clearError());
         const response = await getAllProducts(params);
         if (response.success) {
-          dispatch(setProducts(response.data.products));
+          dispatch(setProducts(response.data));
           return true;
         } else {
           dispatch(setError(response.error.message));
@@ -86,7 +86,7 @@ export const useProduct = () => {
         dispatch(clearError());
         const response = await searchProducts(term);
         if (response.success) {
-          dispatch(setProducts(response.data.products));
+          dispatch(setProducts(response.data));
           return true;
         } else {
           dispatch(setError(response.error.message));
@@ -110,7 +110,7 @@ export const useProduct = () => {
         dispatch(clearError());
         const response = await getLimitedProducts(limit);
         if (response.success) {
-          dispatch(setProducts(response.data.products));
+          dispatch(setProducts(response.data));
           return true;
         } else {
           dispatch(setError(response.error.message));

@@ -168,7 +168,6 @@ export class ProductController {
       }
 
       const result = await getProducts(queryParsed.data);
-
       res.status(200).json({
         success: true,
         message: 'Products fetched successfully',

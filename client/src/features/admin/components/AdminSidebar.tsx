@@ -136,18 +136,18 @@ const SidebarNavItem = memo(function SidebarNavItem({ item }: SidebarNavItemProp
                 className={cn(
                   'relative flex size-10 items-center justify-center rounded-xl',
                   'cursor-pointer select-none',
-                  'focus-visible:ring-2 focus-visible:ring-[oklch(0.7_0_0_/_0.4)] focus-visible:ring-offset-2',
+                  'focus-visible:ring-2 focus-visible:ring-[oklch(0.7_0_0_/0.4)] focus-visible:ring-offset-2',
                   'focus-visible:ring-offset-[oklch(0.12_0_0)]',
                   isActive
-                    ? 'text-[oklch(0.12_0_0)] shadow-[0_2px_12px_oklch(0.96_0_0_/_0.15)]'
-                    : 'bg-transparent text-[oklch(0.55_0_0)] hover:bg-[oklch(1_0_0_/_0.06)] hover:text-[oklch(0.82_0_0)]',
+                    ? 'text-[oklch(0.12_0_0)] shadow-[0_2px_12px_oklch(0.96_0_0_/0.15)]'
+                    : 'bg-transparent text-[oklch(0.55_0_0)] hover:bg-[oklch(1_0_0_/0.06)] hover:text-[oklch(0.82_0_0)]',
                 )}
               >
                 <AnimatePresence>
                   {isActive && (
                     <motion.span
                       layoutId="nav-active-bg"
-                      className="absolute inset-0 rounded-xl bg-[oklch(0.96_0_0)]"
+                      className="absolute inset-0 rounded-xl bg-orange-600"
                       initial={{ opacity: 0, scale: 0.88 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.88 }}
@@ -160,7 +160,7 @@ const SidebarNavItem = memo(function SidebarNavItem({ item }: SidebarNavItemProp
                 <AnimatePresence>
                   {isActive && (
                     <motion.span
-                      className="absolute -left-3.5 top-1/2 h-4 w-1.25 rounded-r-full bg-[oklch(0.96_0_0)]"
+                      className="absolute -left-3.5 top-1/2 h-4 w-1.25 rounded-r-full bg-orange-600"
                       initial={{ opacity: 0, scaleY: 0, y: '-50%' }}
                       animate={{ opacity: 1, scaleY: 1, y: '-50%' }}
                       exit={{ opacity: 0, scaleY: 0, y: '-50%' }}
@@ -206,9 +206,9 @@ const SidebarLogo = memo(function SidebarLogo() {
           whileTap={{ scale: 0.92 }}
           transition={SPRING}
           className={cn(
-            'flex size-9 items-center justify-center rounded-xl outline-none',
+            'flex size-7.5 items-center justify-center rounded-xl outline-none',
             'cursor-pointer select-none',
-            'focus-visible:ring-2 focus-visible:ring-[oklch(0.7_0_0_/_0.4)] focus-visible:ring-offset-2',
+            'focus-visible:ring-2 focus-visible:ring-[oklch(0.7_0_0_/0.4)] focus-visible:ring-offset-2',
             'focus-visible:ring-offset-[oklch(0.12_0_0)]',
           )}
         >
@@ -253,11 +253,11 @@ const SidebarIconButton = memo(function SidebarIconButton({
       className={cn(
         'relative flex size-10 items-center justify-center rounded-xl outline-none',
         'cursor-pointer select-none',
-        'focus-visible:ring-2 focus-visible:ring-[oklch(0.7_0_0_/_0.4)] focus-visible:ring-offset-2',
+        'focus-visible:ring-2 focus-visible:ring-[oklch(0.7_0_0_/0.4)] focus-visible:ring-offset-2',
         'focus-visible:ring-offset-[oklch(0.12_0_0)]',
         isActive
           ? 'bg-[oklch(0.96_0_0)] text-[oklch(0.12_0_0)]'
-          : 'bg-transparent text-[oklch(0.45_0_0)] hover:bg-[oklch(1_0_0_/_0.06)] hover:text-[oklch(0.72_0_0)]',
+          : 'bg-transparent text-[oklch(0.45_0_0)] hover:bg-[oklch(1_0_0_/0.06)] hover:text-[oklch(0.72_0_0)]',
         className,
       )}
       {...(props as React.ComponentPropsWithoutRef<typeof motion.button>)}
@@ -332,7 +332,7 @@ const SidebarProfile = memo(function SidebarProfile() {
               <Avatar
                 className={cn(
                   'size-7 transition-shadow duration-200',
-                  'ring-1 ring-[oklch(1_0_0_/_0.12)]',
+                  'ring-1 ring-[oklch(1_0_0_/0.12)]',
                 )}
               >
                 <AvatarImage src={undefined} alt={user?.firstName ?? 'User'} />
@@ -355,10 +355,10 @@ const SidebarProfile = memo(function SidebarProfile() {
         align="end"
         sideOffset={12}
         className={cn(
-          'z-50 min-w-[192px] rounded-xl p-1.5',
-          'bg-[oklch(0.15_0.005_264_/_0.96)] backdrop-blur-2xl',
-          'border border-[oklch(1_0_0_/_0.09)]',
-          'shadow-[0_24px_64px_oklch(0_0_0_/_0.65),0_0_0_1px_oklch(1_0_0_/_0.05)]',
+          'z-50 min-w-48 rounded-xl p-1.5',
+          'bg-[oklch(0.15_0.005_264_/0.96)] backdrop-blur-2xl',
+          'border border-[oklch(1_0_0_/0.09)]',
+          'shadow-[0_24px_64px_oklch(0_0_0_/0.65),0_0_0_1px_oklch(1_0_0_/0.05)]',
           'duration-150',
         )}
       >
@@ -372,7 +372,7 @@ const SidebarProfile = memo(function SidebarProfile() {
                 {user.email}
               </p>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-[oklch(1_0_0_/_0.07)] my-1" />
+            <DropdownMenuSeparator className="bg-[oklch(1_0_0_/0.07)] my-1" />
           </>
         )}
 
@@ -381,7 +381,7 @@ const SidebarProfile = memo(function SidebarProfile() {
           className={cn(
             'flex items-center gap-2 rounded-lg px-2.5 py-1.5 cursor-pointer outline-none',
             'text-[11px] font-medium text-[oklch(0.65_0_0)]',
-            'hover:bg-[oklch(1_0_0_/_0.07)] hover:text-[oklch(0.88_0_0)]',
+            'hover:bg-[oklch(1_0_0_/0.07)] hover:text-[oklch(0.88_0_0)]',
           )}
         >
           <User size={12} strokeWidth={1.8} />
@@ -393,21 +393,21 @@ const SidebarProfile = memo(function SidebarProfile() {
           className={cn(
             'flex items-center gap-2 rounded-lg px-2.5 py-1.5 cursor-pointer outline-none',
             'text-[11px] font-medium text-[oklch(0.65_0_0)]',
-            'hover:bg-[oklch(1_0_0_/_0.07)] hover:text-[oklch(0.88_0_0)]',
+            'hover:bg-[oklch(1_0_0_/0.07)] hover:text-[oklch(0.88_0_0)]',
           )}
         >
           <Settings size={12} strokeWidth={1.8} />
           Account Settings
         </DropdownMenuItem>
 
-        <DropdownMenuSeparator className="bg-[oklch(1_0_0_/_0.07)] my-1" />
+        <DropdownMenuSeparator className="bg-[oklch(1_0_0_/0.07)] my-1" />
 
         <DropdownMenuItem
           onClick={handleLogout}
           className={cn(
             'flex items-center gap-2 rounded-lg px-2.5 py-1.5 cursor-pointer outline-none',
             'text-[11px] font-medium text-[oklch(0.62_0.18_22)]',
-            'hover:bg-[oklch(0.62_0.18_22_/_0.10)] hover:text-[oklch(0.72_0.18_22)]',
+            'hover:bg-[oklch(0.62_0.18_22_/0.10)] hover:text-[oklch(0.72_0.18_22)]',
           )}
         >
           <LogOut size={12} strokeWidth={1.8} />
@@ -431,11 +431,11 @@ export const AdminSidebar = memo(function AdminSidebar() {
       className={cn(
         'fixed left-0 top-0 z-40 flex h-screen w-16 flex-col justify-between',
         'py-5 gap-0',
-        'bg-[oklch(0.12_0.005_264_/_0.92)] backdrop-blur-2xl',
+        'bg-[oklch(0.12_0.005_264_/0.92)] backdrop-blur-2xl',
         // Border
-        'border-r border-[oklch(1_0_0_/_0.06)]',
+        'border-r border-[oklch(1_0_0_/0.06)]',
         // Shadow — subtle inner edge glow + outer depth
-        'shadow-[1px_0_0_oklch(1_0_0_/_0.04),4px_0_40px_oklch(0_0_0_/_0.45)]',
+        'shadow-[1px_0_0_oklch(1_0_0_/0.04),4px_0_40px_oklch(0_0_0_/0.45)]',
       )}
     >
       {/* ── Top: Brand Logo ─────────────────────────────── */}

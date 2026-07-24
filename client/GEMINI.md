@@ -18,7 +18,7 @@ Design philosophy ka core teen pillars hain:
 
 > ⚠️ **MANDATORY:** Koi bhi UI, animation, ya React component kaam shuru karne se pehle relevant skill file ZAROOR padho. Skills ke bina kaam karna = generic, template-level output.
 
-Is project mein **3 specialized skill files** hain `client/.agents/skills/` folder mein. Ye skills AI agent ko project-specific, production-quality decisions lene mein help karti hain.
+Is project mein **4 specialized skill files** hain `client/.agents/skills/` folder mein. Ye skills AI agent ko project-specific, production-quality decisions lene mein help karti hain.
 
 ---
 
@@ -198,6 +198,59 @@ Trigger examples:
 
 ---
 
+## Coding Principles
+
+### General
+
+- **Production-first implementation only.** No TODO stubs, no placeholder logic, no `console.log`.
+- Prioritize readability, maintainability, scalability, and performance.
+- **Never break the existing project architecture.** Follow the established folder structure, naming conventions, and import patterns.
+- Keep code DRY, modular, and reusable. Prefer composition over duplication.
+- Remove dead code and unused imports. Never introduce unnecessary dependencies.
+
+### Code Quality
+
+- Write clean, self-documenting code with meaningful variable, function, and component names.
+- Keep functions and components small and single-responsibility.
+- Extract reusable logic into hooks (`features/*/hook/`), utilities (`utils/`, `lib/`), services (`features/*/service/`), or shared components (`components/`).
+- Avoid magic numbers and hardcoded values — use constants and enums where appropriate.
+- Maintain consistent formatting and file organization.
+
+### TypeScript
+
+- **Strict typing only.** Never weaken the tsconfig.
+- **Never use `any`** unless absolutely unavoidable. Prefer specific types or `unknown`.
+- Prefer inferred types where possible; avoid redundant annotations.
+- **Reuse shared types from `@snitch/types`** — `UserResponseDto`, `ApiSuccess<T>`, `ApiErrorResponse`, etc.
+- **Reuse shared schemas from `@snitch/schemas`** — never define Zod schemas in the client.
+- Avoid duplicate interfaces. Keep types colocated when only locally used (component props in the component file).
+
+### React
+
+- Follow the current **feature-based architecture** (`features/*/`).
+- Prefer reusable components — check shadcn/Radix first, then build custom.
+- Use **React Hook Form + Zod** (via `@hookform/resolvers`) for all forms.
+- Use `setFormErrors()` from `@/utils/form-errors.util.ts` to map backend validation errors to form fields.
+- Memoize only when it provides measurable value — don't pre-optimize.
+- Keep components focused and avoid prop drilling — use Redux for global state, component composition for local concerns.
+- Maintain responsive, accessible UI. Mobile-first layouts.
+- Preserve current design system and styling patterns.
+- Use **sonner** (via `showToast` from `@/lib/toast`) for all notifications — never use `alert()` or raw `toast()`.
+
+### Before generating code
+
+Always:
+
+1. Analyze the existing implementation across features, components, and hooks.
+2. Reuse existing utilities (`cn()`, `showToast`, `setFormErrors`, `api` from axiosInstance).
+3. Follow the current architecture and naming patterns.
+4. Match the project's coding style.
+5. Optimize for production — validate inputs, handle loading/error states.
+6. Avoid introducing breaking changes.
+7. Improve code quality without unnecessary refactoring.
+
+---
+
 ## Monorepo Architecture — FUNDAMENTAL RULES
 
 > ⚠️ Ye section sabse important hai. Inhe todna = architecture break karna.
@@ -207,7 +260,7 @@ Snitch ek **pnpm workspace monorepo** hai. Structure:
 ```
 snitch/                          ← root workspace
 ├── client/                      ← React frontend (ye folder)
-├── server/                      ← NestJS backend
+├── server/                      ← Express backend
 └── packages/
     ├── schemas/  (@snitch/schemas)   ← Zod schemas — single source of truth
     └── types/    (@snitch/types)     ← Shared TypeScript interfaces/types
@@ -247,10 +300,10 @@ export type RegisterStep1Values = z.infer<typeof registerStep1Schema>;
 
 `@snitch/types` mein:
 
-- API response shapes (`UserResponseDto`, `ApiSuccess<T>`, etc.)
-- Domain entities (`User`, `Product`, `Order`)
-- JWT payloads
-- Shared enums
+- API response shapes (`UserResponseDto`, `ApiSuccess<T>`, `ApiNormalResponse`, `ApiErrorResponse`)
+- Domain entities (`User`)
+- JWT payloads (`JwtPayload`)
+- Shared enums and auth types
 
 `client/src/types/` mein SIRF client-only UI types:
 
@@ -346,7 +399,7 @@ Tailwind v4 mein **`tailwind.config.js` nahi hota** — sab CSS ke andar hota ha
 | One-off utility                    | Tailwind class use karo, CSS file mat banao                                      |
 | Complex component animation        | `@layer components {}` mein, sirf agar Tailwind classes se express nahi ho sakta |
 
-> **Rule:** Custom `.css` files ya `style={}` props **mat banao** jab tak Tailwind classes se kaam na chal sake. Agar custom CSS chahiye, `global.css` ke `@theme` ya `@layer` blocks mein hi add karo.
+> **Rule:** Custom `.css` files ya `style={}` props **mat banao** jab tak Tailwind classes se kaam na chal sake. Agar custom CSS chahiye, `global.css` ya `index.css` ke `@theme` ya `@layer` blocks mein hi add karo.
 
 ---
 
@@ -378,20 +431,20 @@ Tailwind + cva + cn() use karo — no custom CSS files
 
 ```bash
 # Koi component add karo
-npx shadcn add <component-name>
+pnpm dlx shadcn add <component-name>
 
 # Common examples:
-npx shadcn add button input form label
-npx shadcn add dialog sheet drawer
-npx shadcn add dropdown-menu context-menu
-npx shadcn add select combobox
-npx shadcn add card badge separator
-npx shadcn add carousel    # Product gallery
-npx shadcn add toast       # Notifications
-npx shadcn add skeleton    # Loading states
-npx shadcn add avatar      # User profiles
-npx shadcn add tabs        # Multi-step / filter
-npx shadcn add table       # Order lists
+pnpm dlx shadcn add button input form label
+pnpm dlx shadcn add dialog sheet drawer
+pnpm dlx shadcn add dropdown-menu context-menu
+pnpm dlx shadcn add select combobox
+pnpm dlx shadcn add card badge separator
+pnpm dlx shadcn add carousel    # Product gallery
+pnpm dlx shadcn add toast       # Notifications
+pnpm dlx shadcn add skeleton    # Loading states
+pnpm dlx shadcn add avatar      # User profiles
+pnpm dlx shadcn add tabs        # Multi-step / filter
+pnpm dlx shadcn add table       # Order lists
 ```
 
 shadcn components `src/components/ui/` mein hote hain — **inhe seedha edit karo**, ye vendor files nahi hain.
@@ -427,9 +480,10 @@ Snitch mein motion ek first-class citizen hai. Ye libraries aur patterns use kar
 | Tool                           | Use Case                                                            |
 | ------------------------------ | ------------------------------------------------------------------- |
 | **tw-animate-css**             | Entry/exit animations — `animate-fade-in`, `animate-slide-up`, etc. |
+| **motion** (Framer Motion)     | Complex component animations, layout animations, gestures           |
 | **CSS `@keyframes`**           | Custom brand-specific animations `global.css` mein define karo      |
 | **Tailwind `transition-*`**    | Hover states, color transitions, scale effects                      |
-| **CSS `view-transition-name`** | Page transitions ke liye (React Router v7+ compatible)              |
+| **CSS `view-transition-name`** | Page transitions ke liye (React Router v8 compatible)               |
 
 **Micro-interaction checklist — har interactive element pe apply karo:**
 
@@ -450,9 +504,10 @@ Snitch mein motion ek first-class citizen hai. Ye libraries aur patterns use kar
 
 **Current Slices:**
 
-| Slice  | File                                | Manages                    |
-| ------ | ----------------------------------- | -------------------------- |
-| `auth` | `features/auth/state/auth.slice.ts` | User session, login/logout |
+| Slice     | File                                        | Manages                    |
+| --------- | ------------------------------------------- | -------------------------- |
+| `auth`    | `features/auth/state/auth.slice.ts`         | User session, login/logout |
+| `product` | `features/inventory/state/product.slice.ts` | Product/inventory state    |
 
 **Typed hooks hamesha use karo:**
 
@@ -471,12 +526,17 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 **Current Routes** (`src/routes/AppRoutes.tsx`):
 
-| Path        | Component      | Description          |
-| ----------- | -------------- | -------------------- |
-| `/`         | `HomePage`     | Landing / storefront |
-| `/login`    | `LoginPage`    | Auth — login         |
-| `/register` | `RegisterPage` | Auth — registration  |
-| `*`         | `404Page`      | Not found fallback   |
+| Path                      | Component           | Layout        | Description                   |
+| ------------------------- | ------------------- | ------------- | ----------------------------- |
+| `/`                       | `HomePage`          | `RootLayout`  | Landing / storefront          |
+| `/login`                  | `LoginPage`         | `RootLayout`  | Auth — login (nested)         |
+| `/register`               | `RegisterPage`      | `RootLayout`  | Auth — registration (nested)  |
+| `/admin/dashboard`        | `Dashboard`         | `AdminLayout` | Admin dashboard (protected)   |
+| `/admin/inventory`        | `InventoryPage`     | `AdminLayout` | Product inventory (protected) |
+| `/admin/inventory/create` | `CreateProductPage` | `AdminLayout` | Create product (protected)    |
+| `*`                       | `NotFoundPage`      | —             | Not found fallback            |
+
+**Protected routes** use `<ProtectedRoute allowedRoles={['ADMIN']} />` wrapper.
 
 > Route-level code splitting add karna hai — `lazy()` + `<Suspense>` use karo naye pages ke liye.
 
@@ -490,10 +550,74 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 `axiosInstance.ts` mein ye configured hai:
 
-- Base URL (`.env` se)
-- Request/Response interceptors
-- Auth token auto-attach
-- Error handling
+- Base URL: `/api` (proxied via Vite dev server to `VITE_API_BASE_URL`)
+- **Request interceptors:**
+  - `X-Request-Id` auto-generated for every request (tracing)
+  - `Authorization: Bearer <token>` auto-attached from Redux auth state
+- **Response interceptors:**
+  - Automatic token refresh on `401` (silent re-auth)
+  - Queues concurrent requests during refresh (no duplicate refresh calls)
+  - Handles multipart retry (FormData boundary fix)
+  - Dispatches `logout()` + `setSessionExpired(true)` if refresh fails
+
+**Usage:**
+
+```ts
+import { api } from '@/lib/axiosInstance';
+
+// ✅ Always use the configured instance
+const response = await api.post('/auth/login', { email, password });
+
+// ❌ Never use raw axios
+import axios from 'axios';
+axios.post('/api/auth/login', ...); // loses interceptors, auth, tracing
+```
+
+---
+
+### Notifications — Sonner (via `showToast`)
+
+All user-facing notifications use the centralized `showToast` wrapper from `@/lib/toast`:
+
+```ts
+import { showToast } from '@/lib/toast';
+
+showToast.success('Profile updated!');
+showToast.error('Something went wrong', { description: err.message });
+showToast.info('New feature available');
+showToast.warning('Session expires soon');
+showToast.loading('Saving…');
+showToast.dismiss(id);
+showToast.dismissAll();
+```
+
+**Rules:**
+
+- Never use raw `toast()` from sonner directly.
+- Never use `alert()` or `window.confirm()`.
+- The `<Toaster>` component is mounted once in `App.tsx` — don't add it elsewhere.
+
+---
+
+### Form Error Handling — Backend → Frontend Mapping
+
+The API returns structured field errors: `{ field: string, message: string }[]`.
+
+Use `setFormErrors()` from `@/utils/form-errors.util.ts` to map them to React Hook Form:
+
+```ts
+import { setFormErrors, FieldErrorItem } from '@/utils/form-errors.util';
+
+// In your form submission handler:
+catch (error) {
+  const fields = error.response?.data?.error?.fields as FieldErrorItem[];
+  if (fields) {
+    setFormErrors(fields, form.setError);
+  }
+}
+```
+
+This supports nested field paths (e.g. `colors.0.sku`) for complex forms.
 
 ---
 
@@ -503,26 +627,50 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 client/
 ├── src/
 │   ├── components/           # Shared, reusable UI components
-│   │   └── ui/               # shadcn components (source-owned, editable)
-│   │       └── button.tsx
+│   │   ├── ui/               # shadcn components (source-owned, editable)
+│   │   │   ├── button.tsx
+│   │   │   ├── sonner.tsx    # Toaster component
+│   │   │   └── ...
+│   │   ├── auth/             # Auth-related shared components (ProtectedRoute)
+│   │   └── navbar/           # Navigation components
 │   │
 │   ├── features/             # Feature modules — har feature self-contained hai
-│   │   └── auth/
-│   │       ├── components/   # Auth UI — LoginForm, RegisterForm, etc.
-│   │       ├── hook/         # useAuth, useLoginForm, etc.
-│   │       ├── schema/       # ⚠️ SIRF compose karo @snitch/schemas se — naya schema mat banao
-│   │       ├── service/      # authService.ts — API functions
-│   │       └── state/        # auth.slice.ts — Redux slice
+│   │   ├── auth/
+│   │   │   ├── components/   # Auth UI — LoginForm, RegisterForm, etc.
+│   │   │   ├── hook/         # useAuth, useLoginForm, useAuthToast, etc.
+│   │   │   ├── schema/       # ⚠️ SIRF compose karo @snitch/schemas se — naya schema mat banao
+│   │   │   ├── service/      # authService.ts — API functions
+│   │   │   └── state/        # auth.slice.ts — Redux slice
+│   │   ├── admin/
+│   │   │   └── components/   # Admin-specific UI components
+│   │   ├── home/
+│   │   │   ├── components/   # Homepage UI components
+│   │   │   └── data/         # Static data for homepage
+│   │   └── inventory/
+│   │       ├── components/   # Product management UI
+│   │       ├── hook/         # useProductForm, etc.
+│   │       ├── schema/       # Product form schemas (composed from @snitch/schemas)
+│   │       ├── service/      # Product API functions
+│   │       └── state/        # product.slice.ts — Redux slice
+│   │
+│   ├── layouts/
+│   │   ├── RootLayout.tsx    # Public layout (navbar + outlet)
+│   │   └── AdminLayout.tsx   # Admin layout (sidebar + outlet)
 │   │
 │   ├── lib/
-│   │   ├── axiosInstance.ts  # Pre-configured Axios client
+│   │   ├── axiosInstance.ts  # Pre-configured Axios client with interceptors
+│   │   ├── toast.ts          # showToast — centralized notification wrapper
 │   │   └── utils.ts          # cn() — clsx + tailwind-merge
 │   │
 │   ├── pages/                # Route-level page shells
 │   │   ├── HomePage.tsx
 │   │   ├── LoginPage.tsx
 │   │   ├── RegisterPage.tsx
-│   │   └── 404Page.tsx
+│   │   ├── 404Page.tsx
+│   │   └── (admin)/          # Admin pages (route-grouped)
+│   │       ├── Dashboard.tsx
+│   │       ├── InventoryPage.tsx
+│   │       └── CreateProductPage.tsx
 │   │
 │   ├── routes/
 │   │   └── AppRoutes.tsx     # React Router — createBrowserRouter config
@@ -532,20 +680,20 @@ client/
 │   │   └── hooks.ts          # useAppDispatch & useAppSelector (typed)
 │   │
 │   ├── styles/
-│   │   └── global.css        # ← SINGLE CSS FILE: shadcn vars + @theme tokens + @layer base
-│   │                         #   (index.css mat banao — sab yahan aata hai)
+│   │   ├── global.css        # Tailwind imports + @theme tokens + @layer base
+│   │   └── index.css         # shadcn CSS variables + component layer styles
 │   │
-│   ├── types/                # ⚠️ SIRF client-only UI types — global types @snitch/types mein
-│   ├── App.tsx               # Root component
-│   └── main.tsx              # Entry — Provider + RouterProvider setup
+│   ├── utils/
+│   │   └── form-errors.util.ts # setFormErrors — backend→form error mapper
+│   │
+│   ├── App.tsx               # Root component (Toaster + RouterProvider + auth init)
+│   └── main.tsx              # Entry — Provider + setupInterceptors + render
 │
 ├── components.json           # shadcn/ui configuration
-├── vite.config.ts            # Vite config — aliases + plugins
+├── vite.config.ts            # Vite config — aliases + proxy + plugins
 ├── tsconfig.app.json         # TypeScript config
-└── .env                      # Environment variables (VITE_API_URL, etc.)
+└── .env                      # Environment variables (VITE_API_BASE_URL, etc.)
 ```
-
-> **Note on `styles/`:** Tailwind v4 mein ek hi CSS file (`global.css`) kaafi hai. Multiple CSS files avoid karo — sab tokens `@theme {}` mein, sab custom CSS `@layer {}` mein.
 
 ---
 
@@ -569,10 +717,14 @@ import { Button } from '@components/ui/button';
 import { useAppSelector } from '@/store/hooks';
 import { loginUserSchema } from '@snitch/schemas';
 import { UserResponseDto } from '@snitch/types';
+import { showToast } from '@/lib/toast';
+import { cn } from '@/lib/utils';
+import { api } from '@/lib/axiosInstance';
 
 // ❌ Avoid
 import { Button } from '../../components/ui/button';
 import { z } from 'zod'; // seedha zod mat import karo
+import { toast } from 'sonner'; // use showToast wrapper instead
 ```
 
 ---
@@ -640,10 +792,13 @@ pnpm dlx shadcn add <component-name>
 4. **Form feedback** — real-time validation, success/error states animated honge.
 5. **Loading states** — spinner mat use karo — skeleton screens ya shimmer effects use karo.
 6. **Empty states** — "No results" jaise screens illustrated aur animated hongi.
+7. **Follow existing design language** — preserve spacing, typography, and color consistency.
+8. **Mobile-first responsive layouts** — design for mobile, enhance for desktop.
+9. **Accessibility** should not be compromised — focus states, ARIA labels, keyboard navigation.
 
 ### Component Banane Ka Order (mandatory)
 
-1. **shadcn check karo** → `npx shadcn add <name>` → customize karo
+1. **shadcn check karo** → `pnpm dlx shadcn add <name>` → customize karo
 2. **Radix UI check karo** → headless primitive + Tailwind styling
 3. **Custom banao** → `cva` + `cn()` + Tailwind — no custom CSS files
 
@@ -681,7 +836,7 @@ features/<feature-name>/
 ├── components/     # UI components (only for this feature)
 ├── hook/           # Custom React hooks
 ├── schema/         # ⚠️ @snitch/schemas se compose karo — ground-up mat banao
-├── service/        # API call functions (use axiosInstance)
+├── service/        # API call functions (use api from axiosInstance)
 └── state/          # Redux slice (if global state needed)
 ```
 
@@ -701,16 +856,48 @@ export type ProductDraftValues = z.infer<typeof productDraftSchema>;
 `.env` mein:
 
 ```
-VITE_API_URL=http://localhost:3000/api
+VITE_API_BASE_URL=http://localhost:4000
 ```
 
 Access karo:
 
 ```ts
-const baseURL = import.meta.env.VITE_API_URL;
+const baseURL = import.meta.env.VITE_API_BASE_URL;
 ```
 
 > **Note:** Sirf `VITE_` prefix wale variables browser mein accessible hote hain.
+
+---
+
+## Error Handling
+
+- **Never swallow errors.** Always handle them with user feedback (toast or form error).
+- Return actionable validation errors — use `setFormErrors()` for field-level mapping.
+- Differentiate error types:
+  - **Validation errors** — show per-field messages in the form.
+  - **Auth errors** (`401`) — handled by axios interceptor (auto-refresh or logout).
+  - **Business errors** — show toast with server message.
+  - **Network errors** — show generic connectivity toast.
+- Log useful debugging information in development only — never expose sensitive data.
+
+---
+
+## Performance
+
+- Avoid unnecessary renders — don't create new objects/arrays in JSX.
+- Optimize imports and bundle size — use specific imports (`import { X } from 'lucide-react'`).
+- Lazy load routes and heavy components with `React.lazy()` + `<Suspense>`.
+- Use `motion` (Framer Motion) judiciously — don't animate everything.
+- Prefer CSS animations (Tailwind `transition-*`, `animate-*`) over JavaScript animations for simple effects.
+- Use `useAppSelector` with specific selectors, not `state => state.someSlice` (avoid re-renders on unrelated state changes).
+
+---
+
+## Documentation
+
+- Add JSDoc for public utilities, hooks, services, and complex logic.
+- Keep comments meaningful; avoid obvious comments.
+- Update this file when architecture changes.
 
 ---
 
@@ -728,3 +915,6 @@ const baseURL = import.meta.env.VITE_API_URL;
 | Custom animation                 | `src/styles/global.css` → `@layer base { @keyframes ... }` |
 | Custom CSS file                  | ❌ Mat banao — Tailwind classes use karo                   |
 | `zod` direct install in client   | ❌ Mat karo — `@snitch/schemas` se import karo             |
+| Raw `toast()` from sonner        | ❌ Mat karo — `showToast` from `@/lib/toast` use karo      |
+| Raw `axios` import               | ❌ Mat karo — `api` from `@/lib/axiosInstance` use karo    |
+| `useSelector` / `useDispatch`    | ❌ Mat karo — `useAppSelector` / `useAppDispatch` use karo |

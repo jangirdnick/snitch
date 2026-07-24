@@ -159,6 +159,7 @@ export interface IProduct extends Document {
 
   // ─── Classification ─────────────────────────────────────
   category: Types.ObjectId;
+  brand?: string;
   tags: string[];
 
   // ─── Clothing Specific ──────────────────────────────────
@@ -249,6 +250,12 @@ const ProductSchema: Schema<IProduct> = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Category',
       required: [true, 'Category is required'],
+      index: true,
+    },
+
+    brand: {
+      type: String,
+      trim: true,
       index: true,
     },
 

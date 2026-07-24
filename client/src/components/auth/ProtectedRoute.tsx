@@ -20,7 +20,7 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
         <img
           src="/loading.webp"
           alt="Loading..."
-          className="size-24 animate-pulse opacity-80 invert-100 "
+          className="size-22 animate-pulse opacity-80 invert-100"
         />
       </div>
     );

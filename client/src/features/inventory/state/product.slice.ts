@@ -1,15 +1,30 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { Product } from '@snitch/types';
 
 export interface ProductState {
-  products: Record<string, string>[]; // TODO: Replace with actual Product type
-  currentProduct: Record<string, string> | null;
+  items: Product[];
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+
+  currentProduct: Product | null;
   loading: boolean;
   error: string | null;
   message: string;
 }
 
 const initialState: ProductState = {
-  products: [],
+  items: [],
+  totalItems: 0,
+  totalPages: 1,
+  currentPage: 1,
+  pageSize: 20,
+  hasNextPage: false,
+  hasPreviousPage: false,
+
   currentProduct: null,
   loading: false,
   error: null,
@@ -20,11 +35,32 @@ const productSlice = createSlice({
   name: 'product',
   initialState,
   reducers: {
-    setProducts: (state, action: PayloadAction<Record<string, string>[]>) => {
-      state.products = action.payload;
+    setProducts: (
+      state,
+      action: PayloadAction<{
+        items: Product[];
+        pagination?: {
+          currentPage: number;
+          itemsPerPage: number;
+          totalItems: number;
+          totalPages: number;
+          hasNextPage: boolean;
+          hasPreviousPage: boolean;
+        };
+      }>,
+    ) => {
+      state.items = action.payload.items as Product[];
+      if (action.payload.pagination) {
+        state.totalItems = action.payload.pagination.totalItems;
+        state.totalPages = action.payload.pagination.totalPages;
+        state.currentPage = action.payload.pagination.currentPage;
+        state.pageSize = action.payload.pagination.itemsPerPage;
+        state.hasNextPage = action.payload.pagination.hasNextPage;
+        state.hasPreviousPage = action.payload.pagination.hasPreviousPage;
+      }
     },
 
-    setCurrentProduct: (state, action: PayloadAction<Record<string, string> | null>) => {
+    setCurrentProduct: (state, action: PayloadAction<Product>) => {
       state.currentProduct = action.payload;
     },
 
@@ -49,7 +85,13 @@ const productSlice = createSlice({
     },
 
     resetProductState: (state) => {
-      state.products = [];
+      state.items = [];
+      state.totalItems = 0;
+      state.totalPages = 1;
+      state.currentPage = 1;
+      state.pageSize = 20;
+      state.hasNextPage = false;
+      state.hasPreviousPage = false;
       state.currentProduct = null;
       state.loading = false;
       state.error = null;

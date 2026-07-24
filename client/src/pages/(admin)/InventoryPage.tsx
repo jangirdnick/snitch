@@ -1,28 +1,98 @@
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router';
-import { Button } from '@/components/ui/button';
+import { useInventory } from '@/features/inventory/hook/useInventory';
+import { InventoryHeader } from '@/features/inventory/components/InventoryHeader';
+import { InventoryStats } from '@/features/inventory/components/InventoryStats';
+import { InventoryFilters } from '@/features/inventory/components/InventoryFilters';
+import { InventoryTableSection } from '@/features/inventory/components/InventoryTableSection';
+import type { Product } from '@snitch/types';
 
 export default function InventoryPage() {
   const navigate = useNavigate();
+  const {
+    // Redux State
+    items,
+    loading,
+    currentPage,
+    totalPages,
+    totalItems,
+    hasNextPage,
+    hasPreviousPage,
+
+    // Local State
+    searchTerm,
+    setSearchTerm,
+    debouncedSearch,
+    statusFilter,
+    setStatusFilter,
+    sortValue,
+    setSortValue,
+
+    // Derived State
+    activeCount,
+    outOfStockCount,
+    draftCount,
+
+    // Actions
+    fetchProducts,
+    handleClearFilters,
+    handleDeleteConfirm,
+  } = useInventory();
+
+  const handleCreateClick = useCallback(() => {
+    navigate('/admin/inventory/create');
+  }, [navigate]);
+
+  const handleEditClick = useCallback(
+    (product: Product) => {
+      const idToUse = product.id;
+      navigate(`/admin/inventory/edit/${idToUse}`);
+    },
+    [navigate],
+  );
+
+  const handleViewClick = useCallback(
+    (product: Product) => {
+      navigate(`/admin/inventory/${product.sku}`);
+    },
+    [navigate],
+  );
 
   return (
-    <div className="w-full h-full flex-1 flex flex-col gap-2">
-      <div className="w-full h-1/2 space-y-4">
-        <div className="w-full h-16 bg-sidebar/60 flex items-center justify-between p-2 rounded-md">
-          <h1 className="text-lg font-semibold tracking-tight">Product Inventory</h1>
+    <div className="flex flex-col gap-5 lg:gap-6 min-h-screen bg-[oklch(0.08_0.005_260)] selection:bg-[oklch(0.95_0_0)] selection:text-[oklch(0.1_0_0)] pb-4">
+      <InventoryHeader onCreateClick={handleCreateClick} />
 
-          <Button
-            id="create-product-btn"
-            onClick={() => navigate('/admin/inventory/create')}
-            className="text-[12px] font-semibold bg-orange-400 hover:bg-orange-600/80"
-          >
-            Create Product
-          </Button>
-        </div>
+      <InventoryStats
+        totalItems={totalItems ?? items.length}
+        activeCount={activeCount}
+        outOfStockCount={outOfStockCount}
+        draftCount={draftCount}
+        loading={loading}
+      />
 
-        <div className="w-full h-[82%] bg-secondary-foreground/10 rounded-md"></div>
-      </div>
+      <InventoryFilters
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        debouncedSearch={debouncedSearch}
+        statusFilter={statusFilter}
+        onStatusChange={setStatusFilter}
+        sortValue={sortValue}
+        onSortChange={setSortValue}
+        onClearFilters={handleClearFilters}
+      />
 
-      <div className="w-full h-1/2 bg-secondary-foreground/10 rounded-md"></div>
+      <InventoryTableSection
+        items={items}
+        loading={loading}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        hasNextPage={hasNextPage}
+        hasPreviousPage={hasPreviousPage}
+        onPageChange={fetchProducts}
+        onEdit={handleEditClick}
+        onView={handleViewClick}
+        onDeleteConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 }
