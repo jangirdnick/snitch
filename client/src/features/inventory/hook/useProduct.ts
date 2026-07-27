@@ -192,14 +192,15 @@ export const useProduct = () => {
         if (response.success) {
           dispatch(setCurrentProduct(response.data.product));
           dispatch(setMessage(response.message));
-          return true;
+          return { success: true as const };
         } else {
           dispatch(setError(response.error.message));
-          return false;
+          return { success: false as const, message: response.error.message, fields: undefined };
         }
       } catch (error: unknown) {
-        dispatch(setError(getErrorMessage(error)));
-        return false;
+        const message = getErrorMessage(error);
+        dispatch(setError(message));
+        return { success: false as const, message, fields: getErrorFields(error) };
       } finally {
         dispatch(setLoading(false));
       }

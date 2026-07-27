@@ -3,8 +3,8 @@ import { ProductController } from '@/controllers/product.controller.js';
 import { Router } from 'express';
 import multer from 'multer';
 
-const router = Router();
-const adminRouter = Router();
+const router: Router = Router();
+const adminRouter: Router = Router();
 
 // ─── Multer — memory storage, 5 MB limit, images only ─────────────────────────
 const upload = multer({
@@ -26,6 +26,8 @@ router.get('/', ProductController.getAll);
 router.get('/search/:search', ProductController.getSearch);
 // GET /api/product/limited/:limit  — simple paginated fetch (homepage etc.)
 router.get('/limited/:limit', ProductController.getLimited);
+// GET /api/product/id/:id  — fetch by MongoDB _id (admin edit; must precede :slug)
+router.get('/id/:id', ProductController.getById);
 // GET /api/product/:slug  — product detail by slug
 router.get('/:slug', ProductController.getBySlug);
 
@@ -37,11 +39,11 @@ adminRouter.use(AuthAdminGuard);
 //     - `data`    : JSON string of full product (colors include `imageIndices` per color)
 //     - `images`  : flat array of image files (referenced by index in each color)
 // Multer MUST run before the controller so req.body and req.files are populated.
-adminRouter.post('/', upload.array('images', 50), ProductController.create);
+adminRouter.post('/', upload.array('images', 8), ProductController.create);
 
 // PUT /api/product/:id  — partial update, JSON body, optionally images via multipart
 // Images update: same `data` + `images` convention as create; omit colors to leave unchanged.
-adminRouter.put('/:id', upload.array('images', 50), ProductController.update);
+adminRouter.put('/:id', upload.array('images', 8), ProductController.update);
 
 // DELETE /api/product/:id
 adminRouter.delete('/:id', ProductController.delete);

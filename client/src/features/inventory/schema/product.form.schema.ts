@@ -1,14 +1,15 @@
 /**
  * product.form.schema.ts
  *
- * Client-side form schema for Create Product.
+ * Client-side form schema for Create & Edit Product.
  *
  * RULE: Compose from @snitch/schemas — never duplicate or re-define.
  * We only override fields where the browser form needs a different type
  * than what the server expects post-upload:
  *
  *   1. `colors[].images`  → server expects { url, alt, isPrimary, order }[]
- *                           client accepts  File[] (upload transform happens in API hook)
+ *                           client accepts  (File | ExistingImage)[]
+ *                           Edit mode: existing server images represented as ExistingImage
  *   2. `category`         → server expects ObjectId (24-hex string)
  *                           client uses plain text input; ObjectId format
  *                           validation is relaxed until Category API is wired
@@ -46,7 +47,26 @@ export {
   CATEGORY_TYPE,
 };
 
-// ─── Client-side color variant (overrides images to File[]) ──────────────────
+// ─── ExistingImage — already uploaded to cloud storage ───────────────────────
+// Used in edit mode to represent images already saved on the server.
+// Distinct from File (new upload) by the presence of `url`.
+
+export interface ExistingImage {
+  readonly url: string;
+  readonly alt: string;
+  readonly isPrimary: boolean;
+  readonly order: number;
+}
+
+/** Returns true when the value is an ExistingImage (not a File). */
+export function isExistingImage(value: ImageValue): value is ExistingImage {
+  return typeof value === 'object' && !(value instanceof File) && 'url' in value;
+}
+
+/** Union of a new browser File upload and a previously-saved cloud image. */
+export type ImageValue = File | ExistingImage;
+
+// ─── Client-side color variant (overrides images to ImageValue[]) ─────────────
 
 const clientSizeStockSchema = z.object({
   size: z.enum(CLOTHING_SIZE, {
@@ -65,7 +85,15 @@ const clientColorVariantSchema = z.object({
   hex: z
     .string({ required_error: 'Hex color is required' })
     .regex(/^#([A-Fa-f0-9]{6})$/, 'Invalid hex color (e.g. #1B2A6B)'),
-  images: z.array(z.instanceof(File)).min(1, 'At least one image is required per color'),
+  // Accept both new File objects and existing {url,...} image objects
+  images: z
+    .array(
+      z.union([
+        z.instanceof(File),
+        z.object({ url: z.string(), alt: z.string(), isPrimary: z.boolean(), order: z.number() }),
+      ]),
+    )
+    .min(1, 'At least one image is required per color'),
   sizes: z.array(clientSizeStockSchema).min(1, 'At least one size is required per color'),
   isDefault: z.boolean().default(false),
 });
@@ -76,7 +104,7 @@ export const productFormSchema = createProductObjectSchema.extend({
   // Relax category to plain string (future: CategorySelect from API)
   category: z.string().min(1, 'Category is required'),
 
-  // Override colors: File[] images instead of URL objects
+  // Override colors: ImageValue[] images instead of URL objects
   colors: z.array(clientColorVariantSchema).min(1, 'At least one color variant is required'),
 
   // Override price to use datetime-local string for discount expiry
@@ -89,6 +117,11 @@ export const productFormSchema = createProductObjectSchema.extend({
       })
       .optional(),
   }),
+
+  // careInstructions: server requires min(1) when present, but the UI lets it be
+  // empty (user hasn't filled it in yet). Override to allow [] without erroring.
+  // The server omits this field from the update payload when it's empty anyway.
+  careInstructions: z.array(z.string().trim().min(1)).optional(),
 });
 
 export type ProductFormValues = z.infer<typeof productFormSchema>;

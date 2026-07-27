@@ -71,7 +71,7 @@ function SizeRow({ colorIndex, sizeIndex, onRemove, isOnly }: SizeRowProps) {
         render={({ field }) => (
           <FormItem>
             {sizeIndex === 0 && <FormLabel className={formLabelClass}>Size</FormLabel>}
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} value={field.value ?? ''}>
               <FormControl>
                 <SelectTrigger
                   id={`color-${colorIndex}-size-${sizeIndex}`}
@@ -385,7 +385,7 @@ function ColorVariantCard({ colorIndex, onRemove, isOnly, totalColors }: ColorVa
                   <FormControl>
                     <ProductImageUpload
                       id={`color-${colorIndex}-images`}
-                      value={field.value as File[]}
+                      value={field.value}
                       onChange={field.onChange}
                       aria-invalid={!!fieldState.error}
                       maxFiles={7}

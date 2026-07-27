@@ -1,20 +1,28 @@
 /**
  * ProductImageUpload.tsx
  *
- * File input for product images.
- * - Accepts multiple image files (max 7, matching backend)
- * - Shows thumbnail previews with remove buttons
- * - UI only — no upload logic. Upload happens in the API hook.
- * - Integrates with React Hook Form via Controller.
+ * File input for product images — supports both Create and Edit modes.
+ *
+ * In Create mode: value is File[] (all new uploads).
+ * In Edit mode:   value is (File | ExistingImage)[] — existing cloud images
+ *                 are displayed as locked previews; new files are appended.
+ *
+ * UI only — no upload logic. Upload happens in the API layer.
+ * Integrates with React Hook Form via Controller.
  */
 
 import * as React from 'react';
-import { ImagePlus, X, AlertCircle } from 'lucide-react';
+import { ImagePlus, X, AlertCircle, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  isExistingImage,
+  type ExistingImage,
+  type ImageValue,
+} from '../schema/product.form.schema';
 
 interface ProductImageUploadProps {
-  value: File[];
-  onChange: (files: File[]) => void;
+  value: ImageValue[];
+  onChange: (images: ImageValue[]) => void;
   disabled?: boolean;
   id?: string;
   'aria-invalid'?: boolean;
@@ -31,14 +39,26 @@ export function ProductImageUpload({
 }: ProductImageUploadProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  // Object URLs for previews — revoke on unmount / change
-  const previews = React.useMemo(() => value.map((file) => URL.createObjectURL(file)), [value]);
+  // Object URLs for File previews — revoke on unmount / change to avoid leaks
+  const previews = React.useMemo(() => {
+    return value.map((img) => {
+      if (isExistingImage(img)) {
+        return (img as ExistingImage).url;
+      }
+      return URL.createObjectURL(img as File);
+    });
+  }, [value]);
 
+  // Only revoke object URLs created for File entries (not server URLs)
   React.useEffect(() => {
     return () => {
-      previews.forEach((url) => URL.revokeObjectURL(url));
+      value.forEach((img, i) => {
+        if (!isExistingImage(img)) {
+          URL.revokeObjectURL(previews[i]);
+        }
+      });
     };
-  }, [previews]);
+  }, [previews, value]);
 
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
@@ -117,43 +137,66 @@ export function ProductImageUpload({
       {/* ── Previews Grid ─────────────────────────────────────────────────────── */}
       {value.length > 0 && (
         <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-2">
-          {value.map((file, index) => (
-            <div key={`${file.name}-${index}`} className="relative aspect-square group">
-              <img
-                src={previews[index]}
-                alt={`Preview ${index + 1}`}
-                className={cn(
-                  'h-full w-full rounded-lg object-cover',
-                  'border border-[oklch(1_0_0_/_0.08)]',
-                  index === 0 && 'ring-2 ring-[oklch(0.65_0.15_250)]',
-                )}
-              />
+          {value.map((img, index) => {
+            const saved = isExistingImage(img);
+            const isPrimary = index === 0;
 
-              {/* Primary badge */}
-              {index === 0 && (
-                <span className="absolute bottom-1 left-1 rounded text-[9px] font-semibold px-1 py-0.5 bg-[oklch(0.65_0.15_250)] text-white leading-none">
-                  Primary
-                </span>
-              )}
-
-              {/* Remove button */}
-              <button
-                type="button"
-                aria-label={`Remove image ${index + 1}`}
-                onClick={() => removeImage(index)}
-                className={cn(
-                  'absolute -top-1.5 -right-1.5 flex items-center justify-center',
-                  'size-5 rounded-full',
-                  'bg-[oklch(0.20_0_0)] border border-[oklch(1_0_0_/_0.12)]',
-                  'text-[oklch(0.55_0_0)] hover:text-[oklch(0.85_0_0)] hover:bg-[oklch(0.28_0_0)]',
-                  'transition-all duration-150',
-                  'opacity-0 group-hover:opacity-100',
-                )}
+            return (
+              <div
+                key={`${saved ? (img as ExistingImage).url : (img as File).name}-${index}`}
+                className="relative aspect-square group"
               >
-                <X size={10} strokeWidth={2.5} />
-              </button>
-            </div>
-          ))}
+                <img
+                  src={previews[index]}
+                  alt={
+                    saved
+                      ? (img as ExistingImage).alt || `Image ${index + 1}`
+                      : `Preview ${index + 1}`
+                  }
+                  className={cn(
+                    'h-full w-full rounded-lg object-cover',
+                    'border border-[oklch(1_0_0_/_0.08)]',
+                    isPrimary && 'ring-2 ring-[oklch(0.65_0.15_250)]',
+                  )}
+                />
+
+                {/* Primary badge */}
+                {isPrimary && (
+                  <span className="absolute bottom-1 left-1 rounded text-[9px] font-semibold px-1 py-0.5 bg-[oklch(0.65_0.15_250)] text-white leading-none">
+                    Primary
+                  </span>
+                )}
+
+                {/* Saved indicator — existing cloud images */}
+                {saved && !isPrimary && (
+                  <span
+                    className="absolute bottom-1 left-1 flex items-center justify-center rounded size-4 bg-[oklch(0.20_0_0_/_0.7)]"
+                    aria-label="Saved image"
+                    title="Already saved to cloud"
+                  >
+                    <Lock size={7} strokeWidth={2.5} className="text-[oklch(0.65_0_0)]" />
+                  </span>
+                )}
+
+                {/* Remove button */}
+                <button
+                  type="button"
+                  aria-label={`Remove image ${index + 1}`}
+                  onClick={() => removeImage(index)}
+                  className={cn(
+                    'absolute -top-1.5 -right-1.5 flex items-center justify-center',
+                    'size-5 rounded-full',
+                    'bg-[oklch(0.20_0_0)] border border-[oklch(1_0_0_/_0.12)]',
+                    'text-[oklch(0.55_0_0)] hover:text-[oklch(0.85_0_0)] hover:bg-[oklch(0.28_0_0)]',
+                    'transition-all duration-150',
+                    'opacity-0 group-hover:opacity-100',
+                  )}
+                >
+                  <X size={10} strokeWidth={2.5} />
+                </button>
+              </div>
+            );
+          })}
 
           {/* Add more slot */}
           {canAddMore && value.length > 0 && (
@@ -178,6 +221,11 @@ export function ProductImageUpload({
       {value.length > 0 && (
         <p className="text-[11px] text-[oklch(0.38_0_0)]">
           {value.length}/{maxFiles} images · First image is used as primary
+          {value.some(isExistingImage) && (
+            <span className="ml-1.5 text-[oklch(0.42_0_0)]">
+              · <Lock size={9} strokeWidth={2} className="inline-block -mt-0.5" /> = saved to cloud
+            </span>
+          )}
         </p>
       )}
     </div>

@@ -34,13 +34,19 @@ export function ColorPickerInput({
   id,
   'aria-invalid': ariaInvalid,
 }: ColorPickerInputProps) {
-  // Local text state — allows typing partial hex before committing
+  // Local text state — allows typing partial hex before committing to the parent.
+  // `committedValue` tracks the last value we synced from the parent so we can
+  // detect external resets (e.g. form.reset()) without an effect or a ref-during-render.
   const [text, setText] = React.useState(value ?? '#000000');
+  const [committedValue, setCommittedValue] = React.useState(value);
 
-  // Sync external value → local text when form resets
-  React.useEffect(() => {
+  // When the controlled value changes externally, update local text to match.
+  // This is the React-approved "setState during render" derived-state pattern:
+  // compare two pieces of state and reconcile synchronously in the render phase.
+  if (committedValue !== value) {
+    setCommittedValue(value);
     setText(value ?? '#000000');
-  }, [value]);
+  }
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;

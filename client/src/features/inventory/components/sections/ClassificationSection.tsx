@@ -95,7 +95,7 @@ export function ClassificationSection() {
                   *
                 </span>
               </FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value ?? ''}>
                 <FormControl>
                   <SelectTrigger id="product-gender" className={selectTriggerClass}>
                     <SelectValue placeholder="Select gender…" />
@@ -120,7 +120,7 @@ export function ClassificationSection() {
           render={({ field }) => (
             <FormItem>
               <FormLabel className={formLabelClass}>Age Group</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value ?? ''}>
                 <FormControl>
                   <SelectTrigger id="product-age-group" className={selectTriggerClass}>
                     <SelectValue placeholder="Select age group…" />

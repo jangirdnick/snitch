@@ -1,38 +1,15 @@
+// snitch/eslint.config.mjs
+import { defineConfig, globalIgnores } from 'eslint/config';
 import js from '@eslint/js';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
 
-export default tseslint.config(
+export default defineConfig([
+  // ─── Ignore everything — each package has own config ──
+  globalIgnores(['client/**', 'server/**', 'node_modules/**', 'dist/**', '.turbo/**']),
+
+  // ─── Root JS files only — NO TypeScript parser ────────
   {
-    ignores: ['**/dist/**', '**/build/**', '**/node_modules/**', '**/.turbo/**', '**/coverage/**'],
+    files: ['*.js', '*.mjs', '*.cjs'],
+    extends: [js.configs.recommended],
+    // ⭐ parserOptions.project nahi — JS files ke liye TS parser nahi
   },
-  js.configs.recommended,
-
-  ...tseslint.configs.recommended.map((config) => ({
-    ...config,
-    files: config.files ?? ['**/*.{ts,tsx}'],
-  })),
-
-  {
-    files: ['**/*.{ts,tsx}'],
-    languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.browser,
-      },
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-    rules: {
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-        },
-      ],
-    },
-  },
-);
+]);

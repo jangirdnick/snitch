@@ -1,4 +1,4 @@
-import { z, type LoginUserDto, createUserSchema, loginUserSchema } from '@snitch/schemas';
+import { z, type LoginUserDto, type createUserSchema, loginUserSchema } from '@snitch/schemas';
 
 // ─── Login ───────────────────────────────────────────────────────────────────
 // Direct re-export — no duplication

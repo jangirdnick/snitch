@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { createUserSchema, emailVerified, loginUserSchema } from '@snitch/schemas';
 import { AuthController } from '@/controllers/auth.controller.js';
 import passport from 'passport';
-const router = Router();
+const router: Router = Router();
 
 router.post('/register', validate(createUserSchema), AuthController.register);
 router.post(
