@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
-import productModel, { IProduct } from '@/models/product.model.js';
+import type { IProduct } from '@/models/product.model.js';
+import productModel from '@/models/product.model.js';
 import { createLogger } from '@/utils/logger.js';
 import { DatabaseOperationError } from './user.service.js';
-import { CreateProductDto, ProductQueryDto, UpdateProductDto } from '@snitch/schemas';
+import type { CreateProductDto, ProductQueryDto, UpdateProductDto } from '@snitch/schemas';
 
 const logger = createLogger('PRODUCT-SERVICE');
 
@@ -157,6 +158,22 @@ export async function getProductBySlug(slug: string): Promise<IProduct> {
     if (isProductError(error)) throw error;
     logger.error({ err: error, slug }, 'Error fetching product by slug');
     throw new DatabaseOperationError('While fetching product by slug');
+  }
+}
+
+/**
+ * Single product by MongoDB _id — used by the admin Edit Product page.
+ */
+export async function getProductById(id: string): Promise<IProduct> {
+  try {
+    const product = (await productModel.findById(id).lean().exec()) as unknown as IProduct | null;
+
+    if (!product) throw new ProductNotFoundError(id);
+    return product;
+  } catch (error) {
+    if (isProductError(error)) throw error;
+    logger.error({ err: error, id }, 'Error fetching product by id');
+    throw new DatabaseOperationError('While fetching product by id');
   }
 }
 

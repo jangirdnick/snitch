@@ -22,22 +22,22 @@
  *   Provide `colors` with `imageIndices` to replace all color images.
  */
 
-import { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { mediaService } from '@/services/media.service.js';
 import redis from '@/config/redis.config.js';
 import mongoose from 'mongoose';
 import {
   getProducts,
   getLimitProducts,
+  getProductById,
   getProductBySlug,
   getSearchProduct,
   productCreate,
   productDeleteById,
   productUpdate,
 } from '@/services/product.service.js';
+import type { CreateProductDto, CreateProductValidationDto } from '@snitch/schemas';
 import {
-  CreateProductDto,
-  CreateProductValidationDto,
   createProductValidationSchema,
   updateProductSchema,
   productQuerySchema,
@@ -149,7 +149,7 @@ function attachFilesToColors(
 }
 
 // ─── Module-scoped media service (avoid re-instantiating per request) ────────
-const { uploadMedia, deleteMedia } = mediaService();
+const { uploadMedia, deleteMedia, generateUrl } = mediaService();
 
 // ─── ProductController ────────────────────────────────────────────────────────
 
@@ -168,6 +168,23 @@ export class ProductController {
       }
 
       const result = await getProducts(queryParsed.data);
+
+      result.items.map((product) => {
+        product.colors.map((color) => {
+          color.images.map((img) => {
+            img.url = generateUrl({
+              path: img.url,
+              transformations: {
+                width: 40,
+                height: 40,
+                format: 'avif',
+                quality: 10,
+              },
+            });
+          });
+        });
+      });
+
       res.status(200).json({
         success: true,
         message: 'Products fetched successfully',
@@ -220,6 +237,42 @@ export class ProductController {
         success: true,
         message: 'Products fetched successfully',
         data: { products },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────
+   * GET /api/product/id/:id  — fetch by MongoDB _id (admin edit)
+   * ───────────────────────────────────────────────────────────────────────── */
+  static getById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params as { id: string };
+      if (!id?.trim()) {
+        throw new ProductRequestError('Product ID is required');
+      }
+
+      const product = await getProductById(id);
+
+      product.colors.map((color) => {
+        color.images.map((img) => {
+          img.url = generateUrl({
+            path: img.url,
+            transformations: {
+              width: 40,
+              height: 40,
+              format: 'avif',
+              quality: 10,
+            },
+          });
+        });
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Product fetched successfully',
+        data: { product },
       });
     } catch (error) {
       next(error);
@@ -432,7 +485,6 @@ export class ProductController {
       }
 
       const files = (req.files as Express.Multer.File[]) ?? [];
-      const hasFiles = files.length > 0;
 
       // ── 1. Parse body ──────────────────────────────────────────────────────
       // Support both multipart (data field) and raw JSON content-type
@@ -446,41 +498,50 @@ export class ProductController {
       // ── 2. Handle colors with new images ───────────────────────────────────
       let processedBody = { ...rawBody };
 
-      if (hasFiles && Array.isArray(rawBody.colors) && rawBody.colors.length > 0) {
-        const colorsWithFiles = attachFilesToColors(rawBody.colors as RawColor[], files);
+      if (Array.isArray(rawBody.colors) && rawBody.colors.length > 0) {
+        interface RawColorUpdate {
+          name?: string;
+          hex?: string;
+          isDefault?: boolean;
+          sizes?: unknown[];
+          existingImages?: Array<{ url: string; alt: string; isPrimary: boolean; order: number }>;
+          imageIndices?: number[];
+          [key: string]: unknown;
+        }
 
         const colorsWithUrls = await Promise.all(
-          colorsWithFiles.map(async (color, colorIdx) => {
-            const imageFiles = (color.images as unknown[]).filter(
-              (f): f is Express.Multer.File => f != null && typeof f === 'object' && 'buffer' in f,
-            );
+          (rawBody.colors as RawColorUpdate[]).map(async (color, colorIdx) => {
+            const { existingImages = [], imageIndices = [], ...restColor } = color;
 
-            if (imageFiles.length === 0) {
-              return color;
-            }
-
+            // Upload new files referenced by imageIndices
             const uploadedImages = await Promise.all(
-              imageFiles.map(async (file, imgIdx) => {
-                const result = await uploadMedia({
-                  file,
-                  fileName: `${productId}-c${colorIdx}-i${imgIdx}-${file.originalname}`,
-                  fileType: file.mimetype,
-                  folder: `products/${productId}`,
-                });
+              imageIndices
+                .map((i) => files[i])
+                .filter((f): f is Express.Multer.File => f !== undefined)
+                .map(async (file, imgIdx) => {
+                  const result = await uploadMedia({
+                    file,
+                    fileName: `${productId}-c${colorIdx}-i${imgIdx}-${file.originalname}`,
+                    fileType: file.mimetype,
+                    folder: `products/${productId}`,
+                  });
 
-                // Track for rollback
-                uploadedPaths.push(result.data.imagePath as string);
+                  // Track for rollback
+                  uploadedPaths.push(result.data.imagePath as string);
 
-                return {
-                  url: result.data.imagePath as string,
-                  alt: `${(rawBody.title as string) ?? ''} — ${color.name as string}`,
-                  isPrimary: imgIdx === 0,
-                  order: imgIdx,
-                };
-              }),
+                  return {
+                    url: result.data.imagePath as string,
+                    alt: `${(rawBody.title as string) ?? ''} — ${color.name ?? ''}`,
+                    isPrimary: existingImages.length === 0 && imgIdx === 0,
+                    order: existingImages.length + imgIdx,
+                  };
+                }),
             );
 
-            return { ...color, images: uploadedImages };
+            // Merge: existing images retain their position, new uploads appended
+            const allImages = [...existingImages, ...uploadedImages];
+
+            return { ...restColor, images: allImages };
           }),
         );
 
@@ -493,7 +554,29 @@ export class ProductController {
         throw new ProductFieldsError(validation.error.flatten().fieldErrors);
       }
 
-      // ── 4. Persist — roll back cloud uploads on DB failure ─────────────────
+      // ── 4. Snapshot existing image URLs (before update) for orphan cleanup ──
+      // Only needed if colors are being replaced in this request.
+      let previousImageUrls: string[] = [];
+      if (processedBody.colors !== undefined) {
+        try {
+          const existing = await import('@/models/product.model.js').then((m) =>
+            m.default.findById(productId).select('colors').lean(),
+          );
+          if (existing) {
+            previousImageUrls = (
+              existing as { colors: Array<{ images: Array<{ url: string }> }> }
+            ).colors.flatMap((c) => c.images.map((img) => img.url));
+          }
+        } catch (snapshotErr) {
+          // Non-fatal — worst case orphaned assets remain; log and continue
+          logger.warn(
+            { err: snapshotErr, productId },
+            '[PRODUCT UPDATE] Could not snapshot existing image URLs for orphan cleanup',
+          );
+        }
+      }
+
+      // ── 5. Persist — roll back cloud uploads on DB failure ─────────────────
       let updated;
       try {
         updated = await productUpdate({ productId, product: validation.data });
@@ -515,6 +598,30 @@ export class ProductController {
         }
         // Wrap the DB error in a domain-specific error.
         throw new ProductUpdateError(dbError);
+      }
+
+      // ── 6. Clean up orphaned media (best-effort, never fail the request) ────
+      // Compare old image URLs vs new ones; delete any that were removed.
+      if (previousImageUrls.length > 0) {
+        const newImageUrls = new Set<string>(
+          updated.colors.flatMap((c) => c.images.map((img: { url: string }) => img.url)),
+        );
+        const staleUrls = previousImageUrls.filter((url) => !newImageUrls.has(url));
+
+        if (staleUrls.length > 0) {
+          logger.info(
+            { staleUrls, productId },
+            `[PRODUCT UPDATE] Cleaning up ${staleUrls.length} orphaned image(s)`,
+          );
+          const cleanupResults = await Promise.allSettled(staleUrls.map((url) => deleteMedia(url)));
+          const failedCleanups = cleanupResults.filter((r) => r.status === 'rejected');
+          if (failedCleanups.length > 0) {
+            logger.error(
+              { failedCleanups, staleUrls, productId },
+              `[PRODUCT UPDATE] ${failedCleanups.length}/${staleUrls.length} orphaned image deletions failed`,
+            );
+          }
+        }
       }
 
       res.status(200).json({

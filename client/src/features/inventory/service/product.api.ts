@@ -7,7 +7,8 @@
  */
 
 import { api } from '@/lib/axiosInstance';
-import type { ProductFormValues } from '../schema/product.form.schema';
+import type { ProductFormValues, ExistingImage, ImageValue } from '../schema/product.form.schema';
+import { isExistingImage } from '../schema/product.form.schema';
 import type { Product, ProductDetailResponse, ProductListResponse } from '@snitch/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -35,12 +36,12 @@ export interface ProductsResponse {
   };
 }
 
-// ─── Transform: FormValues → FormData ────────────────────────────────────────
+// ─── Transform: Create FormValues → FormData ──────────────────────────────────
 // Server expects:
 //   - `data`: JSON string (product fields, imageIndices per color instead of File[])
 //   - `images`: flat array of image Files (referenced by index in each color)
 
-function buildFormData(values: ProductFormValues): FormData {
+function buildCreateFormData(values: ProductFormValues): FormData {
   const formData = new FormData();
 
   // Flatten all images from all colors into one array, track indices
@@ -49,9 +50,11 @@ function buildFormData(values: ProductFormValues): FormData {
   const colorsForServer = values.colors.map((color) => {
     const imageIndices: number[] = [];
 
-    color.images.forEach((file) => {
-      imageIndices.push(allImages.length);
-      allImages.push(file);
+    (color.images as ImageValue[]).forEach((img) => {
+      if (!isExistingImage(img)) {
+        imageIndices.push(allImages.length);
+        allImages.push(img as File);
+      }
     });
 
     return {
@@ -59,7 +62,7 @@ function buildFormData(values: ProductFormValues): FormData {
       hex: color.hex,
       isDefault: color.isDefault,
       sizes: color.sizes,
-      imageIndices, // tells server which flat images belong to this color
+      imageIndices,
     };
   });
 
@@ -100,11 +103,84 @@ function buildFormData(values: ProductFormValues): FormData {
   return formData;
 }
 
+// ─── Transform: Update FormValues → FormData ──────────────────────────────────
+// Same imageIndices convention as create.
+// Existing URL images are serialised into the JSON payload as-is.
+// New File images are flattened into the `images` field and referenced by index.
+
+function buildUpdateFormData(values: Partial<ProductFormValues>): FormData {
+  const formData = new FormData();
+  const allImages: File[] = [];
+
+  const colorsForServer = values.colors?.map((color) => {
+    const imageIndices: number[] = [];
+    const existingImages: ExistingImage[] = [];
+
+    (color.images as ImageValue[]).forEach((img) => {
+      if (isExistingImage(img)) {
+        existingImages.push(img);
+      } else {
+        imageIndices.push(allImages.length);
+        allImages.push(img as File);
+      }
+    });
+
+    return {
+      name: color.name,
+      hex: color.hex,
+      isDefault: color.isDefault,
+      sizes: color.sizes,
+      // Existing images travel as URL objects inside the JSON payload
+      existingImages,
+      // New images travel as file indices
+      imageIndices,
+    };
+  });
+
+  const isValidObjectId = values.category ? /^[a-f\d]{24}$/i.test(values.category) : false;
+  const categoryForServer = isValidObjectId
+    ? values.category
+    : values.category
+      ? '60c72b2f9b1d8b001c8e4b5c'
+      : undefined;
+
+  const jsonPayload = {
+    ...values,
+    ...(categoryForServer !== undefined ? { category: categoryForServer } : {}),
+    ...(colorsForServer !== undefined ? { colors: colorsForServer } : {}),
+    price: values.price
+      ? {
+          ...values.price,
+          discount: values.price.discount
+            ? {
+                ...values.price.discount,
+                expiresAt: values.price.discount.expiresAt
+                  ? new Date(values.price.discount.expiresAt).toISOString()
+                  : undefined,
+              }
+            : undefined,
+        }
+      : undefined,
+    publishedAt: values.publishedAt
+      ? new Date(
+          values.publishedAt instanceof Date ? values.publishedAt : String(values.publishedAt),
+        ).toISOString()
+      : undefined,
+  };
+
+  formData.append('data', JSON.stringify(jsonPayload));
+
+  allImages.forEach((file) => {
+    formData.append('images', file);
+  });
+
+  return formData;
+}
+
 // ─── Public API Functions ─────────────────────────────────────────────────────
 
 /** GET /api/product — paginated list with optional filters */
 export async function getAllProducts(
-  // ): Promise<ApiResponse<ProductsResponse>> {
   params?: Record<string, string | number>,
 ): Promise<ProductListResponse> {
   const { data } = await api.get('/product', { params });
@@ -123,6 +199,12 @@ export async function getLimitedProducts(limit: number): Promise<ApiResponse<Pro
   return data;
 }
 
+/** GET /api/product/id/:id — fetch by MongoDB _id (admin edit) */
+export async function getProductById(id: string): Promise<ProductDetailResponse> {
+  const { data } = await api.get(`/product/id/${encodeURIComponent(id)}`);
+  return data;
+}
+
 /** GET /api/product/:slug */
 export async function getProductBySlug(slug: string): Promise<ProductDetailResponse> {
   const { data } = await api.get(`/product/${slug}`);
@@ -136,7 +218,7 @@ export async function createProduct(
   values: ProductFormValues,
   idempotencyKey?: string,
 ): Promise<ApiResponse<ProductResponse>> {
-  const formData = buildFormData(values);
+  const formData = buildCreateFormData(values);
   const headers: Record<string, string> = { 'Content-Type': 'multipart/form-data' };
   if (idempotencyKey) {
     headers['Idempotency-Key'] = idempotencyKey;
@@ -152,8 +234,7 @@ export async function updateProduct(
   id: string,
   values: Partial<ProductFormValues>,
 ): Promise<ApiResponse<ProductResponse>> {
-  const formData = new FormData();
-  formData.append('data', JSON.stringify(values));
+  const formData = buildUpdateFormData(values);
   const { data } = await api.put(`/product/${id}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });

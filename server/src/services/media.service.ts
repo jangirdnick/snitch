@@ -99,7 +99,7 @@ export const mediaService = () => {
     fileName: string;
     fileType: string;
     folder?: string;
-  }) => {
+  }): Promise<{ success: boolean; message: string; data: { imagePath: string } }> => {
     try {
       const webFile = new File([new Uint8Array(file.buffer)], fileName, { type: fileType });
 
@@ -124,7 +124,9 @@ export const mediaService = () => {
     }
   };
 
-  const deleteMedia = async (imagePath: string) => {
+  const deleteMedia = async (
+    imagePath: string,
+  ): Promise<{ success: boolean; message: string; data?: unknown }> => {
     try {
       const result = await pixkit.delete(imagePath);
 

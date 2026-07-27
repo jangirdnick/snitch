@@ -96,7 +96,7 @@ export function PricingSection() {
           render={({ field }) => (
             <FormItem>
               <FormLabel className={formLabelClass}>Currency</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value ?? ''}>
                 <FormControl>
                   <SelectTrigger id="price-currency" className={selectTriggerClass}>
                     <SelectValue />
@@ -200,7 +200,7 @@ export function PricingSection() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className={formLabelClass}>Discount Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value ?? ''}>
                   <FormControl>
                     <SelectTrigger id="discount-type" className={selectTriggerClass}>
                       <SelectValue placeholder="Select type…" />

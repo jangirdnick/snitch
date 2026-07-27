@@ -32,8 +32,6 @@ export function StepOTP({
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   React.useEffect(() => {
-    setCountdown(RESEND_SECONDS);
-    setCanResend(false);
     const tick = () => {
       setCountdown((c) => {
         if (c <= 1) {

@@ -237,11 +237,6 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  /* Close drawer on route change */
-  React.useEffect(() => {
-    setMobileOpen(false);
-  }, [location.pathname]);
-
   /* Lock body scroll while mobile menu is open */
   React.useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : '';
@@ -251,6 +246,7 @@ export function Navbar() {
   }, [mobileOpen]);
 
   function openAuthModal(mode: 'login' | 'register') {
+    setMobileOpen(false);
     navigate(`/${mode}`, { state: { background: location } });
   }
 
@@ -575,7 +571,10 @@ export function Navbar() {
 
                 <button
                   type="button"
-                  onClick={handleLogout}
+                  onClick={() => {
+                    setMobileOpen(false);
+                    handleLogout();
+                  }}
                   className={cn(
                     'w-full h-12 rounded-full flex justify-center items-center gap-2',
                     'border border-white/15 text-white/60 text-sm font-medium tracking-[0.08em] uppercase',

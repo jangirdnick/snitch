@@ -16,6 +16,14 @@ export function AuthModal({ mode }: AuthModalProps) {
   const navigate = useNavigate();
   const overlayRef = React.useRef<HTMLDivElement>(null);
 
+  const handleClose = React.useCallback(() => {
+    if (window.history.length > 2) {
+      navigate(-1);
+    } else {
+      navigate('/', { replace: true });
+    }
+  }, [navigate]);
+
   // Close on Escape key
   React.useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -23,7 +31,7 @@ export function AuthModal({ mode }: AuthModalProps) {
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, []);
+  }, [handleClose]);
 
   // Lock body scroll while modal is open
   React.useEffect(() => {
@@ -33,14 +41,6 @@ export function AuthModal({ mode }: AuthModalProps) {
       document.body.style.overflow = originalOverflow;
     };
   }, []);
-
-  function handleClose() {
-    if (window.history.length > 2) {
-      navigate(-1);
-    } else {
-      navigate('/', { replace: true });
-    }
-  }
 
   function handleOverlayClick(e: React.MouseEvent<HTMLDivElement>) {
     if (e.target === overlayRef.current) handleClose();

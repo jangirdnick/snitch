@@ -49,7 +49,7 @@ export function InventoryTableSection({
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
     setIsDeleting(true);
-    const idToUse = deleteTarget.id;
+    const idToUse = deleteTarget._id;
     const success = await onDeleteConfirm(idToUse);
     setIsDeleting(false);
     if (success) {
@@ -71,6 +71,7 @@ export function InventoryTableSection({
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
+              variant={'destructive'}
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
               className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"

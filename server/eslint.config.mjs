@@ -1,31 +1,37 @@
+// server/eslint.config.js
 import js from '@eslint/js';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import { defineConfig, globalIgnores } from 'eslint/config';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
-export default tseslint.config(
-  js.configs.recommended,
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-  ...tseslint.configs.recommended.map((config) => ({
-    ...config,
-    files: config.files ?? ['src/**/*.ts'],
-  })),
+export default defineConfig([
+  globalIgnores(['dist', 'node_modules', '.turbo', 'coverage']),
 
   {
-    files: ['src/**/*.ts'],
-    ignores: ['dist/**'],
+    files: ['**/*.ts', 'server.ts'], // ⭐ server.ts explicitly include
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
     languageOptions: {
-      globals: {
-        ...globals.node,
-      },
+      globals: globals.node,
       parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
+        project: './tsconfig.json',
+        tsconfigRootDir: __dirname,
       },
     },
-  },
-  {
     rules: {
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/consistent-type-imports': ['warn', { prefer: 'type-imports' }],
     },
   },
-);
+]);

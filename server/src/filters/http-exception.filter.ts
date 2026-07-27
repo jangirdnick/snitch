@@ -69,9 +69,9 @@ export function globalErrorFilter(
   let formattedFields: { field: string; message: string }[] | undefined;
 
   if (error instanceof ZodError) {
-    formattedFields = error.errors.map((e) => ({
-      field: e.path.join('.'),
-      message: e.message,
+    formattedFields = error.issues.map((issue) => ({
+      field: issue.path.join('.'),
+      message: issue.message,
     }));
   } else if ('fields' in error && typeof error.fields === 'object' && error.fields !== null) {
     const fieldsObj = error.fields as Record<string, string[] | undefined>;

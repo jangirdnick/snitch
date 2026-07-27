@@ -7,8 +7,9 @@ import NotFoundPage from '@/pages/404Page';
 import Dashboard from '@/pages/(admin)/Dashboard';
 import AdminLayout from '@/layouts/AdminLayout';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import InventoryPage from '@/pages/(admin)/InventoryPage';
-import CreateProductPage from '@/pages/(admin)/CreateProductPage';
+import InventoryPage from '@/pages/(admin)/(inventory)/InventoryPage';
+import CreateProductPage from '@/pages/(admin)/(inventory)/CreateProductPage';
+import EditProductPage from '@/pages/(admin)/(inventory)/EditProductPage';
 
 const router = createBrowserRouter([
   {
@@ -52,8 +53,8 @@ const router = createBrowserRouter([
             element: <CreateProductPage />,
           },
           {
-            path: 'products',
-            element: <div>Products</div>,
+            path: 'inventory/edit/:productId',
+            element: <EditProductPage />,
           },
           {
             path: 'categories',

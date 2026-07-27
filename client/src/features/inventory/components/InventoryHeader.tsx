@@ -30,7 +30,7 @@ export function InventoryHeader({ onCreateClick }: InventoryHeaderProps) {
         onClick={onCreateClick}
         className={cn(
           'group relative shrink-0 overflow-hidden rounded-xl h-10 px-3.5 sm:px-4',
-          'bg-orange-600 text-[oklch(0.98_0_0)] hover:bg-orange-500',
+          'bg-orange-800 text-[oklch(0.98_0_0)] hover:bg-orange-700',
           'font-semibold text-[12px] sm:text-[12.5px] tracking-wide',
           'shadow-[0_2px_12px_oklch(1_0_0_/0.12)] hover:shadow-[0_6px_20px_oklch(1_0_0_/0.22)]',
           'transition-all duration-300 ease-in-out active:scale-[0.98]',
