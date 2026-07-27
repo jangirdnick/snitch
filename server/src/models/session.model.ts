@@ -36,10 +36,10 @@
  *
  * ----------------------------------------------------------------------------
  */
-import mongoose, { Schema, Document, Model, Types } from 'mongoose';
+import mongoose, { Schema, type Document, type Model, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'node:crypto';
-import { IUser } from './user.model.js';
+import type { IUser } from './user.model.js';
 
 interface ISessionMethord {
   compareHashToken: (token: string) => Promise<boolean>;

@@ -71,7 +71,6 @@ export async function getProducts(query: ProductQueryDto): Promise<PaginatedProd
 
     // Exact-match filters
     if (query.category) filter.category = new mongoose.Types.ObjectId(query.category);
-    if (query.brand) filter.brand = query.brand;
     if (query.gender) filter.gender = query.gender;
     if (query.ageGroup) filter.ageGroup = query.ageGroup;
     if (query.fit) filter.fit = query.fit;

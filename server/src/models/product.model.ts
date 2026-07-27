@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Types, Model } from 'mongoose';
+import mongoose, { type Document, Schema, type Types, type Model } from 'mongoose';
 import { randomUUID } from 'node:crypto';
 
 // ─── Clothing Enums ───────────────────────────────────────
@@ -159,7 +159,6 @@ export interface IProduct extends Document {
 
   // ─── Classification ─────────────────────────────────────
   category: Types.ObjectId;
-  brand?: string;
   tags: string[];
 
   // ─── Clothing Specific ──────────────────────────────────
@@ -250,12 +249,6 @@ const ProductSchema: Schema<IProduct> = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Category',
       required: [true, 'Category is required'],
-      index: true,
-    },
-
-    brand: {
-      type: String,
-      trim: true,
       index: true,
     },
 
@@ -374,6 +367,18 @@ ProductSchema.pre('validate', function () {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
+  }
+
+  // Auto SEO metaTitle generate
+  if (this.isModified('title') && !this.seo?.metaTitle) {
+    if (!this.seo) this.seo = { metaTitle: '', metaDescription: '', keywords: [] };
+    this.seo.metaTitle = this.title
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+      .substring(0, 60);
   }
 
   // ⭐ totalStock — sab colors + sizes ka sum auto-calculate

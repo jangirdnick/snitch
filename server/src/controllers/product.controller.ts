@@ -36,7 +36,11 @@ import {
   productDeleteById,
   productUpdate,
 } from '@/services/product.service.js';
-import type { CreateProductDto, CreateProductValidationDto } from '@snitch/schemas';
+import type {
+  CreateProductDto,
+  CreateProductValidationDto,
+  UpdateProductDto,
+} from '@snitch/schemas';
 import {
   createProductValidationSchema,
   updateProductSchema,
@@ -486,7 +490,10 @@ export class ProductController {
 
       const files = (req.files as Express.Multer.File[]) ?? [];
 
-      // ── 1. Parse body ──────────────────────────────────────────────────────
+      // ── 1. Fetch existing product for diffing and orphan cleanup ─────────────
+      const existingProduct = await getProductById(productId);
+
+      // ── 2. Parse body ────────────────────────────────────────────────────────
       // Support both multipart (data field) and raw JSON content-type
       let rawBody: Record<string, unknown>;
       if (req.body?.data) {
@@ -495,7 +502,7 @@ export class ProductController {
         rawBody = req.body as Record<string, unknown>;
       }
 
-      // ── 2. Handle colors with new images ───────────────────────────────────
+      // ── 3. Handle colors with new images ───────────────────────────────────
       let processedBody = { ...rawBody };
 
       if (Array.isArray(rawBody.colors) && rawBody.colors.length > 0) {
@@ -538,8 +545,21 @@ export class ProductController {
                 }),
             );
 
+            // Restore original paths for existing images (frontend sends full generated URLs)
+            const restoredExistingImages = existingImages.map((existingImg) => {
+              let matchedPath = existingImg.url;
+              for (const c of existingProduct.colors ?? []) {
+                const found = c.images.find((img) => existingImg.url.includes(img.url));
+                if (found) {
+                  matchedPath = found.url;
+                  break;
+                }
+              }
+              return { ...existingImg, url: matchedPath };
+            });
+
             // Merge: existing images retain their position, new uploads appended
-            const allImages = [...existingImages, ...uploadedImages];
+            const allImages = [...restoredExistingImages, ...uploadedImages];
 
             return { ...restColor, images: allImages };
           }),
@@ -548,25 +568,40 @@ export class ProductController {
         processedBody = { ...processedBody, colors: colorsWithUrls };
       }
 
-      // ── 3. Validate partial update with URL-based schema ───────────────────
+      // ── 4. Validate partial update with URL-based schema ───────────────────
       const validation = updateProductSchema.safeParse(processedBody);
       if (!validation.success) {
         throw new ProductFieldsError(validation.error.flatten().fieldErrors);
       }
 
-      // ── 4. Snapshot existing image URLs (before update) for orphan cleanup ──
+      // ── 5. Build Minimal Update Payload ──────────────────────────────────────
+      const minimalUpdate: Record<string, unknown> = {};
+      const incoming = validation.data;
+
+      // Compare primitives and deeply compare objects/arrays using JSON stringify
+      for (const [key, value] of Object.entries(incoming)) {
+        const existingValue = (existingProduct as UpdateProductDto)[key];
+        if (JSON.stringify(existingValue) !== JSON.stringify(value)) {
+          minimalUpdate[key] = value;
+        }
+      }
+
+      // ── 6. Bail out early if no fields were changed ──────────────────────────
+      if (Object.keys(minimalUpdate).length === 0) {
+        return void res.status(200).json({
+          success: true,
+          message: 'No changes detected. Product is up to date.',
+          data: { product: existingProduct },
+        });
+      }
+
+      // ── 7. Snapshot existing image URLs (before update) for orphan cleanup ──
       // Only needed if colors are being replaced in this request.
       let previousImageUrls: string[] = [];
-      if (processedBody.colors !== undefined) {
+      if (minimalUpdate.colors !== undefined) {
         try {
-          const existing = await import('@/models/product.model.js').then((m) =>
-            m.default.findById(productId).select('colors').lean(),
-          );
-          if (existing) {
-            previousImageUrls = (
-              existing as { colors: Array<{ images: Array<{ url: string }> }> }
-            ).colors.flatMap((c) => c.images.map((img) => img.url));
-          }
+          previousImageUrls =
+            existingProduct.colors?.flatMap((c) => c.images.map((img) => img.url)) ?? [];
         } catch (snapshotErr) {
           // Non-fatal — worst case orphaned assets remain; log and continue
           logger.warn(
@@ -576,10 +611,10 @@ export class ProductController {
         }
       }
 
-      // ── 5. Persist — roll back cloud uploads on DB failure ─────────────────
+      // ── 8. Persist — roll back cloud uploads on DB failure ─────────────────
       let updated;
       try {
-        updated = await productUpdate({ productId, product: validation.data });
+        updated = await productUpdate({ productId, product: minimalUpdate });
       } catch (dbError) {
         const rollbackResults = await Promise.allSettled(
           uploadedPaths.map((path) => deleteMedia(path)),
@@ -600,7 +635,7 @@ export class ProductController {
         throw new ProductUpdateError(dbError);
       }
 
-      // ── 6. Clean up orphaned media (best-effort, never fail the request) ────
+      // ── 9. Clean up orphaned media (best-effort, never fail the request) ────
       // Compare old image URLs vs new ones; delete any that were removed.
       if (previousImageUrls.length > 0) {
         const newImageUrls = new Set<string>(

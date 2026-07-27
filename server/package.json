@@ -11,7 +11,7 @@
   },
   "scripts": {
     "dev": "tsx watch server.ts",
-    "build": "tsc --project tsconfig.json",
+    "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
     "start": "node dist/server.js",
     "start:prod": "cross-env NODE_ENV=production node dist/server.js",
     "clean": "rimraf dist",

@@ -1,4 +1,5 @@
-import { JwtAccessTokenPayload } from '@snitch/types';
+import type { JwtAccessTokenPayload } from '@snitch/types';
+import type { Logger } from 'pino';
 
 declare global {
   namespace Express {
@@ -7,7 +8,7 @@ declare global {
     interface Request {
       userId: string;
       requestId: string;
-      logger: import('pino').Logger;
+      logger: Logger;
     }
   }
 }
