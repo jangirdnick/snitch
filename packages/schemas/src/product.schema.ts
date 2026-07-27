@@ -112,7 +112,7 @@ const objectIdSchema = z
   .regex(/^[a-f\d]{24}$/i, 'Invalid ID format');
 
 const imageSchema = z.object({
-  url: z.string({ required_error: 'Image URL is required' }).url('Invalid image URL'),
+  url: z.string({ required_error: 'Image URL/Path is required' }).min(1, 'Invalid image path'),
   alt: z.string().trim().default(''),
   isPrimary: z.boolean().default(false),
   order: z.number().int().min(0).default(0),
@@ -216,8 +216,6 @@ const baseProductSchema = z.object({
 
   // ─── Classification ───────────────────────────────────
   category: objectIdSchema,
-
-  brand: z.string().trim().optional(),
 
   tags: z.array(z.string().trim().toLowerCase()).default([]),
 
@@ -387,7 +385,6 @@ export const productQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   search: z.string().trim().optional(),
   category: objectIdSchema.optional(),
-  brand: z.string().trim().optional(),
 
   gender: z.enum(GENDER).optional(),
   ageGroup: z.enum(AGE_GROUP).optional(),

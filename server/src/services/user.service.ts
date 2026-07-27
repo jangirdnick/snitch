@@ -1,4 +1,8 @@
-import userModel, { IUser, UserWithoutPassword, type IUserCreate } from '@/models/user.model.js';
+import userModel, {
+  type IUser,
+  type UserWithoutPassword,
+  type IUserCreate,
+} from '@/models/user.model.js';
 import { createLogger } from '@/utils/logger.js';
 
 const logger = createLogger('USER-SERVICE');

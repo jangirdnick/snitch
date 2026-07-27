@@ -13,8 +13,8 @@ import { verificationMailTemplate } from '@/emails/verification.email.js';
 import sendEmail from '@/services/email.service.js';
 import { redisDel, redisGet, redisSet } from '@/services/redis.service.js';
 import { welcomeEmail } from '@/emails/welcome.email.js';
-import { CreateUserDto, LoginUserDto } from '@snitch/schemas';
-import { UserResponseDto } from '@snitch/types';
+import type { CreateUserDto, LoginUserDto } from '@snitch/schemas';
+import type { UserResponseDto } from '@snitch/types';
 import { compairJwtToken, generateJwtToken } from '@/utils/jwt.util.js';
 import { clearCookie, setCookie } from '@/utils/cookie.util.js';
 import {
@@ -22,9 +22,9 @@ import {
   validateAndExpireAllSessions,
   validateAndExpireSession,
 } from '@/services/session.service.js';
-import userModel, { IUser, UserWithoutPassword } from '@/models/user.model.js';
+import userModel, { type IUser, type UserWithoutPassword } from '@/models/user.model.js';
 import config from '@/config/config.js';
-import { GoogleUser } from '@/types/auth.type.js';
+import type { GoogleUser } from '@/types/auth.type.js';
 
 /* ------------------------------------------------------------------ */
 /* Constants                                                          */
