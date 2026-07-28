@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { useCategoryList } from '../hook/useCategoryList';
 import {
   DropdownMenu,
