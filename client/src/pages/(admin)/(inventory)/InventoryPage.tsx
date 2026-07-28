@@ -43,6 +43,10 @@ export default function InventoryPage() {
     navigate('/admin/inventory/create');
   }, [navigate]);
 
+  const handleCreateCategoryClick = useCallback(() => {
+    navigate('/admin/categories/create');
+  }, [navigate]);
+
   const handleEditClick = useCallback(
     (product: Product) => {
       const idToUse = product._id;
@@ -60,7 +64,10 @@ export default function InventoryPage() {
 
   return (
     <div className="flex flex-col gap-3.5 sm:gap-5 lg:gap-6 h-screen bg-[oklch(0.08_0.005_260)] selection:bg-[oklch(0.95_0_0)] selection:text-[oklch(0.1_0_0)] pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pb-1 overflow-y-scroll">
-      <InventoryHeader onCreateClick={handleCreateClick} />
+      <InventoryHeader
+        onCreateClick={handleCreateClick}
+        onCreateCategoryClick={handleCreateCategoryClick}
+      />
 
       <InventoryStats
         totalItems={totalItems ?? items.length}

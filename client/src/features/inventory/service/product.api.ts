@@ -66,8 +66,12 @@ function buildCreateFormData(values: ProductFormValues): FormData {
     };
   });
 
-  const isValidObjectId = /^[a-f\d]{24}$/i.test(values.category);
-  const categoryForServer = isValidObjectId ? values.category : '60c72b2f9b1d8b001c8e4b5c';
+  const categoryForServer = Array.isArray(values.category)
+    ? values.category.filter((id) => /^[a-f\d]{24}$/i.test(id))
+    : [];
+  if (categoryForServer.length === 0) {
+    categoryForServer.push('60c72b2f9b1d8b001c8e4b5c');
+  }
 
   // Build the JSON payload (everything except File objects)
   const jsonPayload = {
@@ -137,12 +141,15 @@ function buildUpdateFormData(values: Partial<ProductFormValues>): FormData {
     };
   });
 
-  const isValidObjectId = values.category ? /^[a-f\d]{24}$/i.test(values.category) : false;
-  const categoryForServer = isValidObjectId
-    ? values.category
-    : values.category
-      ? '60c72b2f9b1d8b001c8e4b5c'
-      : undefined;
+  let categoryForServer = undefined;
+  if (values.category !== undefined) {
+    categoryForServer = Array.isArray(values.category)
+      ? values.category.filter((id) => /^[a-f\d]{24}$/i.test(id))
+      : [];
+    if (categoryForServer.length === 0) {
+      categoryForServer = ['60c72b2f9b1d8b001c8e4b5c'];
+    }
+  }
 
   const jsonPayload = {
     ...values,

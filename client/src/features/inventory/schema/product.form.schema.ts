@@ -101,8 +101,8 @@ const clientColorVariantSchema = z.object({
 // ─── Client Form Schema ───────────────────────────────────────────────────────
 
 export const productFormSchema = createProductObjectSchema.extend({
-  // Relax category to plain string (future: CategorySelect from API)
-  category: z.string().min(1, 'Category is required'),
+  // Relax category to array of strings for multi-select
+  category: z.array(z.string()).min(1, 'At least one category is required'),
 
   // Override colors: ImageValue[] images instead of URL objects
   colors: z.array(clientColorVariantSchema).min(1, 'At least one color variant is required'),
@@ -138,7 +138,7 @@ export const productFormDefaultValues: Partial<ProductFormValues> = {
   description: '',
   shortDescription: '',
   sku: '',
-  category: '',
+  category: [],
 
   tags: [],
   gender: undefined,

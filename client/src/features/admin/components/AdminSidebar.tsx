@@ -13,6 +13,7 @@ import {
   LogOut,
   Crown,
   User,
+  ChartBarStacked,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -57,7 +58,7 @@ const NAV_ITEMS: ReadonlyArray<NavItem> = [
   { label: 'Dashboard', to: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Inventory', to: '/admin/inventory', icon: Package },
   // { label: 'Products', to: '/admin/products', icon: ShoppingBag },
-  // { label: 'Categories', to: '/admin/categories', icon: Tags },
+  { label: 'Categories', to: '/admin/categories', icon: ChartBarStacked },
   { label: 'Orders', to: '/admin/orders', icon: ShoppingCart },
   { label: 'Customers', to: '/admin/customers', icon: Users },
   { label: 'Reviews', to: '/admin/reviews', icon: Star },

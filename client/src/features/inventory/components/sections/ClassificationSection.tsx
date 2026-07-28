@@ -14,7 +14,6 @@ import {
   FormMessage,
   FormDescription,
 } from '@components/ui/form';
-import { Input } from '@components/ui/input';
 import {
   Select,
   SelectContent,
@@ -23,12 +22,12 @@ import {
   SelectValue,
 } from '@components/ui/select';
 import { TagsInput } from '../TagsInput';
+import { CategoryMultiSelect } from '@/features/category/components/CategoryMultiSelect';
 import { type ProductFormValues, GENDER, AGE_GROUP } from '../../schema/product.form.schema';
 
 import {
   formLabelClass,
   formDescClass,
-  inputClass,
   selectTriggerClass,
   selectContentClass,
   selectItemClass,
@@ -57,7 +56,7 @@ export function ClassificationSection() {
         <FormField
           control={control}
           name="category"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
               <FormLabel className={formLabelClass}>
                 Category ID{' '}
@@ -66,15 +65,15 @@ export function ClassificationSection() {
                 </span>
               </FormLabel>
               <FormControl>
-                <Input
-                  {...field}
+                <CategoryMultiSelect
                   id="product-category"
-                  placeholder="Category name or ID…"
-                  className={inputClass}
+                  value={field.value ?? []}
+                  onChange={field.onChange}
+                  aria-invalid={!!fieldState.error}
                 />
               </FormControl>
               <FormDescription className={formDescClass}>
-                Will become a category selector when API is ready.
+                Select one or more categories for this product.
               </FormDescription>
               <FormMessage />
             </FormItem>

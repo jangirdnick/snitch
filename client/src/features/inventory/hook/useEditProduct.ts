@@ -24,6 +24,7 @@ import { useProduct } from './useProduct';
 import { getProductById } from '../service/product.api';
 import { setFormErrors } from '@/utils/form-errors.util';
 import type { Product, ProductColorVariant, ProductImage } from '@snitch/types';
+import type { Category } from '../types/inventory';
 
 // ─── Data mapper — Product (server) → ProductFormValues (client) ──────────────
 
@@ -71,7 +72,17 @@ function mapProductToFormValues(product: Product): ProductFormValues {
     description: product.description ?? '',
     shortDescription: product.shortDescription ?? '',
     sku: product.sku ?? '',
-    category: typeof product.category === 'string' ? product.category : String(product.category),
+    category: Array.isArray(product.category)
+      ? product.category.map((c: Category) =>
+          typeof c === 'object' && c !== null ? String(c._id) : String(c),
+        )
+      : product.category
+        ? [
+            typeof product.category === 'object' && product.category !== null
+              ? String((product.category as Category)._id || (product.category as Category)._id)
+              : String(product.category),
+          ]
+        : [],
 
     tags: product.tags ?? [],
     gender: product.gender,

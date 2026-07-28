@@ -10,6 +10,9 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import InventoryPage from '@/pages/(admin)/(inventory)/InventoryPage';
 import CreateProductPage from '@/pages/(admin)/(inventory)/CreateProductPage';
 import EditProductPage from '@/pages/(admin)/(inventory)/EditProductPage';
+import CategoryPage from '@/pages/(admin)/(category)/CategoryPage';
+import CreateCategoryPage from '@/pages/(admin)/(category)/CreateCategoryPage';
+import EditCategoryPage from '@/pages/(admin)/(category)/EditCategoryPage';
 
 const router = createBrowserRouter([
   {
@@ -58,7 +61,15 @@ const router = createBrowserRouter([
           },
           {
             path: 'categories',
-            element: <div>Categories</div>,
+            element: <CategoryPage />,
+          },
+          {
+            path: 'categories/create',
+            element: <CreateCategoryPage />,
+          },
+          {
+            path: 'categories/edit/:categoryId',
+            element: <EditCategoryPage />,
           },
           {
             path: 'orders',
