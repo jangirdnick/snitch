@@ -215,7 +215,7 @@ const baseProductSchema = z.object({
     .toUpperCase(),
 
   // ─── Classification ───────────────────────────────────
-  category: objectIdSchema,
+  category: z.array(objectIdSchema).min(1, 'At least one category is required'),
 
   tags: z.array(z.string().trim().toLowerCase()).default([]),
 

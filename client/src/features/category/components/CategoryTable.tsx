@@ -1,0 +1,212 @@
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal, Edit, Trash, Hash, Tag, Clock } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import type { Category } from '../service/category.api';
+
+interface CategoryTableProps {
+  items: Category[];
+  loading: boolean;
+  onEdit: (category: Category) => void;
+  onDelete: (category: Category) => void;
+}
+
+const STATUS_CONFIG: Record<string, { label: string; dot: string; badge: string }> = {
+  active: {
+    label: 'Active',
+    dot: 'bg-[oklch(0.70_0.15_160)] shadow-[0_0_6px_oklch(0.70_0.15_160_/_0.7)]',
+    badge:
+      'bg-[oklch(0.70_0.15_160_/_0.10)] text-[oklch(0.82_0.15_160)] border-[oklch(0.70_0.15_160_/_0.25)]',
+  },
+  inactive: {
+    label: 'Inactive',
+    dot: 'bg-[oklch(0.42_0_0)] shadow-[0_0_6px_oklch(0.42_0_0_/_0.4)]',
+    badge: 'bg-[oklch(0.42_0_0_/_0.08)] text-[oklch(0.50_0_0)] border-[oklch(0.42_0_0_/_0.18)]',
+  },
+  archived: {
+    label: 'Archived',
+    dot: 'bg-[oklch(0.55_0_0)] shadow-[0_0_6px_oklch(0.55_0_0_/_0.6)]',
+    badge: 'bg-[oklch(0.55_0_0_/_0.10)] text-[oklch(0.65_0_0)] border-[oklch(0.55_0_0_/_0.20)]',
+  },
+};
+
+const formatDate = (dateString?: string) => {
+  if (!dateString) return '-';
+  try {
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(new Date(dateString));
+  } catch {
+    return '-';
+  }
+};
+
+export function CategoryTable({ items, loading, onEdit, onDelete }: CategoryTableProps) {
+  const getStatusBadge = (status: string) => {
+    const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.active;
+    return (
+      <span
+        className={cn(
+          'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10.5px] font-semibold tracking-wide whitespace-nowrap',
+          cfg.badge,
+        )}
+      >
+        <span className={cn('size-1.5 rounded-full shrink-0', cfg.dot)} />
+        {cfg.label}
+      </span>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="w-full h-full p-6">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-b-[oklch(1_0_0_/_0.055)] hover:bg-transparent">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <TableHead key={i}>
+                  <Skeleton className="h-4 w-20 bg-[oklch(1_0_0_/_0.05)]" />
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 5 }).map((_, index) => (
+              <TableRow
+                key={index}
+                className="border-b-[oklch(1_0_0_/_0.055)] hover:bg-transparent"
+              >
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <TableCell key={i}>
+                    <Skeleton className="h-4 w-24 bg-[oklch(1_0_0_/_0.05)]" />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 bg-transparent">
+        <div className="text-[oklch(0.55_0_0)] text-[13px] font-medium tracking-wide">
+          No categories found.
+        </div>
+      </div>
+    );
+  }
+
+  const thClass =
+    'text-[oklch(0.55_0_0)] uppercase tracking-wider text-[10px] font-semibold h-10 border-b-[oklch(1_0_0_/_0.055)] px-4 whitespace-nowrap';
+  const tdClass = 'py-3 px-4 text-[13px] text-[oklch(0.85_0_0)] font-medium whitespace-nowrap';
+  const rowClass =
+    'group transition-colors border-b-[oklch(1_0_0_/_0.055)] hover:bg-[oklch(1_0_0_/_0.03)]';
+
+  return (
+    <div className="w-full h-full bg-transparent overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent border-b-[oklch(1_0_0_/_0.055)]">
+            <TableHead className={thClass}>
+              <div className="flex items-center gap-1.5">
+                <Hash className="size-3.5" /> ID
+              </div>
+            </TableHead>
+            <TableHead className={cn(thClass, 'min-w-[200px]')}>Name</TableHead>
+            <TableHead className={thClass}>
+              <div className="flex items-center gap-1.5">
+                <Tag className="size-3.5" /> Slug
+              </div>
+            </TableHead>
+            <TableHead className={thClass}>Status</TableHead>
+            <TableHead className={thClass}>
+              <div className="flex items-center gap-1.5">
+                <Clock className="size-3.5" /> Created
+              </div>
+            </TableHead>
+            <TableHead className={cn(thClass, 'w-[80px] text-right')}>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((cat) => (
+            <TableRow key={cat._id} className={rowClass}>
+              <TableCell className={tdClass}>
+                <span
+                  className="text-[oklch(0.6_0_0)] font-mono text-[11px] truncate max-w-[100px] block"
+                  title={cat._id}
+                >
+                  {cat._id}
+                </span>
+              </TableCell>
+              <TableCell className="px-4 py-3 min-w-[200px]">
+                <div className="truncate max-w-[250px] font-medium text-[oklch(0.95_0_0)]">
+                  {cat.name}
+                </div>
+              </TableCell>
+              <TableCell className={tdClass}>
+                <span className="text-[oklch(0.7_0_0)] text-[12px]">{cat.slug}</span>
+              </TableCell>
+              <TableCell className="px-4 py-3">{getStatusBadge(cat.status)}</TableCell>
+              <TableCell className={tdClass}>
+                <span className="text-[oklch(0.65_0_0)]">{formatDate(cat.createdAt)}</span>
+              </TableCell>
+              <TableCell className="px-4 py-3 text-right">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="h-8 w-8 p-0 hover:bg-[oklch(1_0_0_/_0.08)] text-[oklch(0.7_0_0)]"
+                    >
+                      <span className="sr-only">Open menu</span>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="bg-[oklch(0.13_0.005_260)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] shadow-[0_8px_32px_oklch(0_0_0_/_0.6)] rounded-xl min-w-[160px] w-full"
+                  >
+                    <DropdownMenuLabel className="text-[10px] uppercase text-[oklch(0.55_0_0)] font-bold tracking-wider">
+                      Actions
+                    </DropdownMenuLabel>
+                    <DropdownMenuItem
+                      onClick={() => onEdit(cat)}
+                      className="cursor-pointer focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)] rounded-lg mx-1 my-0.5 min-h-[32px]"
+                    >
+                      <Edit className="mr-2 h-4 w-4 text-[oklch(0.6_0_0)]" /> Edit Category
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onDelete(cat)}
+                      className="cursor-pointer text-[oklch(0.65_0.20_22)] focus:bg-[oklch(0.65_0.20_22_/_0.15)] focus:text-[oklch(0.75_0.20_22)] rounded-lg mx-1 my-0.5 min-h-[32px]"
+                    >
+                      <Trash className="mr-2 h-4 w-4" /> Delete Category
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}

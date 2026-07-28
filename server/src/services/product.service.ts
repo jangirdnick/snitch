@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import type { IProduct } from '@/models/product.model.js';
 import productModel from '@/models/product.model.js';
+import categoryModel from '@/models/category.model.js';
 import { createLogger } from '@/utils/logger.js';
 import { DatabaseOperationError } from './user.service.js';
 import type { CreateProductDto, ProductQueryDto, UpdateProductDto } from '@snitch/schemas';
@@ -116,6 +117,7 @@ export async function getProducts(query: ProductQueryDto): Promise<PaginatedProd
         .sort({ [sortField]: sortDir, _id: 1 })
         .skip(skip)
         .limit(query.limit)
+        .populate('category', 'name slug')
         .lean()
         .exec() as unknown as IProduct[],
       productModel.countDocuments(filter),
@@ -148,6 +150,7 @@ export async function getProductBySlug(slug: string): Promise<IProduct> {
   try {
     const product = (await productModel
       .findOne({ slug })
+      .populate('category', 'name slug')
       .lean()
       .exec()) as unknown as IProduct | null;
 
@@ -165,7 +168,11 @@ export async function getProductBySlug(slug: string): Promise<IProduct> {
  */
 export async function getProductById(id: string): Promise<IProduct> {
   try {
-    const product = (await productModel.findById(id).lean().exec()) as unknown as IProduct | null;
+    const product = (await productModel
+      .findById(id)
+      .populate('category', 'name slug')
+      .lean()
+      .exec()) as unknown as IProduct | null;
 
     if (!product) throw new ProductNotFoundError(id);
     return product;
@@ -184,6 +191,7 @@ export async function getLimitProducts(limit: number): Promise<IProduct[]> {
     const products = (await productModel
       .find({ status: 'active' })
       .limit(limit)
+      .populate('category', 'name slug')
       .lean()
       .exec()) as unknown as IProduct[];
 
@@ -213,6 +221,7 @@ export async function getSearchProduct(
       .sort({ score: { $meta: 'textScore' } })
       .limit(limit)
       .select('id title slug colors price category') // ← fixed: colors not images
+      .populate('category', 'name slug')
       .lean()
       .exec()) as unknown as IProduct[];
 
@@ -247,6 +256,11 @@ export async function productCreate(
   session?: mongoose.ClientSession,
 ): Promise<IProduct> {
   try {
+    const categoryCount = await categoryModel.countDocuments({ _id: { $in: params.category } });
+    if (categoryCount !== params.category.length) {
+      throw new DatabaseOperationError('One or more selected categories do not exist');
+    }
+
     const [created] = await productModel.create([params], { session });
     return created as unknown as IProduct;
   } catch (error) {
@@ -269,6 +283,13 @@ export async function productUpdate({
   product: UpdateProductDto;
 }): Promise<IProduct> {
   try {
+    if (product.category) {
+      const categoryCount = await categoryModel.countDocuments({ _id: { $in: product.category } });
+      if (categoryCount !== product.category.length) {
+        throw new DatabaseOperationError('One or more selected categories do not exist');
+      }
+    }
+
     const updated = (await productModel
       .findByIdAndUpdate(productId, { $set: product }, { new: true, runValidators: true })
       .lean()) as unknown as IProduct | null;

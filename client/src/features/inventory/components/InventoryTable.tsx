@@ -33,6 +33,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import type { Product } from '@snitch/types';
+import type { Category } from '../types/inventory';
 
 interface InventoryTableProps {
   items: Product[];
@@ -242,10 +243,18 @@ export function InventoryTable({ items, loading, onEdit, onView, onDelete }: Inv
             {items.map((product) => {
               const imgUrl = getPrimaryImage(product);
               const idToUse = product._id;
-              const categoryName =
-                typeof product.category === 'object' && product.category !== null
-                  ? product.category
-                  : String(product.category || 'Unknown');
+              let categoryName = 'Unknown';
+              if (Array.isArray(product.category)) {
+                categoryName = product.category
+                  .map((c: Category) =>
+                    typeof c === 'object' && c !== null && c.name ? c.name : String(c),
+                  )
+                  .join(', ');
+              } else if (typeof product.category === 'object' && product.category !== null) {
+                categoryName = (product.category as Category).name || 'Unknown';
+              } else if (product.category) {
+                categoryName = String(product.category);
+              }
 
               return (
                 <TableRow key={idToUse} className={rowClass}>
@@ -360,10 +369,18 @@ export function InventoryTable({ items, loading, onEdit, onView, onDelete }: Inv
       <div className="md:hidden flex flex-col p-4 gap-4">
         {items.map((product) => {
           const imgUrl = getPrimaryImage(product);
-          const categoryName =
-            typeof product.category === 'object' && product.category !== null
-              ? product.category
-              : String(product.category || 'Unknown');
+          let categoryName = 'Unknown';
+          if (Array.isArray(product.category)) {
+            categoryName = product.category
+              .map((c: Category) =>
+                typeof c === 'object' && c !== null && c.name ? c.name : String(c),
+              )
+              .join(', ');
+          } else if (typeof product.category === 'object' && product.category !== null) {
+            categoryName = (product.category as Category).name || 'Unknown';
+          } else if (product.category) {
+            categoryName = String(product.category);
+          }
 
           return (
             <div

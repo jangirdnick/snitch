@@ -24,7 +24,6 @@ import {
   Package,
   ShoppingCart,
   Users,
-  Tags,
   BarChart3,
   Settings,
   LogOut,
@@ -33,6 +32,7 @@ import {
   X,
   User,
   TextAlignJustify,
+  ChartBarStacked,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -98,7 +98,7 @@ const MENU_ITEMS: ReadonlyArray<NavItem> = [
   { label: 'Reviews', to: '/admin/reviews', icon: Star },
   { label: 'Coupons', to: '/admin/coupons', icon: Ticket },
   { label: 'Analytics', to: '/admin/analytics', icon: BarChart3 },
-  { label: 'Categories', to: '/admin/categories', icon: Tags },
+  { label: 'Categories', to: '/admin/categories', icon: ChartBarStacked },
   { label: 'Settings', to: '/admin/settings', icon: Settings },
 ] as const;
 
@@ -508,7 +508,9 @@ export const AdminMobileNav = memo(function AdminMobileNav() {
   const isHiddenRoute = useMemo(() => {
     return (
       location.pathname.startsWith('/admin/inventory/create') ||
-      location.pathname.startsWith('/admin/inventory/edit')
+      location.pathname.startsWith('/admin/inventory/edit') ||
+      location.pathname.startsWith('/admin/categories/create') ||
+      location.pathname.startsWith('/admin/categories/edit')
     );
   }, [location.pathname]);
 

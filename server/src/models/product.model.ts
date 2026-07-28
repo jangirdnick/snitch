@@ -158,7 +158,7 @@ export interface IProduct extends Document {
   sku: string; // master SKU (per color+size alag hoga)
 
   // ─── Classification ─────────────────────────────────────
-  category: Types.ObjectId;
+  category: Types.ObjectId[];
   tags: string[];
 
   // ─── Clothing Specific ──────────────────────────────────
@@ -246,9 +246,16 @@ const ProductSchema: Schema<IProduct> = new Schema(
 
     // ─── Classification ─────────────────────────────────────
     category: {
-      type: Schema.Types.ObjectId,
-      ref: 'Category',
-      required: [true, 'Category is required'],
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: 'Category',
+        },
+      ],
+      validate: {
+        validator: (val: mongoose.Types.ObjectId[]) => val.length > 0,
+        message: 'At least one category is required',
+      },
       index: true,
     },
 
