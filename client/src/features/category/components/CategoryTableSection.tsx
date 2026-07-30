@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { CategoryTable } from './CategoryTable';
-import { InventoryPagination } from '@/features/inventory/components/InventoryPagination';
+import { AdminPagination } from '@/components/admin/AdminPagination';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -99,7 +99,7 @@ export function CategoryTableSection({
 
         {totalPages > 1 && (
           <div className="border-t border-[oklch(1_0_0_/0.055)] px-4 py-3 shrink-0 bg-[oklch(1_0_0_/0.015)]">
-            <InventoryPagination
+            <AdminPagination
               currentPage={currentPage}
               totalPages={totalPages}
               hasNextPage={hasNextPage}

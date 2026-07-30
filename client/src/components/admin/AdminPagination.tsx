@@ -9,7 +9,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 
-interface InventoryPaginationProps {
+interface AdminPaginationProps {
   currentPage: number;
   totalPages: number;
   hasNextPage: boolean;
@@ -17,20 +17,18 @@ interface InventoryPaginationProps {
   onPageChange: (page: number) => void;
 }
 
-export function InventoryPagination({
+export function AdminPagination({
   currentPage,
   totalPages,
   hasNextPage,
   hasPreviousPage,
   onPageChange,
-}: InventoryPaginationProps) {
-  console.log('[Pagination Render]', { currentPage, totalPages, hasNextPage, hasPreviousPage });
+}: AdminPaginationProps) {
   if (totalPages <= 1) return null;
 
   const handlePrevious = (e: React.MouseEvent) => {
     e.preventDefault();
     if (hasPreviousPage) {
-      console.log('going previous to:', currentPage - 1);
       onPageChange(currentPage - 1);
     }
   };
@@ -38,14 +36,12 @@ export function InventoryPagination({
   const handleNext = (e: React.MouseEvent) => {
     e.preventDefault();
     if (hasNextPage) {
-      console.log('going next to:', currentPage + 1);
       onPageChange(currentPage + 1);
     }
   };
 
   const handlePageClick = (e: React.MouseEvent, page: number) => {
     e.preventDefault();
-    console.log('clicked page:', page);
     onPageChange(page);
   };
 

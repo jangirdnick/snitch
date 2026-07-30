@@ -29,9 +29,7 @@ export function PageHeader({ title, description, children }: PageHeaderProps) {
       </div>
 
       {children && (
-        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 w-full sm:w-auto">
-          {children}
-        </div>
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 w-full sm:w-auto">{children}</div>
       )}
     </header>
   );

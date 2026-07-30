@@ -33,6 +33,8 @@ import {
 import { CategoryNotFoundError, CategoryOperationError } from '@/services/category.service.js';
 import { CategoryFieldsError, CategoryRequestError } from '@/controllers/category.controller.js';
 import { UserFieldsError, UserRequestError } from '@/controllers/user.controller.js';
+import { CouponNotFoundError, CouponOperationError } from '@/services/coupon.service.js';
+import { CouponFieldsError, CouponRequestError } from '@/controllers/coupon.controller.js';
 
 const logger = createLogger('HttpExceptionFilter');
 
@@ -67,6 +69,10 @@ const DOMAIN_ERROR_MAP = new Map<ErrorClass, number>([
   [CategoryOperationError, 500],
   [CategoryFieldsError, 400],
   [CategoryRequestError, 400],
+  [CouponNotFoundError, 404],
+  [CouponOperationError, 500],
+  [CouponFieldsError, 400],
+  [CouponRequestError, 400],
 ]);
 
 export function globalErrorFilter(
@@ -92,11 +98,17 @@ export function globalErrorFilter(
       }));
   }
 
-  if (error instanceof ZodError) {
+  if (
+    error instanceof ZodError ||
+    error instanceof UserFieldsError ||
+    error instanceof ProductFieldsError ||
+    error instanceof CategoryFieldsError ||
+    error instanceof CouponFieldsError
+  ) {
     res.status(400).json({
       success: false,
       error: {
-        name: 'ZodError',
+        name: error.name,
         message: 'Validation failed',
         fields: formattedFields,
       },
