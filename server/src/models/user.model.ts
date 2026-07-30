@@ -117,6 +117,7 @@ export interface IUser extends Document {
   };
   password: string;
   role: 'USER' | 'ADMIN';
+  isBlocked: boolean;
   lastLoginAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -135,6 +136,7 @@ export interface IUserCreate {
     phoneNumber: string;
   };
   password: string;
+  isBlocked?: boolean;
   lastLoginAt: Date;
 }
 
@@ -255,6 +257,11 @@ const userSchema: Schema<IUser> = new Schema(
       type: String,
       enum: ['USER', 'ADMIN'],
       default: 'USER',
+    },
+
+    isBlocked: {
+      type: Boolean,
+      default: false,
     },
 
     lastLoginAt: {

@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { PageHeader } from '@/components/ui/page-header';
 
 interface CategoryHeaderProps {
   onCreateClick: () => void;
@@ -8,23 +9,7 @@ interface CategoryHeaderProps {
 
 export function CategoryHeader({ onCreateClick }: CategoryHeaderProps) {
   return (
-    <header
-      className={cn(
-        'sticky top-0 z-40 shrink-0 px-4 md:px-6 mx-0 lg:-mx-6 lg:px-6 max-md:py-3',
-        'border-b border-[oklch(1_0_0_/_0.05)]',
-        'bg-[oklch(0.08_0.005_260_/0.88)] backdrop-blur-2xl',
-        'flex items-center justify-between gap-3 md:gap-4',
-      )}
-    >
-      <div className="min-w-0 flex-1">
-        <h1 className="text-lg sm:text-[20px] font-semibold text-[oklch(0.97_0_0)] tracking-tight leading-tight">
-          Categories
-        </h1>
-        <p className="text-[11px] sm:text-[12px] text-[oklch(0.42_0_0)] mt-0.5 sm:mt-1 font-light truncate">
-          Manage product categories and classifications.
-        </p>
-      </div>
-
+    <PageHeader title="Categories" description="Manage product categories and classifications.">
       <Button
         size="sm"
         onClick={onCreateClick}
@@ -47,6 +32,6 @@ export function CategoryHeader({ onCreateClick }: CategoryHeaderProps) {
           <span className="sm:hidden">Create</span>
         </span>
       </Button>
-    </header>
+    </PageHeader>
   );
 }

@@ -14,7 +14,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Edit, Trash, Hash, Tag, Clock } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash, FolderTree, Link2, Clock, Tag } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import type { Category } from '../service/category.api';
@@ -49,9 +49,12 @@ const formatDate = (dateString?: string) => {
   if (!dateString) return '-';
   try {
     return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
       month: 'short',
       day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
     }).format(new Date(dateString));
   } catch {
     return '-';
@@ -80,7 +83,7 @@ export function CategoryTable({ items, loading, onEdit, onDelete }: CategoryTabl
         <Table>
           <TableHeader>
             <TableRow className="border-b-[oklch(1_0_0_/_0.055)] hover:bg-transparent">
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: 5 }).map((_, i) => (
                 <TableHead key={i}>
                   <Skeleton className="h-4 w-20 bg-[oklch(1_0_0_/_0.05)]" />
                 </TableHead>
@@ -93,7 +96,7 @@ export function CategoryTable({ items, loading, onEdit, onDelete }: CategoryTabl
                 key={index}
                 className="border-b-[oklch(1_0_0_/_0.055)] hover:bg-transparent"
               >
-                {Array.from({ length: 6 }).map((_, i) => (
+                {Array.from({ length: 5 }).map((_, i) => (
                   <TableCell key={i}>
                     <Skeleton className="h-4 w-24 bg-[oklch(1_0_0_/_0.05)]" />
                   </TableCell>
@@ -120,25 +123,28 @@ export function CategoryTable({ items, loading, onEdit, onDelete }: CategoryTabl
     'text-[oklch(0.55_0_0)] uppercase tracking-wider text-[10px] font-semibold h-10 border-b-[oklch(1_0_0_/_0.055)] px-4 whitespace-nowrap';
   const tdClass = 'py-3 px-4 text-[13px] text-[oklch(0.85_0_0)] font-medium whitespace-nowrap';
   const rowClass =
-    'group transition-colors border-b-[oklch(1_0_0_/_0.055)] hover:bg-[oklch(1_0_0_/_0.03)]';
+    'group transition-colors border-b-[oklch(1_0_0_/_0.055)] hover:bg-[oklch(1_0_0_/_0.04)]';
 
   return (
     <div className="w-full h-full bg-transparent overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent border-b-[oklch(1_0_0_/_0.055)]">
-            <TableHead className={thClass}>
+            <TableHead className={cn(thClass, 'min-w-[240px]')}>
               <div className="flex items-center gap-1.5">
-                <Hash className="size-3.5" /> ID
+                <FolderTree className="size-3.5" /> Category
               </div>
             </TableHead>
-            <TableHead className={cn(thClass, 'min-w-[200px]')}>Name</TableHead>
             <TableHead className={thClass}>
               <div className="flex items-center gap-1.5">
-                <Tag className="size-3.5" /> Slug
+                <Link2 className="size-3.5" /> Slug
               </div>
             </TableHead>
-            <TableHead className={thClass}>Status</TableHead>
+            <TableHead className={thClass}>
+              <div className="flex items-center gap-1.5">
+                <Tag className="size-3.5" /> Status
+              </div>
+            </TableHead>
             <TableHead className={thClass}>
               <div className="flex items-center gap-1.5">
                 <Clock className="size-3.5" /> Created
@@ -150,26 +156,48 @@ export function CategoryTable({ items, loading, onEdit, onDelete }: CategoryTabl
         <TableBody>
           {items.map((cat) => (
             <TableRow key={cat._id} className={rowClass}>
+              {/* CATEGORY INFO */}
               <TableCell className={tdClass}>
-                <span
-                  className="text-[oklch(0.6_0_0)] font-mono text-[11px] truncate max-w-[100px] block"
-                  title={cat._id}
-                >
-                  {cat._id}
-                </span>
-              </TableCell>
-              <TableCell className="px-4 py-3 min-w-[200px]">
-                <div className="truncate max-w-[250px] font-medium text-[oklch(0.95_0_0)]">
-                  {cat.name}
+                <div className="flex flex-col gap-0.5 max-w-[280px]">
+                  <span className="font-semibold text-[oklch(0.95_0_0)] truncate text-[13.5px]">
+                    {cat.name}
+                  </span>
+                  {cat.description ? (
+                    <span
+                      className="text-[11.5px] text-[oklch(0.6_0_0)] truncate"
+                      title={cat.description}
+                    >
+                      {cat.description}
+                    </span>
+                  ) : (
+                    <span className="text-[11px] font-mono text-[oklch(0.5_0_0)] truncate">
+                      ID: {cat._id}
+                    </span>
+                  )}
                 </div>
               </TableCell>
+
+              {/* SLUG */}
               <TableCell className={tdClass}>
-                <span className="text-[oklch(0.7_0_0)] text-[12px]">{cat.slug}</span>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[oklch(1_0_0_/_0.04)] border border-[oklch(1_0_0_/_0.08)]">
+                  <span className="text-[oklch(0.55_0_0)] text-[10px]">/</span>
+                  <span className="text-[oklch(0.85_0_0)] font-mono text-[11.5px] tracking-tight">
+                    {cat.slug}
+                  </span>
+                </div>
               </TableCell>
+
+              {/* STATUS */}
               <TableCell className="px-4 py-3">{getStatusBadge(cat.status)}</TableCell>
+
+              {/* CREATED AT */}
               <TableCell className={tdClass}>
-                <span className="text-[oklch(0.65_0_0)]">{formatDate(cat.createdAt)}</span>
+                <span className="text-[oklch(0.65_0_0)] text-[12px]">
+                  {formatDate(cat.createdAt)}
+                </span>
               </TableCell>
+
+              {/* ACTIONS */}
               <TableCell className="px-4 py-3 text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

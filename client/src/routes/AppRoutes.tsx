@@ -13,6 +13,7 @@ import EditProductPage from '@/pages/(admin)/(inventory)/EditProductPage';
 import CategoryPage from '@/pages/(admin)/(category)/CategoryPage';
 import CreateCategoryPage from '@/pages/(admin)/(category)/CreateCategoryPage';
 import EditCategoryPage from '@/pages/(admin)/(category)/EditCategoryPage';
+import CustomersPage from '@/pages/(admin)/CustomersPage';
 
 const router = createBrowserRouter([
   {
@@ -77,7 +78,7 @@ const router = createBrowserRouter([
           },
           {
             path: 'customers',
-            element: <div>Customers</div>,
+            element: <CustomersPage />,
           },
           {
             path: 'reviews',
