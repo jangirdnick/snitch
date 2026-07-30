@@ -526,15 +526,24 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 **Current Routes** (`src/routes/AppRoutes.tsx`):
 
-| Path                      | Component           | Layout        | Description                   |
-| ------------------------- | ------------------- | ------------- | ----------------------------- |
-| `/`                       | `HomePage`          | `RootLayout`  | Landing / storefront          |
-| `/login`                  | `LoginPage`         | `RootLayout`  | Auth — login (nested)         |
-| `/register`               | `RegisterPage`      | `RootLayout`  | Auth — registration (nested)  |
-| `/admin/dashboard`        | `Dashboard`         | `AdminLayout` | Admin dashboard (protected)   |
-| `/admin/inventory`        | `InventoryPage`     | `AdminLayout` | Product inventory (protected) |
-| `/admin/inventory/create` | `CreateProductPage` | `AdminLayout` | Create product (protected)    |
-| `*`                       | `NotFoundPage`      | —             | Not found fallback            |
+| Path                                 | Component            | Layout        | Description                        |
+| ------------------------------------ | -------------------- | ------------- | ---------------------------------- |
+| `/`                                  | `HomePage`           | `RootLayout`  | Landing / storefront               |
+| `/login`                             | `LoginPage`          | `RootLayout`  | Auth — login (nested)              |
+| `/register`                          | `RegisterPage`       | `RootLayout`  | Auth — registration (nested)       |
+| `/admin/dashboard`                   | `Dashboard`          | `AdminLayout` | Admin dashboard (protected)        |
+| `/admin/inventory`                   | `InventoryPage`      | `AdminLayout` | Product inventory list (protected) |
+| `/admin/inventory/create`            | `CreateProductPage`  | `AdminLayout` | Create product (protected)         |
+| `/admin/inventory/edit/:productId`   | `EditProductPage`    | `AdminLayout` | Edit product (protected)           |
+| `/admin/categories`                  | `CategoryPage`       | `AdminLayout` | Category list (protected)          |
+| `/admin/categories/create`           | `CreateCategoryPage` | `AdminLayout` | Create category (protected)        |
+| `/admin/categories/edit/:categoryId` | `EditCategoryPage`   | `AdminLayout` | Edit category (protected)          |
+| `/admin/orders`                      | _(placeholder)_      | `AdminLayout` | Orders — not yet implemented       |
+| `/admin/customers`                   | _(placeholder)_      | `AdminLayout` | Customers — not yet implemented    |
+| `/admin/reviews`                     | _(placeholder)_      | `AdminLayout` | Reviews — not yet implemented      |
+| `/admin/coupons`                     | _(placeholder)_      | `AdminLayout` | Coupons — not yet implemented      |
+| `/admin/analytics`                   | _(placeholder)_      | `AdminLayout` | Analytics — not yet implemented    |
+| `*`                                  | `NotFoundPage`       | —             | Not found fallback                 |
 
 **Protected routes** use `<ProtectedRoute allowedRoles={['ADMIN']} />` wrapper.
 
@@ -628,9 +637,25 @@ client/
 ├── src/
 │   ├── components/           # Shared, reusable UI components
 │   │   ├── ui/               # shadcn components (source-owned, editable)
+│   │   │   ├── alert-dialog.tsx
+│   │   │   ├── avatar.tsx
+│   │   │   ├── badge.tsx
 │   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── checkbox.tsx
+│   │   │   ├── dropdown-menu.tsx
+│   │   │   ├── form.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── label.tsx
+│   │   │   ├── pagination.tsx
+│   │   │   ├── select.tsx
+│   │   │   ├── separator.tsx
+│   │   │   ├── skeleton.tsx
 │   │   │   ├── sonner.tsx    # Toaster component
-│   │   │   └── ...
+│   │   │   ├── switch.tsx
+│   │   │   ├── table.tsx
+│   │   │   ├── textarea.tsx
+│   │   │   └── tooltip.tsx
 │   │   ├── auth/             # Auth-related shared components (ProtectedRoute)
 │   │   └── navbar/           # Navigation components
 │   │
@@ -639,19 +664,30 @@ client/
 │   │   │   ├── components/   # Auth UI — LoginForm, RegisterForm, etc.
 │   │   │   ├── hook/         # useAuth, useLoginForm, useAuthToast, etc.
 │   │   │   ├── schema/       # ⚠️ SIRF compose karo @snitch/schemas se — naya schema mat banao
-│   │   │   ├── service/      # authService.ts — API functions
+│   │   │   ├── service/      # auth.api.ts — API functions
 │   │   │   └── state/        # auth.slice.ts — Redux slice
 │   │   ├── admin/
 │   │   │   └── components/   # Admin-specific UI components
+│   │   ├── category/
+│   │   │   ├── components/   # CategoryFormLayout, CategoryTable, CategoryHeader, etc.
+│   │   │   ├── hook/         # useCategoryList, useCreateCategory, useEditCategory
+│   │   │   ├── schema/       # category.form.schema.ts (composed from @snitch/schemas)
+│   │   │   └── service/      # category.api.ts — categoryService CRUD functions
 │   │   ├── home/
 │   │   │   ├── components/   # Homepage UI components
 │   │   │   └── data/         # Static data for homepage
 │   │   └── inventory/
 │   │       ├── components/   # Product management UI
-│   │       ├── hook/         # useProductForm, etc.
-│   │       ├── schema/       # Product form schemas (composed from @snitch/schemas)
-│   │       ├── service/      # Product API functions
-│   │       └── state/        # product.slice.ts — Redux slice
+│   │       │   ├── sections/ # Form sections — BasicInfo, Pricing, ColorVariants, etc.
+│   │       │   └── shared/   # FormFieldWrapper and other shared form components
+│   │       ├── hook/         # useProduct, useInventory, useCreateProduct, useEditProduct
+│   │       ├── schema/       # product.form.schema.ts (composed from @snitch/schemas)
+│   │       ├── service/      # product.api.ts — API functions
+│   │       ├── state/        # product.slice.ts — Redux slice
+│   │       └── types/        # inventory.ts — client-only types (Category mapping, etc.)
+│   │
+│   ├── hooks/                # Shared custom hooks (app-wide)
+│   │   └── useDebounce.ts    # Debounce hook for search inputs
 │   │
 │   ├── layouts/
 │   │   ├── RootLayout.tsx    # Public layout (navbar + outlet)
@@ -669,8 +705,14 @@ client/
 │   │   ├── 404Page.tsx
 │   │   └── (admin)/          # Admin pages (route-grouped)
 │   │       ├── Dashboard.tsx
-│   │       ├── InventoryPage.tsx
-│   │       └── CreateProductPage.tsx
+│   │       ├── (inventory)/
+│   │       │   ├── InventoryPage.tsx
+│   │       │   ├── CreateProductPage.tsx
+│   │       │   └── EditProductPage.tsx
+│   │       └── (category)/
+│   │           ├── CategoryPage.tsx
+│   │           ├── CreateCategoryPage.tsx
+│   │           └── EditCategoryPage.tsx
 │   │
 │   ├── routes/
 │   │   └── AppRoutes.tsx     # React Router — createBrowserRouter config
@@ -689,6 +731,12 @@ client/
 │   ├── App.tsx               # Root component (Toaster + RouterProvider + auth init)
 │   └── main.tsx              # Entry — Provider + setupInterceptors + render
 │
+├── .agents/                  # AI agent skills and instructions
+│   └── skills/               # 4 specialized skill files
+│       ├── frontend-design/
+│       ├── motion-design/
+│       ├── tailwind-design-system/
+│       └── vercel-react-best-practices/
 ├── components.json           # shadcn/ui configuration
 ├── vite.config.ts            # Vite config — aliases + proxy + plugins
 ├── tsconfig.app.json         # TypeScript config

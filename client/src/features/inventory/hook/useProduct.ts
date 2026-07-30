@@ -9,6 +9,7 @@
 import { useCallback, useRef } from 'react';
 import { useAppDispatch } from '@/store/hooks';
 import { AxiosError } from 'axios';
+import { showToast } from '@/lib/toast';
 import {
   setProducts,
   setCurrentProduct,
@@ -16,7 +17,6 @@ import {
   setError,
   setMessage,
   clearError,
-  clearMessage,
 } from '../state/product.slice';
 import {
   getAllProducts,
@@ -216,15 +216,20 @@ export const useProduct = () => {
         dispatch(clearError());
         const response = await deleteProduct(id);
         if (response.success) {
-          dispatch(setMessage(response.message));
-          dispatch(clearMessage());
+          const successMsg = response.message || 'Product deleted successfully';
+          dispatch(setMessage(successMsg));
+          showToast.success(successMsg);
           return true;
         } else {
-          dispatch(setError(response.error.message));
+          const errorMsg = response.error?.message || 'Failed to delete product';
+          dispatch(setError(errorMsg));
+          showToast.error(errorMsg);
           return false;
         }
       } catch (error: unknown) {
-        dispatch(setError(getErrorMessage(error)));
+        const errorMsg = getErrorMessage(error);
+        dispatch(setError(errorMsg));
+        showToast.error(errorMsg);
         return false;
       } finally {
         dispatch(setLoading(false));

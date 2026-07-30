@@ -30,6 +30,9 @@ import {
   ProductUpdateError,
   ProductConflictError,
 } from '@/controllers/product.controller.js';
+import { CategoryNotFoundError, CategoryOperationError } from '@/services/category.service.js';
+import { CategoryFieldsError, CategoryRequestError } from '@/controllers/category.controller.js';
+import { UserFieldsError, UserRequestError } from '@/controllers/user.controller.js';
 
 const logger = createLogger('HttpExceptionFilter');
 
@@ -39,6 +42,8 @@ type ErrorClass = new (...args: never[]) => Error;
 const DOMAIN_ERROR_MAP = new Map<ErrorClass, number>([
   [UserNotFoundError, 404],
   [UserAlreadyExistsError, 409],
+  [UserFieldsError, 400],
+  [UserRequestError, 400],
   [InvalidCredentialsError, 401],
   [SessionNotFoundError, 404],
   [SessionCompareError, 401],
@@ -58,6 +63,10 @@ const DOMAIN_ERROR_MAP = new Map<ErrorClass, number>([
   [MediaNotFoundError, 404],
   [MediaOperationError, 500],
   [ImageProcessingError, 500],
+  [CategoryNotFoundError, 404],
+  [CategoryOperationError, 500],
+  [CategoryFieldsError, 400],
+  [CategoryRequestError, 400],
 ]);
 
 export function globalErrorFilter(

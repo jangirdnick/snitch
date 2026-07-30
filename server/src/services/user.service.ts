@@ -3,7 +3,10 @@ import userModel, {
   type UserWithoutPassword,
   type IUserCreate,
 } from '@/models/user.model.js';
+import sessionModel from '@/models/session.model.js';
 import { createLogger } from '@/utils/logger.js';
+import type { UserQueryDto } from '@snitch/schemas';
+import type { PaginatedUsers, UserResponseDto } from '@snitch/types';
 
 const logger = createLogger('USER-SERVICE');
 
@@ -265,7 +268,7 @@ export async function userExistByIdRole(params: {
   }
 
   try {
-    const exists = await userModel.exists({ id, role });
+    const exists = await userModel.exists({ id, role, isBlocked: { $ne: true } });
     if (!exists) {
       throw new UserNotFoundError(id);
     }
@@ -284,5 +287,111 @@ export async function userExistByIdRole(params: {
       'Unexpected error checking user by id and role',
     );
     throw new DatabaseOperationError('userExistByIdRole', error);
+  }
+}
+
+export async function getUsers(query: UserQueryDto): Promise<PaginatedUsers> {
+  try {
+    const filter: Record<string, unknown> = {};
+
+    if (query.search) {
+      filter.$or = [
+        { firstName: { $regex: query.search, $options: 'i' } },
+        { lastName: { $regex: query.search, $options: 'i' } },
+        { email: { $regex: query.search, $options: 'i' } },
+      ];
+    }
+
+    if (query.isBlocked !== undefined) {
+      if (query.isBlocked === false) {
+        filter.isBlocked = { $ne: true };
+      } else {
+        filter.isBlocked = true;
+      }
+    }
+
+    const sortFieldMap: Record<string, string> = {
+      createdAt: 'createdAt',
+      lastLoginAt: 'lastLoginAt',
+      firstName: 'firstName',
+    };
+    const sortField = sortFieldMap[query.sortBy] ?? 'createdAt';
+    const sortDir = query.sortOrder === 'asc' ? 1 : -1;
+
+    const skip = (query.page - 1) * query.limit;
+
+    const [items, total] = await Promise.all([
+      userModel
+        .find(filter)
+        .select('-password')
+        .sort({ role: 1, [sortField]: sortDir, _id: 1 })
+        .skip(skip)
+        .limit(query.limit)
+        .lean()
+        .exec() as unknown as UserResponseDto[],
+      userModel.countDocuments(filter),
+    ]);
+
+    const totalPages = Math.ceil(total / query.limit);
+
+    return {
+      items,
+      pagination: {
+        currentPage: query.page,
+        itemsPerPage: query.limit,
+        totalItems: total,
+        totalPages,
+        hasNextPage: query.page < totalPages,
+        hasPreviousPage: query.page > 1,
+      },
+    };
+  } catch (error) {
+    if (isUserError(error)) throw error;
+    logger.error({ err: error, query }, 'Error fetching users');
+    throw new DatabaseOperationError('getUsers', error);
+  }
+}
+
+export async function userUpdateBlockStatus(
+  id: string,
+  isBlocked: boolean,
+): Promise<UserWithoutPassword> {
+  try {
+    const user = await userModel
+      .findOneAndUpdate({ id }, { $set: { isBlocked } }, { new: true, runValidators: true })
+      .select('-password')
+      .lean()
+      .exec();
+
+    if (!user) {
+      throw new UserNotFoundError(id);
+    }
+
+    if (isBlocked) {
+      // Revoke all active sessions immediately
+      await sessionModel.updateMany({ userId: id }, { $set: { revoked: true } });
+    }
+
+    return user as unknown as UserWithoutPassword;
+  } catch (error) {
+    if (isUserError(error)) throw error;
+    logger.error({ err: error, id }, 'Error updating user block status');
+    throw new DatabaseOperationError('userUpdateBlockStatus', error);
+  }
+}
+
+export async function userDeleteById(id: string): Promise<void> {
+  try {
+    const user = await userModel.findOneAndDelete({ id }).exec();
+    if (!user) {
+      throw new UserNotFoundError(id);
+    }
+
+    // Cascade delete all sessions for this user
+    await sessionModel.deleteMany({ userId: id });
+  } catch (error) {
+    if (isUserError(error)) throw error;
+    logger.error({ err: error, id }, 'Error deleting user');
+    throw new DatabaseOperationError('userDeleteById', error);
   }
 }

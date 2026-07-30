@@ -58,3 +58,23 @@ export const emailVerified = z.object({
 export type CreateUserDto = z.infer<typeof createUserSchema>;
 export type LoginUserDto = z.infer<typeof loginUserSchema>;
 export type EmailVerifiedDto = z.infer<typeof emailVerified>;
+
+export const userQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(10),
+  search: z.string().optional(),
+  isBlocked: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((val) => (val === 'true' ? true : val === 'false' ? false : undefined)),
+  sortBy: z.enum(['createdAt', 'lastLoginAt', 'firstName']).default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+});
+
+export type UserQueryDto = z.infer<typeof userQuerySchema>;
+
+export const updateUserBlockStatusSchema = z.object({
+  isBlocked: z.boolean({ required_error: 'isBlocked status is required' }),
+});
+
+export type UpdateUserBlockStatusDto = z.infer<typeof updateUserBlockStatusSchema>;
