@@ -1,20 +1,21 @@
 import { cn } from '@/lib/utils';
-import CustomersTable from './CustomersTable';
+import { CouponsTable } from './CouponsTable';
 import { AdminPagination } from '@/components/admin/AdminPagination';
-import type { UserResponseDto } from '@snitch/types';
+import type { Coupon } from '@snitch/types';
 
-interface CustomersTableSectionProps {
-  items: UserResponseDto[];
+interface CouponsTableSectionProps {
+  items: Coupon[];
   loading: boolean;
   currentPage: number;
   totalPages: number;
   hasNextPage: boolean;
   hasPreviousPage: boolean;
   onPageChange: (page: number) => void;
-  onUpdate: () => void;
+  onEdit: (coupon: Coupon) => void;
+  onDeleteConfirm: (id: string) => Promise<boolean>;
 }
 
-export function CustomersTableSection({
+export function CouponsTableSection({
   items,
   loading,
   currentPage,
@@ -22,8 +23,9 @@ export function CustomersTableSection({
   hasNextPage,
   hasPreviousPage,
   onPageChange,
-  onUpdate,
-}: CustomersTableSectionProps) {
+  onEdit,
+  onDeleteConfirm,
+}: CouponsTableSectionProps) {
   return (
     <div
       className={cn(
@@ -36,7 +38,12 @@ export function CustomersTableSection({
         'mx-4 md:mx-6 lg:mx-0',
       )}
     >
-      <CustomersTable users={items} isLoading={loading} onUpdate={onUpdate} />
+      <CouponsTable
+        coupons={items}
+        isLoading={loading}
+        onEdit={onEdit}
+        onDeleteConfirm={onDeleteConfirm}
+      />
 
       {totalPages > 1 && (
         <div className="border-t border-[oklch(1_0_0_/0.055)] px-4 py-3 shrink-0 bg-[oklch(1_0_0_/0.015)]">

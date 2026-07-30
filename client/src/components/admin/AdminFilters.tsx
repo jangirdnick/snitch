@@ -10,14 +10,31 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-interface InventoryFiltersProps {
+export interface FilterOption {
+  label: string;
+  value: string;
+  dotClass?: string;
+}
+
+export interface SortOption {
+  label: string;
+  value: string;
+}
+
+interface AdminFiltersProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   debouncedSearch: string;
+  searchPlaceholder?: string;
+
   statusFilter: string;
   onStatusChange: (value: string) => void;
+  statusOptions: FilterOption[];
+
   sortValue: string;
   onSortChange: (value: string) => void;
+  sortOptions: SortOption[];
+
   onClearFilters: () => void;
 }
 
@@ -28,16 +45,19 @@ const TOP_GLOW = (
   />
 );
 
-export function InventoryFilters({
+export function AdminFilters({
   searchTerm,
   onSearchChange,
   debouncedSearch,
+  searchPlaceholder = 'Search...',
   statusFilter,
   onStatusChange,
+  statusOptions,
   sortValue,
   onSortChange,
+  sortOptions,
   onClearFilters,
-}: InventoryFiltersProps) {
+}: AdminFiltersProps) {
   return (
     <div
       className={cn(
@@ -55,7 +75,7 @@ export function InventoryFilters({
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[oklch(0.55_0_0)]" />
           <Input
-            placeholder="Search by name or SKU..."
+            placeholder={searchPlaceholder}
             className="pl-10 bg-[oklch(1_0_0_/_0.03)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] placeholder:text-[oklch(0.42_0_0)] focus-visible:ring-[oklch(1_0_0_/_0.2)] focus-visible:border-[oklch(1_0_0_/_0.15)] h-11 rounded-xl"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -69,48 +89,22 @@ export function InventoryFilters({
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent className="bg-[oklch(0.13_0.005_260)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] rounded-xl shadow-[0_8px_32px_oklch(0_0_0_/_0.6)]">
-              <SelectItem
-                value="all"
-                className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)]"
-              >
-                All Status
-              </SelectItem>
-              <SelectItem
-                value="active"
-                className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)]"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[oklch(0.70_0.15_160)] shadow-[0_0_6px_oklch(0.70_0.15_160_/_0.7)]" />
-                  Active
-                </span>
-              </SelectItem>
-              <SelectItem
-                value="draft"
-                className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)]"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[oklch(0.55_0_0)] shadow-[0_0_6px_oklch(0.55_0_0_/_0.6)]" />
-                  Draft
-                </span>
-              </SelectItem>
-              <SelectItem
-                value="inactive"
-                className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)]"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[oklch(0.42_0_0)] shadow-[0_0_6px_oklch(0.42_0_0_/_0.4)]" />
-                  Inactive
-                </span>
-              </SelectItem>
-              <SelectItem
-                value="out_of_stock"
-                className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)]"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[oklch(0.65_0.20_22)] shadow-[0_0_6px_oklch(0.65_0.20_22_/_0.6)]" />
-                  Out of Stock
-                </span>
-              </SelectItem>
+              {statusOptions.map((opt) => (
+                <SelectItem
+                  key={opt.value}
+                  value={opt.value}
+                  className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)]"
+                >
+                  {opt.dotClass ? (
+                    <span className="flex items-center gap-2">
+                      <span className={cn('w-2 h-2 rounded-full', opt.dotClass)} />
+                      {opt.label}
+                    </span>
+                  ) : (
+                    opt.label
+                  )}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
@@ -120,36 +114,15 @@ export function InventoryFilters({
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent className="bg-[oklch(0.13_0.005_260)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] rounded-xl shadow-[0_8px_32px_oklch(0_0_0_/_0.6)]">
-              <SelectItem
-                value="createdAt-desc"
-                className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)]"
-              >
-                Newest First
-              </SelectItem>
-              <SelectItem
-                value="createdAt-asc"
-                className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)]"
-              >
-                Oldest First
-              </SelectItem>
-              <SelectItem
-                value="price-desc"
-                className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)]"
-              >
-                Price: High to Low
-              </SelectItem>
-              <SelectItem
-                value="price-asc"
-                className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)]"
-              >
-                Price: Low to High
-              </SelectItem>
-              <SelectItem
-                value="soldCount-desc"
-                className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)]"
-              >
-                Best Selling
-              </SelectItem>
+              {sortOptions.map((opt) => (
+                <SelectItem
+                  key={opt.value}
+                  value={opt.value}
+                  className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)]"
+                >
+                  {opt.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -172,7 +145,8 @@ export function InventoryFilters({
               variant="outline"
               className="text-[10.5px] border-[oklch(1_0_0_/_0.1)] bg-[oklch(1_0_0_/_0.03)] text-[oklch(0.7_0_0)] font-normal rounded-md capitalize"
             >
-              {statusFilter.replace('_', ' ')}
+              {statusOptions.find((o) => o.value === statusFilter)?.label ||
+                statusFilter.replace('_', ' ')}
             </Badge>
           )}
           <button

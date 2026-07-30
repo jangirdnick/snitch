@@ -14,6 +14,7 @@ import CategoryPage from '@/pages/(admin)/(category)/CategoryPage';
 import CreateCategoryPage from '@/pages/(admin)/(category)/CreateCategoryPage';
 import EditCategoryPage from '@/pages/(admin)/(category)/EditCategoryPage';
 import CustomersPage from '@/pages/(admin)/CustomersPage';
+import CouponsPage from '@/pages/(admin)/CouponsPage';
 
 const router = createBrowserRouter([
   {
@@ -86,7 +87,7 @@ const router = createBrowserRouter([
           },
           {
             path: 'coupons',
-            element: <div>Coupons</div>,
+            element: <CouponsPage />,
           },
           {
             path: 'analytics',

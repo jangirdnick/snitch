@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { useInventory } from '@/features/inventory/hook/useInventory';
 import { InventoryHeader } from '@/features/inventory/components/InventoryHeader';
 import { InventoryStats } from '@/features/inventory/components/InventoryStats';
-import { InventoryFilters } from '@/features/inventory/components/InventoryFilters';
+import { AdminFilters } from '@/components/admin/AdminFilters';
 import { InventoryTableSection } from '@/features/inventory/components/InventoryTableSection';
 import type { Product } from '@snitch/types';
 
@@ -77,14 +77,45 @@ export default function InventoryPage() {
         loading={loading}
       />
 
-      <InventoryFilters
+      <AdminFilters
         searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search by name or SKU..."
         debouncedSearch={debouncedSearch}
+        onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
         onStatusChange={setStatusFilter}
+        statusOptions={[
+          { label: 'All Status', value: 'all' },
+          {
+            label: 'Active',
+            value: 'active',
+            dotClass: 'bg-[oklch(0.70_0.15_160)] shadow-[0_0_6px_oklch(0.70_0.15_160_/_0.7)]',
+          },
+          {
+            label: 'Draft',
+            value: 'draft',
+            dotClass: 'bg-[oklch(0.55_0_0)] shadow-[0_0_6px_oklch(0.55_0_0_/_0.6)]',
+          },
+          {
+            label: 'Inactive',
+            value: 'inactive',
+            dotClass: 'bg-[oklch(0.42_0_0)] shadow-[0_0_6px_oklch(0.42_0_0_/_0.4)]',
+          },
+          {
+            label: 'Out of Stock',
+            value: 'out_of_stock',
+            dotClass: 'bg-[oklch(0.65_0.20_22)] shadow-[0_0_6px_oklch(0.65_0.20_22_/_0.6)]',
+          },
+        ]}
         sortValue={sortValue}
         onSortChange={setSortValue}
+        sortOptions={[
+          { label: 'Newest First', value: 'createdAt-desc' },
+          { label: 'Oldest First', value: 'createdAt-asc' },
+          { label: 'Price: High to Low', value: 'price-desc' },
+          { label: 'Price: Low to High', value: 'price-asc' },
+          { label: 'Best Selling', value: 'soldCount-desc' },
+        ]}
         onClearFilters={handleClearFilters}
       />
 
