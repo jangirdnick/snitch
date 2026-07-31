@@ -1,0 +1,307 @@
+import { useState } from 'react';
+import type { Order } from '@snitch/types';
+import { Button } from '@/components/ui/button';
+import { OrderStatusBadge } from './OrderStatusBadge';
+import {
+  MoreHorizontal,
+  FileText,
+  Truck,
+  Edit,
+  User,
+  Calendar,
+  CreditCard,
+  Box,
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { OrderTrackingDialog } from './OrderTrackingDialog';
+import { UpdateOrderStatusDialog } from './UpdateOrderStatusDialog';
+import { OrderDetailsSheet } from './OrderDetailsSheet';
+
+interface OrderTableProps {
+  orders: Order[];
+  isLoading?: boolean;
+  onUpdateStatus: (
+    id: string,
+    payload: { status: Order['status']; note?: string },
+  ) => Promise<boolean>;
+  onUpdateTracking: (
+    id: string,
+    payload: { trackingId: string; carrier: string },
+  ) => Promise<boolean>;
+}
+
+const getInitials = (first: string, last?: string) => {
+  return `${first.charAt(0)}${last ? last.charAt(0) : ''}`.toUpperCase();
+};
+
+export function OrderTable({
+  orders,
+  isLoading,
+  onUpdateStatus,
+  onUpdateTracking,
+}: OrderTableProps) {
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [activeDialog, setActiveDialog] = useState<'status' | 'tracking' | 'details' | null>(null);
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-full p-6">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-b-[oklch(1_0_0/0.055)] hover:bg-transparent">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <TableHead key={i}>
+                  <Skeleton className="h-4 w-20 bg-[oklch(1_0_0/0.05)]" />
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 6 }).map((_, index) => (
+              <TableRow key={index} className="border-b-[oklch(1_0_0/0.055)] hover:bg-transparent">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <TableCell key={i}>
+                    <Skeleton className="h-4 w-full max-w-30 bg-[oklch(1_0_0/0.05)]" />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  }
+
+  if (orders.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-[oklch(0.5_0_0)] bg-transparent rounded-lg border-none">
+        <FileText className="h-12 w-12 mb-4 opacity-30" />
+        <p className="text-sm font-medium tracking-wide">No orders found</p>
+        <p className="text-xs mt-1 opacity-70">Try adjusting your filters or search query.</p>
+      </div>
+    );
+  }
+
+  const thClass =
+    'text-[oklch(0.55_0_0)] uppercase tracking-wider text-[10px] font-semibold h-10 border-b-[oklch(1_0_0/0.055)] px-4 whitespace-nowrap';
+  const tdClass = 'py-3 px-4 text-[13px] text-[oklch(0.85_0_0)] font-medium whitespace-nowrap';
+  const rowClass =
+    'group transition-colors border-b-[oklch(1_0_0/0.055)] hover:bg-[oklch(1_0_0/0.04)]';
+
+  return (
+    <>
+      <div className="w-full h-full bg-transparent overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent border-b-[oklch(1_0_0/0.055)]">
+              <TableHead className={cn(thClass, 'min-w-40')}>
+                <div className="flex items-center gap-1.5">
+                  <FileText className="size-3.5" /> Order Details
+                </div>
+              </TableHead>
+              <TableHead className={cn(thClass, 'min-w-50')}>
+                <div className="flex items-center gap-1.5">
+                  <User className="size-3.5" /> Customer
+                </div>
+              </TableHead>
+              <TableHead className={thClass}>
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="size-3.5" /> Date & Time
+                </div>
+              </TableHead>
+              <TableHead className={cn(thClass, 'text-right')}>
+                <div className="flex items-center justify-end gap-1.5">
+                  <CreditCard className="size-3.5" /> Amount
+                </div>
+              </TableHead>
+              <TableHead className={thClass}>Status</TableHead>
+              <TableHead className={cn(thClass, 'w-20 text-right')}>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {orders.map((order) => {
+              const userFirstName =
+                typeof order.user === 'object' ? order.user.firstName : 'Unknown';
+              const userLastName = typeof order.user === 'object' ? order.user.lastName : '';
+              const userEmail = typeof order.user === 'object' ? order.user.email : '';
+
+              return (
+                <TableRow key={order.id} className={rowClass}>
+                  {/* ORDER DETAILS */}
+                  <TableCell className={tdClass}>
+                    <div className="flex flex-col gap-1">
+                      <span className="font-mono font-bold text-[oklch(0.95_0_0)] text-sm tracking-tight">
+                        {order.orderNumber}
+                      </span>
+                      <div className="flex items-center gap-1.5 text-[11px] text-[oklch(0.55_0_0)] font-medium">
+                        <Box className="size-3" />
+                        {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
+                      </div>
+                    </div>
+                  </TableCell>
+
+                  {/* CUSTOMER */}
+                  <TableCell className={tdClass}>
+                    <div className="flex items-center gap-3">
+                      <div className="size-9 rounded-full bg-[oklch(1_0_0/0.08)] border border-[oklch(1_0_0/0.1)] flex items-center justify-center text-[oklch(0.8_0_0)] text-xs font-bold tracking-widest shrink-0">
+                        {getInitials(userFirstName, userLastName)}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-[oklch(0.95_0_0)] truncate max-w-37.5">
+                          {userFirstName} {userLastName}
+                        </span>
+                        <span className="text-[11px] text-[oklch(0.6_0_0)] mt-0.5 truncate max-w-37.5">
+                          {userEmail}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
+
+                  {/* DATE & TIME */}
+                  <TableCell className={tdClass}>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[12.5px] text-[oklch(0.85_0_0)]">
+                        {new Intl.DateTimeFormat('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        }).format(new Date(order.createdAt))}
+                      </span>
+                      <span className="text-[11px] text-[oklch(0.6_0_0)] font-medium">
+                        {new Intl.DateTimeFormat('en-US', { timeStyle: 'short' }).format(
+                          new Date(order.createdAt),
+                        )}
+                      </span>
+                    </div>
+                  </TableCell>
+
+                  {/* AMOUNT */}
+                  <TableCell className={cn(tdClass, 'text-right')}>
+                    <span className="font-bold text-[oklch(0.95_0_0)] text-[14px]">
+                      {new Intl.NumberFormat('en-IN', {
+                        style: 'currency',
+                        currency: 'INR',
+                        maximumFractionDigits: 0,
+                      }).format(order.netAmount)}
+                    </span>
+                  </TableCell>
+
+                  {/* STATUS */}
+                  <TableCell className="px-4 py-3">
+                    <OrderStatusBadge status={order.status} />
+                  </TableCell>
+
+                  {/* ACTIONS */}
+                  <TableCell className="px-4 py-3 text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="h-8 w-8 p-0 text-[oklch(0.6_0_0)] hover:text-[oklch(0.95_0_0)] hover:bg-[oklch(1_0_0/0.06)]"
+                        >
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="bg-[oklch(0.15_0.01_260)] border-[oklch(0.25_0.02_260)] text-[oklch(0.9_0_0)] min-w-40"
+                      >
+                        <DropdownMenuLabel className="text-[oklch(0.55_0_0)] text-xs uppercase tracking-wider">
+                          Actions
+                        </DropdownMenuLabel>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setActiveDialog('details');
+                          }}
+                          className="cursor-pointer hover:bg-[oklch(0.2_0.02_260)] focus:bg-[oklch(0.2_0.02_260)]"
+                        >
+                          <FileText className="mr-2 h-4 w-4 text-[oklch(0.6_0_0)]" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-[oklch(0.25_0.02_260)]" />
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setActiveDialog('status');
+                          }}
+                          className="cursor-pointer hover:bg-[oklch(0.2_0.02_260)] focus:bg-[oklch(0.2_0.02_260)]"
+                        >
+                          <Edit className="mr-2 h-4 w-4 text-[oklch(0.6_0_0)]" />
+                          Update Status
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setActiveDialog('tracking');
+                          }}
+                          className="cursor-pointer hover:bg-[oklch(0.2_0.02_260)] focus:bg-[oklch(0.2_0.02_260)]"
+                        >
+                          <Truck className="mr-2 h-4 w-4 text-[oklch(0.6_0_0)]" />
+                          Manage Tracking
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+
+      {selectedOrder && (
+        <>
+          <OrderTrackingDialog
+            isOpen={activeDialog === 'tracking'}
+            onClose={() => setActiveDialog(null)}
+            orderNumber={selectedOrder.orderNumber}
+            defaultTrackingId={selectedOrder.shipping?.trackingId || ''}
+            defaultCarrier={selectedOrder.shipping?.carrier || ''}
+            onConfirm={async (payload) => {
+              const success = await onUpdateTracking(selectedOrder.id, payload);
+              if (success) setActiveDialog(null);
+            }}
+          />
+          <UpdateOrderStatusDialog
+            isOpen={activeDialog === 'status'}
+            onClose={() => setActiveDialog(null)}
+            orderNumber={selectedOrder.orderNumber}
+            currentStatus={selectedOrder.status}
+            onConfirm={async (payload) => {
+              if (!payload.status) return;
+              const success = await onUpdateStatus(selectedOrder.id, {
+                status: payload.status as Order['status'],
+                note: payload.note,
+              });
+              if (success) setActiveDialog(null);
+            }}
+          />
+          <OrderDetailsSheet
+            isOpen={activeDialog === 'details'}
+            onClose={() => setActiveDialog(null)}
+            order={selectedOrder}
+          />
+        </>
+      )}
+    </>
+  );
+}

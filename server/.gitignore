@@ -13,3 +13,4 @@ coverage/
 
 # File uploads directory (if local disk storage is used in dev)
 uploads/
+/test

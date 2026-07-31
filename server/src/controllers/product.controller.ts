@@ -215,6 +215,22 @@ export class ProductController {
 
       const products = await getLimitProducts(Math.min(limitNum, 100));
 
+      products.map((product) => {
+        product.colors.map((color) => {
+          color.images.map((img) => {
+            img.url = generateUrl({
+              path: img.url,
+              transformations: {
+                width: 40,
+                height: 40,
+                format: 'avif',
+                quality: 10,
+              },
+            });
+          });
+        });
+      });
+
       res.status(200).json({
         success: true,
         message: 'Products fetched successfully',
@@ -236,6 +252,22 @@ export class ProductController {
       }
 
       const products = await getSearchProduct(search);
+
+      products.map((product) => {
+        product.colors.map((color) => {
+          color.images.map((img) => {
+            img.url = generateUrl({
+              path: img.url,
+              transformations: {
+                width: 40,
+                height: 40,
+                format: 'avif',
+                quality: 10,
+              },
+            });
+          });
+        });
+      });
 
       res.status(200).json({
         success: true,
@@ -294,6 +326,20 @@ export class ProductController {
       }
 
       const product = await getProductBySlug(slug);
+
+      product.colors.map((color) => {
+        color.images.map((img) => {
+          img.url = generateUrl({
+            path: img.url,
+            transformations: {
+              width: 40,
+              height: 40,
+              format: 'avif',
+              quality: 10,
+            },
+          });
+        });
+      });
 
       res.status(200).json({
         success: true,
