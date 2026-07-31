@@ -16,6 +16,7 @@ import EditCategoryPage from '@/pages/(admin)/(category)/EditCategoryPage';
 import CustomersPage from '@/pages/(admin)/CustomersPage';
 import CouponsPage from '@/pages/(admin)/CouponsPage';
 import ReviewsPage from '@/pages/(admin)/ReviewsPage';
+import { OrdersPage } from '@/pages/(admin)/OrdersPage';
 
 const router = createBrowserRouter([
   {
@@ -76,7 +77,7 @@ const router = createBrowserRouter([
           },
           {
             path: 'orders',
-            element: <div>Orders</div>,
+            element: <OrdersPage />,
           },
           {
             path: 'customers',

@@ -37,6 +37,8 @@ import { CouponNotFoundError, CouponOperationError } from '@/services/coupon.ser
 import { CouponFieldsError, CouponRequestError } from '@/controllers/coupon.controller.js';
 import { ReviewNotFoundError, ReviewOperationError } from '@/services/review.service.js';
 import { ReviewFieldsError, ReviewRequestError } from '@/controllers/review.controller.js';
+import { OrderNotFoundError, OrderOperationError } from '@/services/order.service.js';
+import { OrderFieldsError, OrderRequestError } from '@/controllers/order.controller.js';
 
 const logger = createLogger('HttpExceptionFilter');
 
@@ -79,6 +81,10 @@ const DOMAIN_ERROR_MAP = new Map<ErrorClass, number>([
   [ReviewOperationError, 500],
   [ReviewFieldsError, 400],
   [ReviewRequestError, 400],
+  [OrderNotFoundError, 404],
+  [OrderOperationError, 500],
+  [OrderFieldsError, 400],
+  [OrderRequestError, 400],
 ]);
 
 export function globalErrorFilter(
@@ -110,7 +116,8 @@ export function globalErrorFilter(
     error instanceof ProductFieldsError ||
     error instanceof CategoryFieldsError ||
     error instanceof CouponFieldsError ||
-    error instanceof ReviewFieldsError
+    error instanceof ReviewFieldsError ||
+    error instanceof OrderFieldsError
   ) {
     res.status(400).json({
       success: false,

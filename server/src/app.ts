@@ -15,6 +15,7 @@ import useProduct from './routes/product.route.js';
 import categoryRoute from './routes/category.route.js';
 import couponRoute from './routes/coupon.route.js';
 import reviewRoute from './routes/review.route.js';
+import orderRoute from './routes/order.route.js';
 
 const app: Application = express();
 
@@ -59,6 +60,7 @@ apiRouter.use('/product', useProduct);
 apiRouter.use('/category', categoryRoute);
 apiRouter.use('/coupon', couponRoute);
 apiRouter.use('/review', reviewRoute);
+apiRouter.use('/order', orderRoute);
 
 app.use('/api', apiRouter);
 
