@@ -78,3 +78,9 @@ export const updateUserBlockStatusSchema = z.object({
 });
 
 export type UpdateUserBlockStatusDto = z.infer<typeof updateUserBlockStatusSchema>;
+
+export const updateUserReviewPermissionSchema = z.object({
+  canReview: z.boolean({ required_error: 'canReview status is required' }),
+});
+
+export type UpdateUserReviewPermissionDto = z.infer<typeof updateUserReviewPermissionSchema>;

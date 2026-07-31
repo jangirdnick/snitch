@@ -91,6 +91,7 @@ export const mapUserResponse = (user: IUser | UserWithoutPassword): UserResponse
   emailVerified: user.emailVerified,
   role: user.role,
   isBlocked: user.isBlocked,
+  canReview: user.canReview,
   contact: user.contact,
   lastLoginAt: user.lastLoginAt,
   createdAt: user.createdAt,

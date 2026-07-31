@@ -9,7 +9,7 @@
  */
 
 import { Navigate, useParams } from 'react-router';
-import { EditProductForm } from '@/features/inventory/components/EditProductForm';
+import { EditProductForm } from '@/features/admin/inventory/components/EditProductForm';
 
 export default function EditProductPage() {
   const { productId } = useParams<{ productId: string }>();
