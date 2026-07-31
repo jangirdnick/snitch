@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@components/ui/select';
 import { TagsInput } from '../TagsInput';
-import { CategoryMultiSelect } from '@/features/category/components/CategoryMultiSelect';
+import { CategoryMultiSelect } from '@/features/admin/category/components/CategoryMultiSelect';
 import { type ProductFormValues, GENDER, AGE_GROUP } from '../../schema/product.form.schema';
 
 import {

@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router';
-import { useCategoryList } from '@/features/category/hook/useCategoryList';
-import { CategoryHeader } from '@/features/category/components/CategoryHeader';
-import { CategoryTableSection } from '@/features/category/components/CategoryTableSection';
+import { useCategoryList } from '@/features/admin/category/hook/useCategoryList';
+import { CategoryHeader } from '@/features/admin/category/components/CategoryHeader';
+import { CategoryTableSection } from '@/features/admin/category/components/CategoryTableSection';
 import { showToast } from '@/lib/toast';
-import { categoryService } from '@/features/category/service/category.api';
-import type { Category } from '@/features/category/service/category.api';
+import { categoryService } from '@/features/admin/category/service/category.api';
+import type { Category } from '@/features/admin/category/service/category.api';
 import { AxiosError } from 'axios';
 
 export default function CategoryPage() {

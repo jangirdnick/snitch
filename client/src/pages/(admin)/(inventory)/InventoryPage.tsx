@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router';
-import { useInventory } from '@/features/inventory/hook/useInventory';
-import { InventoryHeader } from '@/features/inventory/components/InventoryHeader';
-import { InventoryStats } from '@/features/inventory/components/InventoryStats';
+import { useInventory } from '@/features/admin/inventory/hook/useInventory';
+import { InventoryHeader } from '@/features/admin/inventory/components/InventoryHeader';
+import { InventoryStats } from '@/features/admin/inventory/components/InventoryStats';
 import { AdminFilters } from '@/components/admin/AdminFilters';
-import { InventoryTableSection } from '@/features/inventory/components/InventoryTableSection';
+import { InventoryTableSection } from '@/features/admin/inventory/components/InventoryTableSection';
 import type { Product } from '@snitch/types';
 
 export default function InventoryPage() {

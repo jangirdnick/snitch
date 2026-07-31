@@ -15,6 +15,7 @@ import CreateCategoryPage from '@/pages/(admin)/(category)/CreateCategoryPage';
 import EditCategoryPage from '@/pages/(admin)/(category)/EditCategoryPage';
 import CustomersPage from '@/pages/(admin)/CustomersPage';
 import CouponsPage from '@/pages/(admin)/CouponsPage';
+import ReviewsPage from '@/pages/(admin)/ReviewsPage';
 
 const router = createBrowserRouter([
   {
@@ -83,7 +84,7 @@ const router = createBrowserRouter([
           },
           {
             path: 'reviews',
-            element: <div>Reviews</div>,
+            element: <ReviewsPage />,
           },
           {
             path: 'coupons',

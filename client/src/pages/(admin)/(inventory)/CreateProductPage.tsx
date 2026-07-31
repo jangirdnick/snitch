@@ -1,4 +1,4 @@
-import { CreateProductForm } from '@/features/inventory/components/CreateProductForm';
+import { CreateProductForm } from '@/features/admin/inventory/components/CreateProductForm';
 
 export default function CreateProductPage() {
   return <CreateProductForm />;

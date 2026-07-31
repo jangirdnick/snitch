@@ -118,6 +118,7 @@ export interface IUser extends Document {
   password: string;
   role: 'USER' | 'ADMIN';
   isBlocked: boolean;
+  canReview: boolean;
   lastLoginAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -137,6 +138,7 @@ export interface IUserCreate {
   };
   password: string;
   isBlocked?: boolean;
+  canReview?: boolean;
   lastLoginAt: Date;
 }
 
@@ -262,6 +264,11 @@ const userSchema: Schema<IUser> = new Schema(
     isBlocked: {
       type: Boolean,
       default: false,
+    },
+
+    canReview: {
+      type: Boolean,
+      default: true,
     },
 
     lastLoginAt: {

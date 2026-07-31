@@ -1,6 +1,15 @@
 import type { NextFunction, Request, Response } from 'express';
-import { getUsers, userUpdateBlockStatus, userDeleteById } from '@/services/user.service.js';
-import { userQuerySchema, updateUserBlockStatusSchema } from '@snitch/schemas';
+import {
+  getUsers,
+  userUpdateBlockStatus,
+  userDeleteById,
+  userUpdateReviewPermission,
+} from '@/services/user.service.js';
+import {
+  userQuerySchema,
+  updateUserBlockStatusSchema,
+  updateUserReviewPermissionSchema,
+} from '@snitch/schemas';
 
 export class UserFieldsError extends Error {
   public readonly statusCode = 400;
@@ -102,6 +111,36 @@ export class UserController {
       res.status(200).json({
         success: true,
         message: 'User deleted successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * PATCH /api/user/admin/:id/review-permission
+   * Updates the user's canReview permission.
+   */
+  static updateReviewPermission = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      if (!id || typeof id !== 'string') {
+        throw new UserRequestError('User ID is required');
+      }
+
+      const bodyParsed = updateUserReviewPermissionSchema.safeParse(req.body);
+      if (!bodyParsed.success) {
+        throw new UserFieldsError(bodyParsed.error.flatten().fieldErrors);
+      }
+
+      const { canReview } = bodyParsed.data;
+
+      const updatedUser = await userUpdateReviewPermission(id, canReview);
+
+      res.status(200).json({
+        success: true,
+        message: `User review permission successfully ${canReview ? 'granted' : 'revoked'}`,
+        data: { user: updatedUser },
       });
     } catch (error) {
       next(error);

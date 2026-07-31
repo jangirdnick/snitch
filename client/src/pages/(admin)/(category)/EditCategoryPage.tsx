@@ -1,5 +1,5 @@
 import { Navigate, useParams } from 'react-router';
-import { EditCategoryForm } from '@/features/category/components/EditCategoryForm';
+import { EditCategoryForm } from '@/features/admin/category/components/EditCategoryForm';
 
 export default function EditCategoryPage() {
   const { categoryId } = useParams<{ categoryId: string }>();

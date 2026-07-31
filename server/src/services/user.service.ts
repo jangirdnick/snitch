@@ -395,3 +395,26 @@ export async function userDeleteById(id: string): Promise<void> {
     throw new DatabaseOperationError('userDeleteById', error);
   }
 }
+
+export async function userUpdateReviewPermission(
+  id: string,
+  canReview: boolean,
+): Promise<UserWithoutPassword> {
+  try {
+    const user = await userModel
+      .findOneAndUpdate({ id }, { $set: { canReview } }, { new: true, runValidators: true })
+      .select('-password')
+      .lean()
+      .exec();
+
+    if (!user) {
+      throw new UserNotFoundError(id);
+    }
+
+    return user as unknown as UserWithoutPassword;
+  } catch (error) {
+    if (isUserError(error)) throw error;
+    logger.error({ err: error, id }, 'Error updating user review permission');
+    throw new DatabaseOperationError('userUpdateReviewPermission', error);
+  }
+}

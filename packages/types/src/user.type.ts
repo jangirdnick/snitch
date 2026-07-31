@@ -12,6 +12,7 @@ export interface User {
   password: string;
   role: 'USER' | 'ADMIN';
   isBlocked: boolean;
+  canReview: boolean;
   lastLoginAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -26,6 +27,7 @@ export interface UserResponseDto {
   emailVerified: boolean;
   role: 'USER' | 'ADMIN';
   isBlocked: boolean;
+  canReview: boolean;
   contact: {
     countryCode: string;
     phoneNumber: string;
