@@ -52,7 +52,7 @@ export function OrderTableSection({ initialStatus }: OrderTableSectionProps) {
   }, []);
 
   return (
-    <div className="space-y-6 flex flex-col h-full">
+    <div className="space-y-6 flex flex-col h-full justify-between">
       <AdminFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}

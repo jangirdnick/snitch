@@ -7,14 +7,14 @@ import { ShoppingBag, Clock } from 'lucide-react';
 export function OrdersPage() {
   return (
     <>
-      <div className="space-y-2  md:space-y-6">
+      <div className="space-y-2  md:space-y-6 h-full flex-1 flex flex-col justify-between">
         <PageHeader
           title="Orders"
           description="Manage customer orders, track shipping, and update statuses."
         />
 
         <Tabs defaultValue="all" className="w-full h-full space-y-2 ">
-          <div className="w-full flex items-center md:justify-end max-md:px-2.5">
+          <div className="w-full flex items-center md:justify-end max-md:px-2.5 md:-mt-16 z-[99]">
             <TabsList className=" bg-[oklch(0.12_0.01_260)] border border-[oklch(0.2_0.02_260)] p-1 gap-2">
               <TabsTrigger
                 value="all"
