@@ -245,10 +245,13 @@ export function InventoryTable({ items, loading, onEdit, onView, onDelete }: Inv
               const idToUse = product._id;
               let categoryName = 'Unknown';
               if (Array.isArray(product.category)) {
-                categoryName = product.category
-                  .map((c: Category) =>
-                    typeof c === 'object' && c !== null && c.name ? c.name : String(c),
-                  )
+                categoryName = (product.category as Array<Category | string>)
+                  .map((c) => {
+                    if (c == null) return '';
+                    return typeof c === 'object' && c !== null && 'name' in c && c.name
+                      ? String(c.name)
+                      : String(c);
+                  })
                   .join(', ');
               } else if (typeof product.category === 'object' && product.category !== null) {
                 categoryName = (product.category as Category).name || 'Unknown';
@@ -371,10 +374,13 @@ export function InventoryTable({ items, loading, onEdit, onView, onDelete }: Inv
           const imgUrl = getPrimaryImage(product);
           let categoryName = 'Unknown';
           if (Array.isArray(product.category)) {
-            categoryName = product.category
-              .map((c: Category) =>
-                typeof c === 'object' && c !== null && c.name ? c.name : String(c),
-              )
+            categoryName = (product.category as Array<Category | string>)
+              .map((c) => {
+                if (c == null) return '';
+                return typeof c === 'object' && c !== null && 'name' in c && c.name
+                  ? String(c.name)
+                  : String(c);
+              })
               .join(', ');
           } else if (typeof product.category === 'object' && product.category !== null) {
             categoryName = (product.category as Category).name || 'Unknown';

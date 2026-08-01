@@ -24,7 +24,6 @@ import { useProduct } from './useProduct';
 import { getProductById } from '../service/product.api';
 import { setFormErrors } from '@/utils/form-errors.util';
 import type { Product, ProductColorVariant, ProductImage } from '@snitch/types';
-import type { Category } from '../types/inventory';
 
 // ─── Data mapper — Product (server) → ProductFormValues (client) ──────────────
 
@@ -52,20 +51,27 @@ function mapProductToFormValues(product: Product): ProductFormValues {
   const colors = product.colors.map((color: ProductColorVariant) => ({
     name: color.name,
     hex: color.hex,
-    isDefault: color.isDefault,
+    isDefault: color.isDefault ?? false,
     sizes: color.sizes.map((s) => ({
       size: s.size,
-      stock: s.stock,
+      stock: s.stock ?? 0,
       sku: s.sku,
     })),
     // Existing server images become ExistingImage objects in the form
     images: color.images.map((img: ProductImage): ExistingImage => ({
       url: img.url,
       alt: img.alt ?? '',
-      isPrimary: img.isPrimary,
-      order: img.order,
+      isPrimary: img.isPrimary ?? false,
+      order: img.order ?? 0,
     })),
   }));
+
+  const parseCategory = (c: Product | string | unknown) => {
+    if (c == null) return '';
+    return typeof c === 'object' && c !== null
+      ? String((c as { _id?: string })._id || c)
+      : String(c);
+  };
 
   return {
     title: product.title ?? '',
@@ -73,15 +79,9 @@ function mapProductToFormValues(product: Product): ProductFormValues {
     shortDescription: product.shortDescription ?? '',
     sku: product.sku ?? '',
     category: Array.isArray(product.category)
-      ? product.category.map((c: Category) =>
-          typeof c === 'object' && c !== null ? String(c._id) : String(c),
-        )
+      ? product.category.map(parseCategory).filter(Boolean)
       : product.category
-        ? [
-            typeof product.category === 'object' && product.category !== null
-              ? String((product.category as Category)._id || (product.category as Category)._id)
-              : String(product.category),
-          ]
+        ? [parseCategory(product.category)].filter(Boolean)
         : [],
 
     tags: product.tags ?? [],
@@ -90,9 +90,8 @@ function mapProductToFormValues(product: Product): ProductFormValues {
 
     fit: product.fit,
     fabric: product.fabric ?? '',
-    // careInstructions is not on the Product type — leave undefined so the
-    // optional schema field passes validation and the server ignores it.
-    careInstructions: undefined,
+    careInstructions:
+      (product as unknown as { careInstructions?: string[] }).careInstructions ?? [],
     pattern: product.pattern,
     occasion: product.occasion ?? [],
     season: product.season ?? [],
