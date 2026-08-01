@@ -7,3 +7,4 @@ export * from './review.type.js';
 export * from './order.type.js';
 export * from './jwt.type.js';
 export * from './analytics.type.js';
+export * from './dashboard.type.js';

@@ -17,6 +17,7 @@ import couponRoute from './routes/coupon.route.js';
 import reviewRoute from './routes/review.route.js';
 import orderRoute from './routes/order.route.js';
 import analyticsRoute from './routes/analytics.route.js';
+import dashboardRoute from './routes/dashboard.route.js';
 
 const app: Application = express();
 
@@ -63,6 +64,7 @@ apiRouter.use('/coupon', couponRoute);
 apiRouter.use('/review', reviewRoute);
 apiRouter.use('/order', orderRoute);
 apiRouter.use('/analytics', analyticsRoute);
+apiRouter.use('/dashboard', dashboardRoute);
 
 app.use('/api', apiRouter);
 

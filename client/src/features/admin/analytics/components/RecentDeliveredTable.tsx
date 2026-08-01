@@ -25,6 +25,9 @@ import { Button } from '@/components/ui/button';
 interface RecentDeliveredTableProps {
   data: PaginatedOrders;
   onPageChange: (page: number) => void;
+  hfull: boolean;
+  title?: string;
+  description?: string;
 }
 
 const getPaymentBadgeClass = (status?: string) => {
@@ -42,15 +45,23 @@ const getPaymentBadgeClass = (status?: string) => {
   }
 };
 
-export function RecentDeliveredTable({ data, onPageChange }: RecentDeliveredTableProps) {
+export function RecentDeliveredTable({
+  data,
+  onPageChange,
+  hfull,
+  title,
+  description,
+}: RecentDeliveredTableProps) {
   return (
-    <Card className="col-span-1 lg:col-span-5 lg:h-[40%] 2xl:h-[73%] overflow-y-scroll justify-between">
+    <Card
+      className={`col-span-1 ${hfull ? '' : 'lg:col-span-5 lg:h-[40%] 2xl:h-[73%]'} overflow-y-scroll justify-between`}
+    >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Recent Delivered Orders</CardTitle>
+            <CardTitle>{title || 'Recent Delivered Orders'}</CardTitle>
             <CardDescription>
-              Latest successfully delivered orders across the platform
+              {description || 'Latest successfully delivered orders across the platform'}
             </CardDescription>
           </div>
           <Button variant="outline" size="sm" asChild>

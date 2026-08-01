@@ -217,6 +217,7 @@ export function AttributesSection() {
             <FormLabel className={formLabelClass}>Occasion</FormLabel>
             <FormControl>
               <CheckboxGroup
+                {...field}
                 id="product-occasion"
                 options={OCCASION}
                 value={field.value ?? []}
@@ -241,6 +242,7 @@ export function AttributesSection() {
             <FormLabel className={formLabelClass}>Season</FormLabel>
             <FormControl>
               <CheckboxGroup
+                {...field}
                 id="product-season"
                 options={SEASON}
                 value={field.value ?? []}
@@ -265,6 +267,7 @@ export function AttributesSection() {
             <FormLabel className={formLabelClass}>Care Instructions</FormLabel>
             <FormControl>
               <CareInstructionsInput
+                {...field}
                 id="product-care-instructions"
                 value={field.value ?? []}
                 onChange={field.onChange}

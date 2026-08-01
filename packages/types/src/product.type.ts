@@ -110,7 +110,7 @@ export interface Product {
   shortDescription?: string;
   readonly sku: string;
 
-  category: string;
+  category: string[];
   brand?: string;
   tags: string[];
 

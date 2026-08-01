@@ -66,6 +66,7 @@ export function ClassificationSection() {
               </FormLabel>
               <FormControl>
                 <CategoryMultiSelect
+                  {...field}
                   id="product-category"
                   value={field.value ?? []}
                   onChange={field.onChange}
@@ -148,6 +149,7 @@ export function ClassificationSection() {
             <FormLabel className={formLabelClass}>Tags</FormLabel>
             <FormControl>
               <TagsInput
+                {...field}
                 id="product-tags"
                 value={field.value ?? []}
                 onChange={field.onChange}

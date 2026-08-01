@@ -1,4 +1,4 @@
-import { KpiCard } from './KpiCard';
+import { KpiCard } from '../../components/shared/KpiCard';
 import { SalesChart } from './SalesChart';
 import { OrderOverview } from './OrderOverview';
 import { RecentDeliveredTable } from './RecentDeliveredTable';
@@ -66,7 +66,7 @@ export function AnalyticsDashboard() {
 
       {recentOrders ? (
         <div className="grid gap-4 lg:grid-cols-5">
-          <RecentDeliveredTable data={recentOrders} onPageChange={setPage} />
+          <RecentDeliveredTable data={recentOrders} onPageChange={setPage} hfull={false} />
         </div>
       ) : ordersLoading ? (
         <Skeleton className="h-[400px] w-full rounded-xl" />
