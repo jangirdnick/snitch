@@ -14,6 +14,7 @@ import {
   Crown,
   User,
   ChartBarStacked,
+  LifeBuoy,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -63,6 +64,7 @@ const NAV_ITEMS: ReadonlyArray<NavItem> = [
   { label: 'Customers', to: '/admin/customers', icon: Users },
   { label: 'Reviews', to: '/admin/reviews', icon: Star },
   { label: 'Coupons', to: '/admin/coupons', icon: Ticket },
+  { label: 'Support', to: '/admin/support', icon: LifeBuoy },
   { label: 'Analytics', to: '/admin/analytics', icon: BarChart3 },
 ] as const;
 
