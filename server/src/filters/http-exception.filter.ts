@@ -39,6 +39,8 @@ import { ReviewNotFoundError, ReviewOperationError } from '@/services/review.ser
 import { ReviewFieldsError, ReviewRequestError } from '@/controllers/review.controller.js';
 import { OrderNotFoundError, OrderOperationError } from '@/services/order.service.js';
 import { OrderFieldsError, OrderRequestError } from '@/controllers/order.controller.js';
+import { TicketNotFoundError, TicketOperationError } from '@/services/ticket.service.js';
+import { TicketFieldsError, TicketRequestError } from '@/controllers/ticket.controller.js';
 
 const logger = createLogger('HttpExceptionFilter');
 
@@ -85,6 +87,10 @@ const DOMAIN_ERROR_MAP = new Map<ErrorClass, number>([
   [OrderOperationError, 500],
   [OrderFieldsError, 400],
   [OrderRequestError, 400],
+  [TicketNotFoundError, 404],
+  [TicketOperationError, 500],
+  [TicketFieldsError, 400],
+  [TicketRequestError, 400],
 ]);
 
 export function globalErrorFilter(
@@ -117,7 +123,8 @@ export function globalErrorFilter(
     error instanceof CategoryFieldsError ||
     error instanceof CouponFieldsError ||
     error instanceof ReviewFieldsError ||
-    error instanceof OrderFieldsError
+    error instanceof OrderFieldsError ||
+    error instanceof TicketFieldsError
   ) {
     res.status(400).json({
       success: false,

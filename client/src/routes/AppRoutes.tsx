@@ -18,6 +18,7 @@ import CouponsPage from '@/pages/(admin)/CouponsPage';
 import ReviewsPage from '@/pages/(admin)/ReviewsPage';
 import { OrdersPage } from '@/pages/(admin)/OrdersPage';
 import AnalyticsPage from '@/pages/(admin)/AnalyticsPage';
+import SupportPage from '@/pages/(admin)/SupportPage';
 const router = createBrowserRouter([
   {
     path: '/',
@@ -94,6 +95,10 @@ const router = createBrowserRouter([
           {
             path: 'analytics',
             element: <AnalyticsPage />,
+          },
+          {
+            path: 'support',
+            element: <SupportPage />,
           },
         ],
       },
