@@ -100,42 +100,68 @@ export function SupportTicketTable({ items, loading, onViewDetails }: SupportTic
 
   if (loading) {
     return (
-      <div className="w-full h-full bg-transparent p-6">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-b-[oklch(1_0_0_/_0.055)] hover:bg-transparent">
-              {Array.from({ length: 7 }).map((_, i) => (
-                <TableHead key={i}>
-                  <Skeleton className="h-4 w-20 bg-[oklch(1_0_0_/_0.05)]" />
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Array.from({ length: 5 }).map((_, index) => (
-              <TableRow
-                key={index}
-                className="border-b-[oklch(1_0_0_/_0.055)] hover:bg-transparent"
-              >
-                {Array.from({ length: 7 }).map((_, i) => (
-                  <TableCell key={i}>
-                    <Skeleton className="h-4 w-24 bg-[oklch(1_0_0_/_0.05)]" />
-                  </TableCell>
+      <div className="w-full h-full p-4 md:p-6">
+        {/* Desktop Skeleton Table */}
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-b-[oklch(1_0_0_/_0.055)] hover:bg-transparent">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <TableHead key={i}>
+                    <Skeleton className="h-4 w-20 bg-[oklch(1_0_0_/_0.05)]" />
+                  </TableHead>
                 ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 5 }).map((_, index) => (
+                <TableRow
+                  key={index}
+                  className="border-b-[oklch(1_0_0_/_0.055)] hover:bg-transparent"
+                >
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <TableCell key={i}>
+                      <Skeleton className="h-4 w-full max-w-[120px] bg-[oklch(1_0_0_/_0.05)]" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Mobile Skeleton Cards */}
+        <div className="block md:hidden space-y-3">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div
+              key={index}
+              className="p-4 rounded-xl border border-[oklch(1_0_0/0.065)] bg-[oklch(1_0_0/0.02)] space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-5 w-24 bg-[oklch(1_0_0/0.06)]" />
+                <Skeleton className="h-6 w-20 rounded-full bg-[oklch(1_0_0/0.06)]" />
+              </div>
+              <div className="space-y-1.5 py-1">
+                <Skeleton className="h-4 w-40 bg-[oklch(1_0_0/0.06)]" />
+                <Skeleton className="h-3 w-56 bg-[oklch(1_0_0/0.06)]" />
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-[oklch(1_0_0/0.04)]">
+                <Skeleton className="h-4 w-20 bg-[oklch(1_0_0/0.06)]" />
+                <Skeleton className="h-8 w-24 rounded-lg bg-[oklch(1_0_0/0.06)]" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 bg-transparent">
-        <div className="text-[oklch(0.55_0_0)] text-[13px] font-medium tracking-wide">
-          No support tickets found.
-        </div>
+      <div className="flex flex-col items-center justify-center py-12 md:py-20 text-[oklch(0.55_0_0)] bg-transparent rounded-lg border-none px-4 text-center">
+        <LifeBuoy className="h-10 w-10 md:h-12 md:w-12 mb-3 md:mb-4 opacity-30 text-[oklch(0.55_0_0)]" />
+        <div className="text-[13px] font-medium tracking-wide">No support tickets found.</div>
+        <p className="text-xs mt-1 opacity-70">Try adjusting your filters or search criteria.</p>
       </div>
     );
   }
@@ -147,95 +173,166 @@ export function SupportTicketTable({ items, loading, onViewDetails }: SupportTic
     'group transition-colors border-b-[oklch(1_0_0_/_0.055)] hover:bg-[oklch(1_0_0_/_0.03)] cursor-pointer';
 
   return (
-    <div className="w-full h-full bg-transparent overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent border-b-[oklch(1_0_0_/_0.055)]">
-            <TableHead className={thClass}>
-              <div className="flex items-center gap-1.5">
-                <Hash className="size-3.5" /> ID
-              </div>
-            </TableHead>
-            <TableHead className={thClass}>
-              <div className="flex items-center gap-1.5">
-                <User className="size-3.5" /> Customer
-              </div>
-            </TableHead>
-            <TableHead className={thClass}>
-              <div className="flex items-center gap-1.5">
-                <LifeBuoy className="size-3.5" /> Subject
-              </div>
-            </TableHead>
-            <TableHead className={thClass}>
-              <div className="flex items-center gap-1.5">
-                <Tag className="size-3.5" /> Category
-              </div>
-            </TableHead>
-            <TableHead className={thClass}>
-              <div className="flex items-center gap-1.5">
-                <AlertCircle className="size-3.5" /> Priority
-              </div>
-            </TableHead>
-            <TableHead className={thClass}>Status</TableHead>
-            <TableHead className={thClass}>
-              <div className="flex items-center gap-1.5">
-                <Calendar className="size-3.5" /> Created Date
-              </div>
-            </TableHead>
-            <TableHead className={cn(thClass, 'w-[80px] text-right')}>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {items.map((ticket) => {
-            const priorityConfig = PRIORITY_CONFIG[ticket.priority] || PRIORITY_CONFIG.LOW;
-            return (
-              <TableRow key={ticket._id} className={rowClass} onClick={() => onViewDetails(ticket)}>
-                <TableCell className={tdClass}>
-                  <span
-                    className="text-[oklch(0.6_0_0)] font-mono text-[11px] truncate max-w-[100px] block"
-                    title={ticket.ticketId}
-                  >
+    <>
+      {/* DESKTOP TABLE VIEW (Unchanged for md+) */}
+      <div className="hidden md:block w-full h-full bg-transparent overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent border-b-[oklch(1_0_0_/_0.055)]">
+              <TableHead className={thClass}>
+                <div className="flex items-center gap-1.5">
+                  <Hash className="size-3.5" /> ID
+                </div>
+              </TableHead>
+              <TableHead className={thClass}>
+                <div className="flex items-center gap-1.5">
+                  <User className="size-3.5" /> Customer
+                </div>
+              </TableHead>
+              <TableHead className={thClass}>
+                <div className="flex items-center gap-1.5">
+                  <LifeBuoy className="size-3.5" /> Subject
+                </div>
+              </TableHead>
+              <TableHead className={thClass}>
+                <div className="flex items-center gap-1.5">
+                  <Tag className="size-3.5" /> Category
+                </div>
+              </TableHead>
+              <TableHead className={thClass}>
+                <div className="flex items-center gap-1.5">
+                  <AlertCircle className="size-3.5" /> Priority
+                </div>
+              </TableHead>
+              <TableHead className={thClass}>Status</TableHead>
+              <TableHead className={thClass}>
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="size-3.5" /> Created Date
+                </div>
+              </TableHead>
+              <TableHead className={cn(thClass, 'w-[80px] text-right')}>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {items.map((ticket) => {
+              const priorityConfig = PRIORITY_CONFIG[ticket.priority] || PRIORITY_CONFIG.LOW;
+              return (
+                <TableRow
+                  key={ticket._id}
+                  className={rowClass}
+                  onClick={() => onViewDetails(ticket)}
+                >
+                  <TableCell className={tdClass}>
+                    <span
+                      className="text-[oklch(0.6_0_0)] font-mono text-[11px] truncate max-w-[100px] block"
+                      title={ticket.ticketId}
+                    >
+                      {ticket.ticketId}
+                    </span>
+                  </TableCell>
+                  <TableCell className={tdClass}>
+                    <div className="flex flex-col">
+                      <span className="text-[13px] text-[oklch(0.9_0_0)] font-semibold">
+                        {ticket.user?.firstName} {ticket.user?.lastName}
+                      </span>
+                      <span className="text-[11px] text-[oklch(0.5_0_0)]">
+                        {ticket.user?.email}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className={tdClass}>
+                    <div
+                      className="truncate max-w-[200px] font-medium text-[oklch(0.95_0_0)]"
+                      title={ticket.subject}
+                    >
+                      {ticket.subject}
+                    </div>
+                  </TableCell>
+                  <TableCell className={tdClass}>
+                    <span className="text-[oklch(0.7_0_0)] text-[12px] uppercase tracking-wide">
+                      {ticket.category.replace('_', ' ')}
+                    </span>
+                  </TableCell>
+                  <TableCell className={tdClass}>
+                    <span
+                      className={`text-[12px] font-bold tracking-wide uppercase ${priorityConfig.color}`}
+                    >
+                      {priorityConfig.label}
+                    </span>
+                  </TableCell>
+                  <TableCell className="px-4 py-3">{getStatusBadge(ticket.status)}</TableCell>
+                  <TableCell className={tdClass}>
+                    <span className="text-[oklch(0.65_0_0)]">{formatDate(ticket.createdAt)}</span>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="h-8 w-8 p-0 hover:bg-[oklch(1_0_0_/_0.08)] text-[oklch(0.7_0_0)]"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="bg-[oklch(0.13_0.005_260)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] shadow-[0_8px_32px_oklch(0_0_0_/_0.6)] rounded-xl min-w-[160px]"
+                      >
+                        <DropdownMenuLabel className="text-[10px] uppercase text-[oklch(0.55_0_0)] font-bold tracking-wider">
+                          Actions
+                        </DropdownMenuLabel>
+                        <DropdownMenuItem
+                          onClick={() => onViewDetails(ticket)}
+                          className="cursor-pointer focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)] rounded-lg mx-1 my-0.5 min-h-[40px] md:min-h-[32px]"
+                        >
+                          <Eye className="mr-2 h-4 w-4 text-[oklch(0.6_0_0)]" /> View Details
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* MOBILE RESPONSIVE CARDS VIEW (block md:hidden) */}
+      <div className="block md:hidden p-3 sm:p-4 space-y-3">
+        {items.map((ticket) => {
+          const priorityConfig = PRIORITY_CONFIG[ticket.priority] || PRIORITY_CONFIG.LOW;
+          return (
+            <div
+              key={ticket._id}
+              onClick={() => onViewDetails(ticket)}
+              className={cn(
+                'rounded-xl p-4 transition-all duration-300 cursor-pointer active:scale-[0.99]',
+                'bg-gradient-to-b from-[oklch(0.14_0.005_260)] to-[oklch(0.12_0.005_260)]',
+                'border border-[oklch(1_0_0/0.07)] hover:border-[oklch(1_0_0/0.14)]',
+                'shadow-sm flex flex-col gap-3',
+              )}
+            >
+              {/* Header: Ticket ID + Priority + Status */}
+              <div className="flex items-center justify-between pb-2 border-b border-[oklch(1_0_0/0.05)]">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold text-[oklch(0.95_0_0)] text-sm">
                     {ticket.ticketId}
                   </span>
-                </TableCell>
-                <TableCell className={tdClass}>
-                  <div className="flex flex-col">
-                    <span className="text-[13px] text-[oklch(0.9_0_0)] font-semibold">
-                      {ticket.user?.firstName} {ticket.user?.lastName}
-                    </span>
-                    <span className="text-[11px] text-[oklch(0.5_0_0)]">{ticket.user?.email}</span>
-                  </div>
-                </TableCell>
-                <TableCell className={tdClass}>
-                  <div
-                    className="truncate max-w-[200px] font-medium text-[oklch(0.95_0_0)]"
-                    title={ticket.subject}
-                  >
-                    {ticket.subject}
-                  </div>
-                </TableCell>
-                <TableCell className={tdClass}>
-                  <span className="text-[oklch(0.7_0_0)] text-[12px] uppercase tracking-wide">
-                    {ticket.category.replace('_', ' ')}
-                  </span>
-                </TableCell>
-                <TableCell className={tdClass}>
                   <span
-                    className={`text-[12px] font-bold tracking-wide uppercase ${priorityConfig.color}`}
+                    className={`text-[10.5px] font-bold uppercase tracking-wider ${priorityConfig.color}`}
                   >
                     {priorityConfig.label}
                   </span>
-                </TableCell>
-                <TableCell className="px-4 py-3">{getStatusBadge(ticket.status)}</TableCell>
-                <TableCell className={tdClass}>
-                  <span className="text-[oklch(0.65_0_0)]">{formatDate(ticket.createdAt)}</span>
-                </TableCell>
-                <TableCell className="px-4 py-3 text-right">
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {getStatusBadge(ticket.status)}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="h-8 w-8 p-0 hover:bg-[oklch(1_0_0_/_0.08)] text-[oklch(0.7_0_0)]"
+                        className="h-8 w-8 p-0 text-[oklch(0.6_0_0)] hover:text-[oklch(0.95_0_0)] hover:bg-[oklch(1_0_0/0.08)] rounded-lg"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <span className="sr-only">Open menu</span>
@@ -244,25 +341,66 @@ export function SupportTicketTable({ items, loading, onViewDetails }: SupportTic
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       align="end"
-                      className="bg-[oklch(0.13_0.005_260)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] shadow-[0_8px_32px_oklch(0_0_0_/_0.6)] rounded-xl min-w-[160px]"
+                      className="bg-[oklch(0.13_0.005_260)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] min-w-[160px] rounded-xl"
                     >
-                      <DropdownMenuLabel className="text-[10px] uppercase text-[oklch(0.55_0_0)] font-bold tracking-wider">
-                        Actions
-                      </DropdownMenuLabel>
                       <DropdownMenuItem
                         onClick={() => onViewDetails(ticket)}
-                        className="cursor-pointer focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)] rounded-lg mx-1 my-0.5 min-h-[40px] md:min-h-[32px]"
+                        className="cursor-pointer py-2.5"
                       >
                         <Eye className="mr-2 h-4 w-4 text-[oklch(0.6_0_0)]" /> View Details
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </div>
+                </div>
+              </div>
+
+              {/* Subject & Category */}
+              <div>
+                <h4 className="font-semibold text-[oklch(0.95_0_0)] text-sm leading-snug">
+                  {ticket.subject}
+                </h4>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="text-[10.5px] text-[oklch(0.7_0_0)] bg-[oklch(1_0_0/0.05)] border border-[oklch(1_0_0/0.08)] px-2 py-0.5 rounded-md uppercase font-medium">
+                    {ticket.category.replace('_', ' ')}
+                  </span>
+                </div>
+              </div>
+
+              {/* Customer & Date */}
+              <div className="flex items-center justify-between pt-2 border-t border-[oklch(1_0_0/0.05)] text-[11px] text-[oklch(0.6_0_0)]">
+                <div>
+                  <span className="text-[10px] uppercase text-[oklch(0.5_0_0)] block font-semibold">
+                    Customer
+                  </span>
+                  <span className="font-medium text-[oklch(0.85_0_0)]">
+                    {ticket.user?.firstName} {ticket.user?.lastName}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] uppercase text-[oklch(0.5_0_0)] block font-semibold">
+                    Created
+                  </span>
+                  <span>{formatDate(ticket.createdAt)}</span>
+                </div>
+              </div>
+
+              {/* Quick Details Trigger Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewDetails(ticket);
+                }}
+                className="w-full h-9 mt-1 bg-[oklch(1_0_0/0.04)] border-[oklch(1_0_0/0.08)] text-[oklch(0.85_0_0)] hover:bg-[oklch(1_0_0/0.08)] text-xs font-medium rounded-lg"
+              >
+                <Eye className="w-3.5 h-3.5 mr-1.5 text-[oklch(0.6_0_0)]" />
+                View Ticket Details
+              </Button>
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }

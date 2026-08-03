@@ -21,12 +21,14 @@ export function OrderOverview({ data }: OrderOverviewProps) {
 
   return (
     <Card className="col-span-1 lg:col-span-2">
-      <CardHeader>
-        <CardTitle>Order Distribution</CardTitle>
-        <CardDescription>Status breakdown for the last 3 months</CardDescription>
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="text-base sm:text-lg">Order Distribution</CardTitle>
+        <CardDescription className="text-xs sm:text-sm">
+          Status breakdown for the last 3 months
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="h-[350px] w-full flex items-center justify-center">
+      <CardContent className="p-4 sm:p-6 pt-0">
+        <div className="h-[280px] sm:h-[350px] w-full flex items-center justify-center">
           {chartData.length === 0 ? (
             <div className="text-sm text-muted-foreground flex items-center justify-center h-full">
               No orders found in the last 3 months
@@ -37,10 +39,10 @@ export function OrderOverview({ data }: OrderOverviewProps) {
                 <Pie
                   data={chartData}
                   cx="50%"
-                  cy="50%"
-                  innerRadius={80}
-                  outerRadius={120}
-                  paddingAngle={2}
+                  cy="45%"
+                  innerRadius="50%"
+                  outerRadius="75%"
+                  paddingAngle={3}
                   dataKey="count"
                   nameKey="status"
                   stroke="var(--color-background)"
@@ -55,9 +57,10 @@ export function OrderOverview({ data }: OrderOverviewProps) {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     border: '1px solid var(--color-border)',
                     backgroundColor: 'var(--color-background)',
+                    fontSize: '12px',
                   }}
                   formatter={(value, name) => [
                     value ?? 0,
@@ -71,7 +74,7 @@ export function OrderOverview({ data }: OrderOverviewProps) {
                   height={36}
                   iconType="circle"
                   formatter={(value) => (
-                    <span className="text-sm font-medium text-foreground capitalize ml-1">
+                    <span className="text-xs sm:text-sm font-medium text-foreground capitalize ml-1">
                       {value}
                     </span>
                   )}

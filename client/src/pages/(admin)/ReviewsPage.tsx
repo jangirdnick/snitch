@@ -1,10 +1,11 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useReviews } from '@/features/admin/reviews/hook/useReviews';
-import { ReviewHeader } from '@/features/admin/reviews/components/ReviewHeader';
+import { PageHeader } from '@/components/ui/page-header';
 import { AdminFilters } from '@/components/admin/AdminFilters';
 import { ReviewTableSection } from '@/features/admin/reviews/components/ReviewTableSection';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { ReviewQueryDto } from '@snitch/schemas';
+import { Star, MessageSquareQuote, ShieldAlert } from 'lucide-react';
 
 export default function ReviewsPage() {
   // Local filter states
@@ -32,14 +33,25 @@ export default function ReviewsPage() {
     if (statusFilter !== 'all') {
       params.status = statusFilter;
     }
-    // We don't have a direct string text search on review API currently implemented
-    // in the service, but if we did, we'd pass it here. The schema has user/product id.
-    // For now we just pass what we can.
     return params;
   }, [currentPage, statusFilter, sortBy, sortOrder]);
 
   const { data, isLoading, updateReviewStatus, deleteReview, updateUserPermission } =
     useReviews(queryParams);
+
+  const items = useMemo(() => data?.items || [], [data?.items]);
+  const totalReviews = data?.pagination.totalItems || items.length;
+
+  // KPI Calculations
+  const averageRating = useMemo(() => {
+    if (!items.length) return '0.0';
+    const sum = items.reduce((acc, r) => acc + (r.rating || 0), 0);
+    return (sum / items.length).toFixed(1);
+  }, [items]);
+
+  const reportedCount = useMemo(() => {
+    return items.filter((r) => r.status === 'reported' || r.status === 'blocked').length;
+  }, [items]);
 
   const handleClearFilters = useCallback(() => {
     setSearchTerm('');
@@ -64,8 +76,58 @@ export default function ReviewsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-3.5 sm:gap-5 lg:gap-6 h-screen bg-[oklch(0.08_0.005_260)] selection:bg-[oklch(0.95_0_0)] selection:text-[oklch(0.1_0_0)] pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pb-1 overflow-y-scroll">
-      <ReviewHeader />
+    <div className="space-y-4 md:space-y-6 h-full flex-1 flex flex-col justify-between overflow-y-auto">
+      <PageHeader
+        title="Reviews & Moderation"
+        description="Monitor product ratings, customer feedback, and user review permissions."
+      >
+        <div className="grid max-md:grid-cols-2 gap-2 sm:gap-3 w-full sm:w-auto">
+          {/* Total Reviews Card */}
+          <div className="flex-1 sm:flex-none flex items-center gap-2.5 bg-[oklch(1_0_0/0.03)] border border-[oklch(1_0_0/0.08)] rounded-xl px-3 sm:px-3.5 py-1.5 shadow-xs">
+            <div className="bg-blue-500/20 text-blue-400 p-1.5 rounded-lg shrink-0">
+              <MessageSquareQuote className="size-3.5" />
+            </div>
+            <div>
+              <div className="text-[9px] sm:text-[10px] text-[oklch(0.55_0_0)] uppercase tracking-wider font-bold">
+                Total Reviews
+              </div>
+              <div className="text-[12px] sm:text-[13px] font-semibold text-[oklch(0.95_0_0)]">
+                {totalReviews.toLocaleString()}
+              </div>
+            </div>
+          </div>
+
+          {/* Average Rating Card */}
+          <div className="flex-1 sm:flex-none flex items-center gap-2.5 bg-[oklch(1_0_0/0.03)] border border-[oklch(1_0_0/0.08)] rounded-xl px-3 sm:px-3.5 py-1.5 shadow-xs">
+            <div className="bg-amber-500/20 text-amber-400 p-1.5 rounded-lg shrink-0">
+              <Star className="size-3.5 fill-amber-400" />
+            </div>
+            <div>
+              <div className="text-[9px] sm:text-[10px] text-[oklch(0.55_0_0)] uppercase tracking-wider font-bold">
+                Avg Rating
+              </div>
+              <div className="text-[12px] sm:text-[13px] font-semibold text-[oklch(0.95_0_0)]">
+                {averageRating} / 5.0
+              </div>
+            </div>
+          </div>
+
+          {/* Moderation Alerts Card */}
+          <div className="flex-1 max-md:col-span-2 sm:flex-none flex items-center gap-2.5 bg-[oklch(1_0_0/0.03)] border border-[oklch(1_0_0/0.08)] rounded-xl px-3 sm:px-3.5 py-1.5 shadow-xs">
+            <div className="bg-red-500/20 text-red-400 p-1.5 rounded-lg shrink-0">
+              <ShieldAlert className="size-3.5" />
+            </div>
+            <div>
+              <div className="text-[9px] sm:text-[10px] text-[oklch(0.55_0_0)] uppercase tracking-wider font-bold">
+                Flagged / Blocked
+              </div>
+              <div className="text-[12px] sm:text-[13px] font-semibold text-[oklch(0.95_0_0)]">
+                {reportedCount} Items
+              </div>
+            </div>
+          </div>
+        </div>
+      </PageHeader>
 
       <AdminFilters
         searchTerm={searchTerm}

@@ -110,12 +110,12 @@ export function SupportTicketDetailsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] md:max-w-6xl bg-[oklch(0.12_0.005_260)] border-[oklch(1_0_0_/_0.1)] text-[oklch(0.95_0_0)] shadow-[0_32px_80px_oklch(0_0_0_/_0.7)] h-[90vh] flex flex-col p-0 overflow-hidden rounded-2xl">
-        <DialogHeader className="px-8 py-6 border-b border-[oklch(1_0_0_/_0.08)] bg-gradient-to-b from-[oklch(1_0_0_/_0.03)] to-transparent flex-shrink-0">
-          <div className="flex flex-col lg:flex-row justify-between items-start gap-6">
+      <DialogContent className="w-[95vw] md:max-w-6xl bg-[oklch(0.12_0.005_260)] border-[oklch(1_0_0_/_0.1)] text-[oklch(0.95_0_0)] shadow-[0_32px_80px_oklch(0_0_0_/_0.7)] h-[92vh] sm:h-[90vh] flex flex-col p-0 overflow-hidden rounded-2xl">
+        <DialogHeader className="px-4 py-4 sm:px-8 sm:py-6 border-b border-[oklch(1_0_0_/_0.08)] bg-gradient-to-b from-[oklch(1_0_0_/_0.03)] to-transparent flex-shrink-0">
+          <div className="flex flex-col lg:flex-row justify-between items-start gap-4 lg:gap-6">
             {/* Ticket Identity */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-2 text-[oklch(0.55_0_0)] text-sm font-mono uppercase tracking-widest">
+              <div className="flex items-center gap-3 mb-1.5 sm:mb-2 text-[oklch(0.55_0_0)] text-xs sm:text-sm font-mono uppercase tracking-widest">
                 <span className="flex items-center gap-1.5">
                   <Hash className="size-3.5" /> {ticket.ticketId}
                 </span>
@@ -124,30 +124,33 @@ export function SupportTicketDetailsDialog({
                   <Clock className="size-3.5" /> {new Date(ticket.createdAt).toLocaleString()}
                 </span>
               </div>
-              <DialogTitle className="text-2xl font-bold tracking-tight text-[oklch(0.98_0_0)] leading-tight mb-4">
+              <DialogTitle className="text-lg sm:text-2xl font-bold tracking-tight text-[oklch(0.98_0_0)] leading-tight mb-3 sm:mb-4">
                 {ticket.subject}
               </DialogTitle>
-              <div className="flex flex-wrap gap-2.5">
+              <div className="flex flex-wrap gap-2">
                 <Badge
                   variant="outline"
                   className={cn(
-                    'text-xs font-semibold px-3 py-1 bg-[oklch(1_0_0_/_0.02)] border-[oklch(1_0_0_/_0.1)]',
+                    'text-[11px] sm:text-xs font-semibold px-2.5 py-0.5 sm:px-3 sm:py-1 bg-[oklch(1_0_0_/_0.02)] border-[oklch(1_0_0_/_0.1)]',
                     getPriorityColor(ticket.priority),
                   )}
                 >
-                  <Activity className="size-3.5 mr-1.5" />
+                  <Activity className="size-3 mr-1" />
                   {ticket.priority} Priority
                 </Badge>
                 <Badge
                   variant="outline"
-                  className="text-xs px-3 py-1 bg-[oklch(1_0_0_/_0.02)] border-[oklch(1_0_0_/_0.1)] text-[oklch(0.8_0_0)]"
+                  className="text-[11px] sm:text-xs px-2.5 py-0.5 sm:px-3 sm:py-1 bg-[oklch(1_0_0_/_0.02)] border-[oklch(1_0_0_/_0.1)] text-[oklch(0.8_0_0)]"
                 >
-                  <Tag className="size-3.5 mr-1.5" />
+                  <Tag className="size-3 mr-1" />
                   {ticket.category.replace('_', ' ')}
                 </Badge>
                 <Badge
                   variant="outline"
-                  className={cn('text-xs px-3 py-1 font-semibold', getStatusColor(ticket.status))}
+                  className={cn(
+                    'text-[11px] sm:text-xs px-2.5 py-0.5 sm:px-3 sm:py-1 font-semibold',
+                    getStatusColor(ticket.status),
+                  )}
                 >
                   {ticket.status.replace('_', ' ')}
                 </Badge>
@@ -155,7 +158,7 @@ export function SupportTicketDetailsDialog({
             </div>
 
             {/* Customer Snapshot */}
-            <div className="flex flex-col gap-2.5 bg-[oklch(1_0_0_/_0.02)] border border-[oklch(1_0_0_/_0.08)] rounded-xl p-4 lg:min-w-[280px] shrink-0">
+            <div className="flex flex-col gap-2 bg-[oklch(1_0_0_/_0.02)] border border-[oklch(1_0_0_/_0.08)] rounded-xl p-3 sm:p-4 w-full lg:w-auto lg:min-w-[280px] shrink-0">
               <h4 className="text-[10px] uppercase font-bold tracking-widest text-[oklch(0.45_0_0)]">
                 Customer Profile
               </h4>
@@ -163,11 +166,11 @@ export function SupportTicketDetailsDialog({
                 <div className="h-8 w-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
                   <UserIcon className="size-4" />
                 </div>
-                <div className="truncate text-[14px]">
+                <div className="truncate text-xs sm:text-[14px]">
                   {ticket.user?.firstName} {ticket.user?.lastName}
                 </div>
               </div>
-              <div className="grid gap-2 mt-1 pl-11 text-[13px]">
+              <div className="grid gap-1.5 mt-0.5 pl-11 text-xs sm:text-[13px]">
                 <div
                   className="flex items-center gap-2 text-[oklch(0.65_0_0)] truncate"
                   title={ticket.user?.email}
@@ -186,17 +189,17 @@ export function SupportTicketDetailsDialog({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-3">
+        <div className="flex-1 overflow-y-auto lg:overflow-hidden grid grid-cols-1 lg:grid-cols-3">
           {/* Main Content Area (Description & Replies) - 2/3 Width */}
           <div className="lg:col-span-2 flex flex-col h-full border-r border-[oklch(1_0_0_/_0.08)] bg-[oklch(1_0_0_/_0.005)]">
             <ScrollArea className="flex-1" ref={scrollRef}>
-              <div className="p-8 space-y-8">
+              <div className="p-4 sm:p-8 space-y-6 sm:space-y-8">
                 {/* Original Description */}
-                <div className="bg-[oklch(1_0_0_/_0.02)] p-6 rounded-2xl border border-[oklch(1_0_0_/_0.08)] shadow-[0_4px_12px_oklch(0_0_0_/_0.2)]">
-                  <h4 className="font-bold text-[oklch(0.6_0_0)] mb-4 text-[11px] uppercase tracking-widest flex items-center gap-2">
+                <div className="bg-[oklch(1_0_0_/_0.02)] p-4 sm:p-6 rounded-2xl border border-[oklch(1_0_0_/_0.08)] shadow-[0_4px_12px_oklch(0_0_0_/_0.2)]">
+                  <h4 className="font-bold text-[oklch(0.6_0_0)] mb-3 text-[11px] uppercase tracking-widest flex items-center gap-2">
                     <MessageSquare className="size-4 text-[oklch(0.8_0_0)]" /> Original Request
                   </h4>
-                  <p className="whitespace-pre-wrap text-[oklch(0.9_0_0)] text-[15px] leading-relaxed">
+                  <p className="whitespace-pre-wrap text-[oklch(0.9_0_0)] text-xs sm:text-[15px] leading-relaxed">
                     {ticket.description}
                   </p>
                 </div>

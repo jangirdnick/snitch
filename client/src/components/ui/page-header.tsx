@@ -11,7 +11,7 @@ export function PageHeader({ title, description, children }: PageHeaderProps) {
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 shrink-0 px-4 md:px-6 mx-0 lg:-mx-6 lg:px-6 max-md:py-3',
+        'sticky top-0 z-40 shrink-0 w-full md:px-6 mx-0 lg:-mx-6 lg:px-6 max-md:pb-2',
         'border-b border-[oklch(1_0_0_/_0.05)]',
         'bg-[oklch(0.08_0.005_260_/0.88)] backdrop-blur-2xl',
         'flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:gap-4',

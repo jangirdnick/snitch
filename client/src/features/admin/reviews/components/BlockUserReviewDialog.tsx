@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,22 +39,29 @@ export function BlockUserReviewDialog({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <AlertDialogContent>
+      <AlertDialogContent className="w-[95vw] max-w-[425px] rounded-2xl bg-[oklch(0.12_0.01_260)] border-[oklch(0.2_0.02_260)] text-[oklch(0.95_0_0)] p-4 sm:p-6">
         <AlertDialogHeader>
-          <AlertDialogTitle>{actionText} from Reviews?</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogTitle className="text-lg sm:text-xl font-bold">
+            {actionText} from Reviews?
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-xs sm:text-sm text-[oklch(0.7_0_0)]">
+            {description}
+          </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+        <AlertDialogFooter className="flex-row justify-end gap-2 pt-2">
+          <AlertDialogCancel disabled={isLoading} className="h-10 text-xs sm:text-sm rounded-xl">
+            Cancel
+          </AlertDialogCancel>
           <AlertDialogAction
             variant={currentPermission ? 'destructive' : 'default'}
             onClick={handleConfirm}
             disabled={isLoading}
-            className={
+            className={cn(
+              'h-10 text-xs sm:text-sm font-semibold rounded-xl',
               currentPermission
                 ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
-                : 'bg-primary hover:bg-primary/90 text-primary-foreground'
-            }
+                : 'bg-primary hover:bg-primary/90 text-primary-foreground',
+            )}
           >
             {isLoading ? 'Processing...' : actionText}
           </AlertDialogAction>

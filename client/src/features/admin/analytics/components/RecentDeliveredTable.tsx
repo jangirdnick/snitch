@@ -72,7 +72,8 @@ export function RecentDeliveredTable({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border">
+        {/* DESKTOP TABLE VIEW (Unchanged for md+) */}
+        <div className="hidden md:block rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -135,7 +136,7 @@ export function RecentDeliveredTable({
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon" asChild>
-                        <Link to={`/admin/orders/${order.id}`}>
+                        <Link to={`/admin/orders`}>
                           <ReceiptText className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -147,10 +148,85 @@ export function RecentDeliveredTable({
           </Table>
         </div>
 
+        {/* MOBILE RESPONSIVE DELIVERED CARDS VIEW (block md:hidden) */}
+        <div className="block md:hidden space-y-3">
+          {data.items.length === 0 ? (
+            <div className="text-center py-8 text-sm text-muted-foreground">
+              No recent delivered orders.
+            </div>
+          ) : (
+            data.items.map((order) => (
+              <div
+                key={order.id}
+                className="rounded-xl p-3.5 sm:p-4 bg-[oklch(1_0_0/0.02)] border border-[oklch(1_0_0/0.07)] space-y-2.5 shadow-sm"
+              >
+                {/* Header: Order Number + Payment Badge */}
+                <div className="flex items-center justify-between pb-2 border-b border-[oklch(1_0_0/0.05)]">
+                  <div className="flex items-center gap-2">
+                    <PackageCheck className="h-4 w-4 text-emerald-400 shrink-0" />
+                    <span className="font-mono font-bold text-[oklch(0.95_0_0)] text-sm">
+                      {order.orderNumber}
+                    </span>
+                  </div>
+                  <Badge
+                    className={`capitalize text-[10px] px-2 py-0.5 ${getPaymentBadgeClass(order.payment?.status)}`}
+                  >
+                    {order.payment?.status || 'Unknown'}
+                  </Badge>
+                </div>
+
+                {/* Body: Customer + Products */}
+                <div className="flex items-start justify-between text-xs gap-2">
+                  <div>
+                    <span className="text-[10px] uppercase text-[oklch(0.5_0_0)] block font-semibold">
+                      Customer
+                    </span>
+                    <span className="font-semibold text-[oklch(0.9_0_0)]">
+                      {order.user && typeof order.user === 'object' && 'firstName' in order.user
+                        ? `${order.user.firstName} ${order.user.lastName}`
+                        : 'Unknown'}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase text-[oklch(0.5_0_0)] block font-semibold">
+                      Total
+                    </span>
+                    <span className="font-bold text-emerald-400 text-sm">
+                      ₹{order.netAmount || 0}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Product Summary & Date */}
+                <div className="flex items-center justify-between pt-2 border-t border-[oklch(1_0_0/0.05)] text-[11px] text-[oklch(0.6_0_0)]">
+                  <div className="truncate max-w-[180px]">
+                    <span className="truncate block text-[oklch(0.8_0_0)] font-medium">
+                      {order.items?.[0]?.title || 'Unknown Item'}
+                    </span>
+                    {order.items && order.items.length > 1 && (
+                      <span className="text-[10px] text-[oklch(0.5_0_0)]">
+                        +{order.items.length - 1} more items
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-[10px] text-[oklch(0.5_0_0)] block">Delivered</span>
+                    <span>
+                      {order.shipping?.deliveredAt
+                        ? dayjs(order.shipping.deliveredAt).format('MMM D, YYYY')
+                        : 'N/A'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
         {data.totalPages > 1 && (
           <div className="mt-4">
             <Pagination>
-              <PaginationContent>
+              <PaginationContent className="flex-wrap justify-center sm:justify-end gap-1">
                 <PaginationItem>
                   <PaginationPrevious
                     href="#"

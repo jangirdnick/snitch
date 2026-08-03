@@ -6,7 +6,7 @@ import AdminMobileNav from '@/features/admin/components/AdminMobileNav';
 export default function AdminLayout() {
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex h-screen w-full overflow-hidden bg-[oklch(0.09_0_0)]">
+      <div className="flex h-screen w-full overflow-hidden bg-[oklch(0.09_0_0)] max-md:p-2">
         {/* ── Desktop sidebar — hidden below lg ──────────────────── */}
         <div className="hidden lg:block">
           <AdminSidebar />
@@ -20,15 +20,7 @@ export default function AdminLayout() {
          */}
         <main
           id="main-content"
-          className={[
-            'flex-1 overflow-hidden h-screen',
-            // Desktop offset for sidebar
-            'lg:ml-20',
-            // Desktop padding
-            'lg:px-1.5 lg:py-4',
-            // Mobile: add bottom padding to clear the fixed nav bar
-            'pb-[calc(80px+env(safe-area-inset-bottom)+8px)] lg:pb-0',
-          ].join(' ')}
+          className="flex-1 overflow-hidden h-full min-h-0 lg:ml-20 lg:px-1.5 lg:py-4"
           aria-label="Main content"
         >
           <Outlet />

@@ -42,21 +42,30 @@ export function CouponFormModal({ open, onOpenChange, coupon, onSuccess }: Coupo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] bg-[oklch(0.13_0.005_260)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] rounded-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-[500px] bg-[oklch(0.13_0.005_260)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] rounded-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit Coupon' : 'Create New Coupon'}</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl font-bold">
+            {isEditing ? 'Edit Coupon' : 'Create New Coupon'}
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-            <div className="grid grid-cols-2 gap-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-3.5 sm:space-y-4 pt-2 sm:pt-4"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <FormField
                 control={form.control}
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[oklch(0.7_0_0)]">Code</FormLabel>
+                    <FormLabel className="text-[oklch(0.7_0_0)] text-xs sm:text-sm">Code</FormLabel>
                     <FormControl>
-                      <Input placeholder="SUMMER20" className={inputClass} {...field} />
+                      <Input
+                        placeholder="SUMMER20"
+                        className={cn(inputClass, 'h-11 sm:h-10 text-xs sm:text-sm')}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -67,16 +76,22 @@ export function CouponFormModal({ open, onOpenChange, coupon, onSuccess }: Coupo
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[oklch(0.7_0_0)]">Type</FormLabel>
+                    <FormLabel className="text-[oklch(0.7_0_0)] text-xs sm:text-sm">Type</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className={inputClass}>
+                        <SelectTrigger
+                          className={cn(inputClass, 'h-11 sm:h-10 text-xs sm:text-sm')}
+                        >
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-[oklch(0.15_0.005_260)] border-[oklch(1_0_0_/_0.08)] text-white">
-                        <SelectItem value="PERCENTAGE">Percentage (%)</SelectItem>
-                        <SelectItem value="FIXED">Fixed Amount (₹)</SelectItem>
+                      <SelectContent className="bg-[oklch(0.15_0.005_260)] border-[oklch(1_0_0_/_0.08)] text-white rounded-xl">
+                        <SelectItem value="PERCENTAGE" className="text-xs sm:text-sm">
+                          Percentage (%)
+                        </SelectItem>
+                        <SelectItem value="FIXED" className="text-xs sm:text-sm">
+                          Fixed Amount (₹)
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -85,18 +100,20 @@ export function CouponFormModal({ open, onOpenChange, coupon, onSuccess }: Coupo
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <FormField
                 control={form.control}
                 name="value"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[oklch(0.7_0_0)]">Value</FormLabel>
+                    <FormLabel className="text-[oklch(0.7_0_0)] text-xs sm:text-sm">
+                      Value
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         placeholder="e.g. 20"
-                        className={inputClass}
+                        className={cn(inputClass, 'h-11 sm:h-10 text-xs sm:text-sm')}
                         {...field}
                         value={field.value ?? ''}
                         onChange={(e) => {
@@ -114,12 +131,14 @@ export function CouponFormModal({ open, onOpenChange, coupon, onSuccess }: Coupo
                 name="usageLimit"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[oklch(0.7_0_0)]">Usage Limit</FormLabel>
+                    <FormLabel className="text-[oklch(0.7_0_0)] text-xs sm:text-sm">
+                      Usage Limit
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         placeholder="Unlimited"
-                        className={inputClass}
+                        className={cn(inputClass, 'h-11 sm:h-10 text-xs sm:text-sm')}
                         {...field}
                         value={field.value ?? ''}
                         onChange={(e) => {
@@ -134,15 +153,21 @@ export function CouponFormModal({ open, onOpenChange, coupon, onSuccess }: Coupo
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <FormField
                 control={form.control}
                 name="validFrom"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[oklch(0.7_0_0)]">Valid From</FormLabel>
+                    <FormLabel className="text-[oklch(0.7_0_0)] text-xs sm:text-sm">
+                      Valid From
+                    </FormLabel>
                     <FormControl>
-                      <Input type="datetime-local" className={inputClass} {...field} />
+                      <Input
+                        type="datetime-local"
+                        className={cn(inputClass, 'h-11 sm:h-10 text-xs sm:text-sm')}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -153,9 +178,15 @@ export function CouponFormModal({ open, onOpenChange, coupon, onSuccess }: Coupo
                 name="validUntil"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[oklch(0.7_0_0)]">Valid Until</FormLabel>
+                    <FormLabel className="text-[oklch(0.7_0_0)] text-xs sm:text-sm">
+                      Valid Until
+                    </FormLabel>
                     <FormControl>
-                      <Input type="datetime-local" className={inputClass} {...field} />
+                      <Input
+                        type="datetime-local"
+                        className={cn(inputClass, 'h-11 sm:h-10 text-xs sm:text-sm')}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -163,18 +194,20 @@ export function CouponFormModal({ open, onOpenChange, coupon, onSuccess }: Coupo
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <FormField
                 control={form.control}
                 name="minOrder"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[oklch(0.7_0_0)]">Min Order (₹)</FormLabel>
+                    <FormLabel className="text-[oklch(0.7_0_0)] text-xs sm:text-sm">
+                      Min Order (₹)
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         placeholder="No minimum"
-                        className={inputClass}
+                        className={cn(inputClass, 'h-11 sm:h-10 text-xs sm:text-sm')}
                         {...field}
                         value={field.value ?? ''}
                         onChange={(e) => {
@@ -192,12 +225,14 @@ export function CouponFormModal({ open, onOpenChange, coupon, onSuccess }: Coupo
                 name="maxDiscount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[oklch(0.7_0_0)]">Max Discount (₹)</FormLabel>
+                    <FormLabel className="text-[oklch(0.7_0_0)] text-xs sm:text-sm">
+                      Max Discount (₹)
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         placeholder="No maximum"
-                        className={inputClass}
+                        className={cn(inputClass, 'h-11 sm:h-10 text-xs sm:text-sm')}
                         {...field}
                         value={field.value ?? ''}
                         onChange={(e) => {
