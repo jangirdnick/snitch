@@ -47,7 +47,7 @@ export default function CouponsPage() {
   const totalPages = pagination?.totalPages || 1;
 
   return (
-    <div className="flex flex-col gap-3.5 sm:gap-5 lg:gap-6 h-screen bg-[oklch(0.08_0.005_260)] selection:bg-[oklch(0.95_0_0)] selection:text-[oklch(0.1_0_0)] pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pb-1 overflow-y-scroll">
+    <div className="flex-1 h-full overflow-y-auto space-y-4 md:space-y-6 pb-22 lg:pb-4 sm:p-2 lg:p-0">
       <PageHeader
         title="Coupons Management"
         description="Create and manage discount codes, validity periods, and usage limits"

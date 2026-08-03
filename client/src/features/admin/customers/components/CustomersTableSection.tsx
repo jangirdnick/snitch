@@ -33,7 +33,7 @@ export function CustomersTableSection({
         'border border-[oklch(1_0_0_/_0.055)] hover:border-[oklch(1_0_0_/_0.11)]',
         'transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]',
         'shadow-[0_4px_24px_oklch(0_0_0_/_0.35)] hover:shadow-[0_8px_32px_oklch(0_0_0_/_0.5)]',
-        'mx-4 md:mx-6 lg:mx-0',
+        'md:mx-6 lg:mx-0',
       )}
     >
       <CustomersTable users={items} isLoading={loading} onUpdate={onUpdate} />

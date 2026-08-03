@@ -129,12 +129,17 @@ const MobileNavItem = memo(function MobileNavItem({ item, onNavigate }: MobileNa
           className="relative flex items-center justify-center"
           style={{ minWidth: 44 }}
         >
-          {/* ── Ambient: shared layout pill background ── */}
+          {/* ── Ambient: shared layout pill background with liquid glass orange gradient ── */}
           <AnimatePresence>
             {isActive && (
               <motion.span
                 layoutId="mobile-nav-pill"
-                className={cn('absolute inset-0 rounded-3xl', 'bg-secondary-foreground/70')}
+                className={cn(
+                  'absolute inset-0 rounded-3xl',
+                  'bg-gradient-to-r from-orange-600/40 via-orange-700/50 to-amber-700/45',
+                  'border border-t-[rgba(255,255,255,0.4)] border-x-[rgba(255,255,255,0.15)] border-b-transparent',
+                  'shadow-[0_6px_24px_rgba(234,88,12,0.3),inset_0_1px_1px_rgba(255,255,255,0.4)]',
+                )}
                 initial={{ opacity: 0, scale: 0.82 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.82 }}
@@ -149,16 +154,18 @@ const MobileNavItem = memo(function MobileNavItem({ item, onNavigate }: MobileNa
             layout
             transition={{ ...SPRING, mass: 0.6 }}
             className={cn(
-              'relative z-10 flex items-center gap-1.5 px-3 py-2 rounded-2xl',
+              'relative z-10 flex items-center gap-1.5 px-3.5 py-2 rounded-2xl',
               'select-none cursor-pointer',
             )}
           >
             <Icon
               size={18}
-              strokeWidth={isActive ? 2.2 : 1.6}
+              strokeWidth={isActive ? 2.3 : 1.7}
               className={cn(
                 'flex-shrink-0 transition-colors duration-150',
-                isActive ? 'text-[oklch(0.10_0_0)]' : 'text-[oklch(0.48_0_0)]',
+                isActive
+                  ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]'
+                  : 'text-[oklch(0.58_0_0)]',
               )}
             />
             {/* Label only visible when active — layout-animated width */}
@@ -169,7 +176,7 @@ const MobileNavItem = memo(function MobileNavItem({ item, onNavigate }: MobileNa
                   animate={{ opacity: 1, width: 'auto' }}
                   exit={{ opacity: 0, width: 0 }}
                   transition={{ duration: 0.22, ease: EASE }}
-                  className="overflow-hidden whitespace-nowrap text-[11px] font-semibold tracking-wide text-[oklch(0.10_0_0)]"
+                  className="overflow-hidden whitespace-nowrap text-[11.5px] font-extrabold tracking-wide text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]"
                 >
                   {item.label}
                 </motion.span>
@@ -201,24 +208,27 @@ const MenuActionItem = memo(function MenuActionItem({ item, onNavigate }: MenuAc
             whileTap={{ scale: 0.97 }}
             transition={{ duration: 0.14, ease: EASE }}
             className={cn(
-              'flex items-center gap-3 px-4 py-3 rounded-xl',
+              'flex items-center gap-3 px-4 py-3 rounded-xl transition-all',
               'cursor-pointer select-none',
-              'focus-visible:ring-2 focus-visible:ring-[oklch(0.7_0_0_/_0.3)]',
+              'focus-visible:ring-2 focus-visible:ring-orange-500/40',
               isActive
-                ? 'bg-[oklch(1_0_0_/_0.08)] text-[oklch(0.92_0_0)]'
-                : 'text-[oklch(0.58_0_0)]',
+                ? 'bg-orange-800/25 border border-orange-700/40 text-orange-400 font-semibold shadow-xs'
+                : 'text-[oklch(0.65_0_0)] hover:text-[oklch(0.95_0_0)]',
             )}
           >
             <Icon
               size={16}
               strokeWidth={isActive ? 2.2 : 1.6}
-              className="flex-shrink-0 transition-[stroke-width] duration-150"
+              className={cn(
+                'flex-shrink-0 transition-[stroke-width] duration-150',
+                isActive ? 'text-orange-400' : 'text-[oklch(0.55_0_0)]',
+              )}
             />
             <span className="text-[13px] font-medium tracking-wide">{item.label}</span>
             {isActive && (
               <motion.span
                 layoutId="menu-active-dot"
-                className="ml-auto size-1.5 rounded-full bg-[oklch(0.92_0_0)]"
+                className="ml-auto size-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={SPRING}
@@ -254,12 +264,15 @@ const MenuButton = memo(function MenuButton({ isOpen, isActive, onClick }: MenuB
         'rounded-3xl',
       )}
     >
-      {/* White pill — same layoutId as primary tabs, animates across on menu route active */}
+      {/* Orange pill — same layoutId as primary tabs, animates across on menu route active */}
       <AnimatePresence>
         {isActive && (
           <motion.span
             layoutId="mobile-nav-pill"
-            className={cn('absolute inset-0 rounded-3xl', 'bg-secondary-foreground/70')}
+            className={cn(
+              'absolute inset-0 rounded-3xl',
+              'bg-orange-800 text-[oklch(0.98_0_0)] shadow-[0_4px_16px_rgba(194,65,12,0.45)]',
+            )}
             initial={{ opacity: 0, scale: 0.82 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.82 }}
@@ -273,7 +286,7 @@ const MenuButton = memo(function MenuButton({ isOpen, isActive, onClick }: MenuB
       <AnimatePresence>
         {isOpen && !isActive && (
           <motion.span
-            className="absolute inset-0 rounded-3xl bg-sidebar-accent/60"
+            className="absolute inset-0 rounded-3xl bg-[oklch(1_0_0_/_0.08)] border border-[oklch(1_0_0_/_0.12)]"
             initial={{ opacity: 0, scale: 0.84 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.84 }}
@@ -299,10 +312,10 @@ const MenuButton = memo(function MenuButton({ isOpen, isActive, onClick }: MenuB
             >
               <X
                 size={18}
-                strokeWidth={isActive ? 2.2 : 2}
+                strokeWidth={isActive ? 2.3 : 2}
                 className={cn(
                   'transition-colors duration-150',
-                  isActive ? 'text-[oklch(0.10_0_0)]' : 'text-[oklch(0.68_0_0)]',
+                  isActive ? 'text-white' : 'text-[oklch(0.85_0_0)]',
                 )}
               />
             </motion.span>
@@ -316,10 +329,10 @@ const MenuButton = memo(function MenuButton({ isOpen, isActive, onClick }: MenuB
             >
               <TextAlignJustify
                 size={18}
-                strokeWidth={isActive ? 2.2 : 1.6}
+                strokeWidth={isActive ? 2.3 : 1.7}
                 className={cn(
                   'transition-colors duration-150',
-                  isActive ? 'text-[oklch(0.10_0_0)]' : 'text-[oklch(0.48_0_0)]',
+                  isActive ? 'text-white' : 'text-[oklch(0.55_0_0)]',
                 )}
               />
             </motion.span>
@@ -411,11 +424,12 @@ const MobileMenuSheet = memo(function MobileMenuSheet({ isOpen, onClose }: Mobil
               // Position — fixed above the bottom nav with gap
               'fixed z-50 left-4 right-4',
               'bottom-[calc(80px+env(safe-area-inset-bottom)+12px)]',
-              // Surface
-              'rounded-2xl overflow-hidden',
-              'bg-[oklch(0.13_0.006_264_/_0.97)] backdrop-blur-2xl',
-              'border border-[oklch(1_0_0_/_0.08)]',
-              'shadow-[0_-4px_40px_oklch(0_0_0_/_0.55),0_0_0_1px_oklch(1_0_0_/_0.05)]',
+              // Liquid Glass Surface
+              'rounded-3xl overflow-hidden',
+              'bg-gradient-to-b from-[oklch(0.18_0.008_260_/_0.92)] via-[oklch(0.13_0.006_260_/_0.96)] to-[oklch(0.09_0.005_260_/_0.98)]',
+              'backdrop-blur-3xl saturate-150',
+              'border border-t-[rgba(255,255,255,0.22)] border-x-[rgba(255,255,255,0.1)] border-b-[rgba(255,255,255,0.05)]',
+              'shadow-[0_32px_80px_rgba(0,0,0,0.95),inset_0_1.5px_1px_rgba(255,255,255,0.2)]',
             )}
           >
             {/* User identity strip */}
@@ -546,16 +560,17 @@ export const AdminMobileNav = memo(function AdminMobileNav() {
           'px-3',
         )}
       >
-        {/* Inner pill container */}
+        {/* Liquid Glass Pill Container */}
         <div
           className={cn(
-            'flex items-center h-[72px] px-2',
+            'flex items-center h-18 px-2',
             'mx-auto max-w-sm',
             'rounded-full overflow-hidden',
-            'bg-accent/30 backdrop-blur-2xl',
-            // 'border border-[oklch(1_0_0_/0.08)]',
-            'shadow-[0px_0px_5px_0px_#484848,inset_0px_0px_11px_5px_#6969691c]',
-            'mb-2',
+            'bg-gradient-to-b from-[oklch(0.18_0.008_260_/0.6)] via-[oklch(0.11_0.005_260_/0.7)] to-[oklch(0.07_0.005_260_/0.5)]',
+            'backdrop-blur-md saturate-150',
+            'border border-t-[rgba(255,255,255,0.25)] border-x-[rgba(255,255,255,0.12)] border-b-[rgba(255,255,255,0.06)]',
+            'shadow-[0_20px_60px_rgba(0,0,0,0.9),inset_0_1.5px_1px_rgba(255,255,255,0.25),inset_0_-1px_1px_rgba(0,0,0,0.5)]',
+            'mb-2.5',
           )}
         >
           {/* Primary nav items */}

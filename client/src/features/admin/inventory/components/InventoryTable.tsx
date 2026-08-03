@@ -369,7 +369,7 @@ export function InventoryTable({ items, loading, onEdit, onView, onDelete }: Inv
         </Table>
       </div>
 
-      <div className="md:hidden flex flex-col p-4 gap-4">
+      <div className="md:hidden flex flex-col md:p-4 gap-4">
         {items.map((product) => {
           const imgUrl = getPrimaryImage(product);
           let categoryName = 'Unknown';

@@ -33,7 +33,7 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="flex flex-col gap-3.5 sm:gap-5 lg:gap-6 h-screen bg-[oklch(0.08_0.005_260)] selection:bg-[oklch(0.95_0_0)] selection:text-[oklch(0.1_0_0)] pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pb-1 overflow-y-scroll">
+    <div className="flex-1 h-full overflow-y-auto space-y-4 md:space-y-6 pb-22 lg:pb-4 sm:p-2 lg:p-0">
       <PageHeader
         title="Support Tickets"
         description="Manage customer support inquiries, updates, and resolutions."
@@ -135,7 +135,7 @@ export default function SupportPage() {
           'border border-[oklch(1_0_0/0.055)] hover:border-[oklch(1_0_0/0.11)] ' +
           'transition-all duration-500 ease-in-out ' +
           'shadow-[0_4px_24px_oklch(0_0_0/0.35)] hover:shadow-[0_8px_32px_oklch(0_0_0/0.5)] ' +
-          'mx-4 md:mx-6 lg:mx-0'
+          'md:mx-6 lg:mx-0'
         }
       >
         <SupportTicketTable

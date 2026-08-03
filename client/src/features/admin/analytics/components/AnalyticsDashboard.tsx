@@ -29,8 +29,8 @@ export function AnalyticsDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-4 md:space-y-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         <KpiCard
           title="Total Sales"
           metric={dashboard.kpi.totalSales}
@@ -59,13 +59,13 @@ export function AnalyticsDashboard() {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
         <SalesChart data={dashboard.salesChart} />
         <OrderOverview data={dashboard.orderOverview} />
       </div>
 
       {recentOrders ? (
-        <div className="grid gap-4 lg:grid-cols-5">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6">
           <RecentDeliveredTable data={recentOrders} onPageChange={setPage} hfull={false} />
         </div>
       ) : ordersLoading ? (

@@ -29,17 +29,17 @@ export function OrderDetailsSheet({ order, isOpen, onClose }: OrderDetailsSheetP
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-2xl! bg-linear-to-b from-[oklch(0.13_0.01_260)] to-[oklch(0.11_0.01_260)] border-l-[oklch(1_0_0/0.1)] text-[oklch(0.95_0_0)] p-0 shadow-[0_0_40px_oklch(0_0_0/0.5)]">
         <ScrollArea className="h-full">
-          <div className="p-6 md:p-8">
-            <SheetHeader className="mb-8 space-y-3">
+          <div className="p-4 sm:p-6 md:p-8">
+            <SheetHeader className="mb-6 sm:mb-8 space-y-3">
               <div className="flex items-start justify-between">
                 <div className="space-y-1.5">
-                  <SheetTitle className="text-2xl font-bold tracking-tight text-[oklch(0.95_0_0)]">
+                  <SheetTitle className="text-xl sm:text-2xl font-bold tracking-tight text-[oklch(0.95_0_0)]">
                     Order{' '}
                     <span className="font-mono text-[oklch(0.7_0.15_260)]">
                       {order.orderNumber}
                     </span>
                   </SheetTitle>
-                  <SheetDescription className="text-[oklch(0.6_0_0)] font-medium text-sm">
+                  <SheetDescription className="text-[oklch(0.6_0_0)] font-medium text-xs sm:text-sm">
                     Placed on{' '}
                     <span className="text-[oklch(0.8_0_0)]">
                       {new Intl.DateTimeFormat('en-US', {
@@ -51,7 +51,7 @@ export function OrderDetailsSheet({ order, isOpen, onClose }: OrderDetailsSheetP
                 </div>
                 <OrderStatusBadge
                   status={order.status}
-                  className="scale-110 origin-top-right mt-1"
+                  className="scale-95 sm:scale-110 origin-top-right mt-1"
                 />
               </div>
             </SheetHeader>

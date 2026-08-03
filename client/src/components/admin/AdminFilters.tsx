@@ -66,7 +66,7 @@ export function AdminFilters({
         'border border-[oklch(1_0_0_/_0.055)] hover:border-[oklch(1_0_0_/_0.11)]',
         'transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]',
         'shadow-[0_4px_24px_oklch(0_0_0_/_0.35)] hover:shadow-[0_8px_32px_oklch(0_0_0_/_0.5)]',
-        'p-4 sm:p-5 mx-4 md:mx-6 lg:mx-0 shrink-0',
+        'p-2.5 sm:p-5 md:mx-6 lg:mx-0 shrink-0',
       )}
     >
       {TOP_GLOW}
@@ -76,16 +76,16 @@ export function AdminFilters({
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[oklch(0.55_0_0)]" />
           <Input
             placeholder={searchPlaceholder}
-            className="pl-10 bg-[oklch(1_0_0_/_0.03)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] placeholder:text-[oklch(0.42_0_0)] focus-visible:ring-[oklch(1_0_0_/_0.2)] focus-visible:border-[oklch(1_0_0_/_0.15)] h-11 rounded-xl"
+            className="pl-10 bg-[oklch(1_0_0_/_0.03)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] placeholder:text-[oklch(0.42_0_0)] text-xs sm:text-sm focus-visible:ring-[oklch(1_0_0_/_0.2)] focus-visible:border-[oklch(1_0_0_/_0.15)] h-11 rounded-xl"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
 
-        <div className="grid grid-cols-2 lg:flex lg:w-auto gap-2 lg:gap-4">
+        <div className="grid grid-cols-2 lg:flex lg:w-auto gap-2 sm:gap-3 lg:gap-4">
           {/* Status Filter */}
           <Select value={statusFilter} onValueChange={onStatusChange}>
-            <SelectTrigger className="w-full lg:w-[180px] bg-[oklch(1_0_0_/_0.03)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] h-11 rounded-xl focus:ring-[oklch(1_0_0_/_0.2)] focus:border-[oklch(1_0_0_/_0.15)]">
+            <SelectTrigger className="w-full lg:w-[180px] bg-[oklch(1_0_0_/_0.03)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] text-xs sm:text-sm h-11 rounded-xl focus:ring-[oklch(1_0_0_/_0.2)] focus:border-[oklch(1_0_0_/_0.15)]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent className="bg-[oklch(0.13_0.005_260)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] rounded-xl shadow-[0_8px_32px_oklch(0_0_0_/_0.6)]">
@@ -93,7 +93,7 @@ export function AdminFilters({
                 <SelectItem
                   key={opt.value}
                   value={opt.value}
-                  className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)]"
+                  className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)] text-xs sm:text-sm"
                 >
                   {opt.dotClass ? (
                     <span className="flex items-center gap-2">
@@ -110,7 +110,7 @@ export function AdminFilters({
 
           {/* Sort */}
           <Select value={sortValue} onValueChange={onSortChange}>
-            <SelectTrigger className="w-full lg:w-[210px] bg-[oklch(1_0_0_/_0.03)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] h-11 rounded-xl focus:ring-[oklch(1_0_0_/_0.2)] focus:border-[oklch(1_0_0_/_0.15)]">
+            <SelectTrigger className="w-full lg:w-[210px] bg-[oklch(1_0_0_/_0.03)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] text-xs sm:text-sm h-11 rounded-xl focus:ring-[oklch(1_0_0_/_0.2)] focus:border-[oklch(1_0_0_/_0.15)]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent className="bg-[oklch(0.13_0.005_260)] border-[oklch(1_0_0_/_0.08)] text-[oklch(0.95_0_0)] rounded-xl shadow-[0_8px_32px_oklch(0_0_0_/_0.6)]">
@@ -118,7 +118,7 @@ export function AdminFilters({
                 <SelectItem
                   key={opt.value}
                   value={opt.value}
-                  className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)]"
+                  className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)] text-xs sm:text-sm"
                 >
                   {opt.label}
                 </SelectItem>
@@ -130,12 +130,12 @@ export function AdminFilters({
 
       {/* Active Filters */}
       {(debouncedSearch || statusFilter !== 'all') && (
-        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[oklch(1_0_0_/_0.055)] relative z-10">
+        <div className="flex items-center flex-wrap gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-[oklch(1_0_0_/_0.055)] relative z-10">
           <span className="text-xs text-[oklch(0.42_0_0)]">Filters:</span>
           {debouncedSearch && (
             <Badge
               variant="outline"
-              className="text-[10.5px] border-[oklch(1_0_0_/_0.1)] bg-[oklch(1_0_0_/_0.03)] text-[oklch(0.7_0_0)] font-normal rounded-md"
+              className="text-[10.5px] border-[oklch(1_0_0_/_0.1)] bg-[oklch(1_0_0_/_0.03)] text-[oklch(0.7_0_0)] font-normal rounded-md truncate max-w-[180px]"
             >
               Search: {debouncedSearch}
             </Badge>

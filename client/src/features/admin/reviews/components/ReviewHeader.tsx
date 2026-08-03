@@ -2,7 +2,7 @@ import { MessageSquareQuote } from 'lucide-react';
 
 export function ReviewHeader() {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4 md:px-6 lg:px-0">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 md:px-6 lg:px-0">
       <div className="flex items-center gap-3 md:gap-4 relative group">
         <div className="relative">
           <div className="absolute inset-0 bg-[oklch(0.55_0_0)] blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-700" />

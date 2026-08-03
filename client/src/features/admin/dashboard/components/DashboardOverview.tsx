@@ -43,9 +43,9 @@ export function DashboardOverview() {
   const { metrics, lowStockProducts, recentCustomers, recentReviews, couponSummary } = data;
 
   return (
-    <div className="space-y-6 flex-1 overflow-y-auto">
-      {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="space-y-4 md:space-y-6 flex-1">
+      {/* Operational Metrics Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         <KpiCard
           index={0}
           title="Total Revenue"
@@ -76,14 +76,12 @@ export function DashboardOverview() {
         />
       </div>
 
-      {/* Row 2: Recent Orders & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
+      {/* Row 2: Live Operations & Quick Shortcuts */}
+      <div className="grid grid-cols-1 lg:grid-cols-6 gap-4 md:gap-6">
         <div className="col-span-1 lg:col-span-5">
-          {/* Reusing Recent Delivered Table but wrapping it for overview.
-              We'll use standard pagination internally. */}
           <RecentDeliveredTable
-            title="Recent Orders"
-            description="Latest orders placed on the platform"
+            title="Live Fulfillment Feed"
+            description="Recent completed orders requiring operational oversight"
             data={{
               items: data.recentOrders,
               total: data.recentOrders.length,
@@ -100,8 +98,8 @@ export function DashboardOverview() {
         </div>
       </div>
 
-      {/* Row 3: Widgets Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Row 3: Operational Widgets Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <LowStockProductsWidget products={lowStockProducts} />
         <RecentCustomersWidget customers={recentCustomers} />
         <CouponSummaryWidget summary={couponSummary} />

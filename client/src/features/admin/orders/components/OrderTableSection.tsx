@@ -52,7 +52,7 @@ export function OrderTableSection({ initialStatus }: OrderTableSectionProps) {
   }, []);
 
   return (
-    <div className="space-y-6 flex flex-col h-full justify-between">
+    <div className="space-y-4 flex flex-col h-full justify-between">
       <AdminFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -99,7 +99,7 @@ export function OrderTableSection({ initialStatus }: OrderTableSectionProps) {
             'border border-[oklch(1_0_0/0.055)] hover:border-[oklch(1_0_0/0.11)]',
             'transition-all duration-500 ease-in-out',
             'shadow-[0_4px_24px_oklch(0_0_0/0.35)] hover:shadow-[0_8px_32px_oklch(0_0_0/0.5)]',
-            'mx-4 md:mx-6 lg:mx-0',
+            'md:mx-6 lg:mx-0',
           )}
         >
           <OrderTable
