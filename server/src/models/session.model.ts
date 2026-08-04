@@ -38,7 +38,7 @@
  */
 import mongoose, { Schema, type Document, type Model, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { randomUUID } from 'node:crypto';
+import crypto, { randomUUID } from 'node:crypto';
 import type { IUser } from './user.model.js';
 
 interface ISessionMethord {
@@ -189,40 +189,34 @@ sessionSchema.index({ expiredAt: 1 }, { expireAfterSeconds: 0 });
  * Security:
  * - Raw refresh tokens never reach the database.
  */
-sessionSchema.pre('save', async function () {
+sessionSchema.pre('save', function () {
   if (!this.isModified('hashToken')) return;
-  this.hashToken = await bcrypt.hash(this.hashToken, 12);
+  // If token is already hashed with bcrypt (legacy), don't re-hash
+  if (this.hashToken.startsWith('$2a$') || this.hashToken.startsWith('$2b$')) return;
+
+  this.hashToken = crypto.createHash('sha256').update(this.hashToken).digest('hex');
 });
 
 /**
  * Verify refresh token.
  *
  * Compares the provided refresh token against
- * the stored bcrypt hash.
- *
- * Common Usage:
- *
- * const valid =
- *   await session.compareHashToken(
- *     refreshToken,
- *   );
- *
- * if (!valid) {
- *   throw new UnauthorizedException();
- * }
- *
- * @param token
- * Raw refresh token received from the client.
- *
- * @returns
- * Promise<boolean>
- *
- * Returns:
- * - true  -> token valid
- * - false -> token invalid
+ * the stored hash using timing-safe comparison.
  */
 sessionSchema.methods.compareHashToken = async function (token: string) {
-  return await bcrypt.compare(token, this.hashToken);
+  if (this.hashToken.startsWith('$2a$') || this.hashToken.startsWith('$2b$')) {
+    return await bcrypt.compare(token, this.hashToken);
+  }
+
+  const hashedInput = crypto.createHash('sha256').update(token).digest('hex');
+  const bufferInput = Buffer.from(hashedInput);
+  const bufferStored = Buffer.from(this.hashToken);
+
+  if (bufferInput.length !== bufferStored.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(bufferInput, bufferStored);
 };
 
 /**

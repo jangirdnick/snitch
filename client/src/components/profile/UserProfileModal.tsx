@@ -70,7 +70,7 @@ export const UserProfileModal = memo(function UserProfileModal({
   return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-md overflow-hidden">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center p-3 sm:p-4 bg-black/10 backdrop-blur-sm overflow-hidden">
           {/* Backdrop overlay — click closes */}
           <motion.div
             key="profile-modal-backdrop"
@@ -94,7 +94,7 @@ export const UserProfileModal = memo(function UserProfileModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 6 }}
             transition={SPRING_MODAL}
-            className="relative z-10 flex flex-col sm:flex-row w-full max-w-[700px] h-[520px] sm:h-[480px] bg-zinc-950 border border-white/12 rounded-2xl shadow-[0_24px_64px_rgba(0,0,0,0.9)] overflow-hidden selection:bg-orange-600 selection:text-white"
+            className="relative z-10 flex flex-col sm:flex-row w-full max-w-[700px] h-[520px] sm:h-[480px] bg-zinc-950 border border-white/12 rounded-xl shadow-[0_24px_64px_rgba(0,0,0,0.9)] overflow-hidden selection:bg-orange-600 selection:text-white"
           >
             {/* Left Sidebar Navigation (~190px) */}
             <aside className="w-full sm:w-[190px] shrink-0 border-b sm:border-b-0 sm:border-r border-white/10 bg-zinc-900/60 p-3 sm:p-3.5 flex flex-col justify-between">

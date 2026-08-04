@@ -198,6 +198,11 @@ export async function userFindByEmailPassword(params: {
       throw new InvalidCredentialsError();
     }
 
+    if (user.isBlocked) {
+      logger.warn({ email: normalizedEmail }, 'Blocked user attempted login');
+      throw new UnauthorizedError('Your account has been suspended');
+    }
+
     if (!user.emailVerified) {
       throw new EmailNotVerifiedError();
     }
