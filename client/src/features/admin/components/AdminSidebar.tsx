@@ -1,6 +1,5 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { NavLink, useNavigate } from 'react-router';
-import { UserProfileModal } from '@/components/profile';
 import { motion, AnimatePresence, useAnimationControls } from 'motion/react';
 import {
   LayoutDashboard,
@@ -303,7 +302,6 @@ const SidebarSettings = memo(function SidebarSettings() {
 // ─── SidebarProfile ──────────────────────────────────────────────────────────
 
 const SidebarProfile = memo(function SidebarProfile() {
-  const [profileOpen, setProfileOpen] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const user = useAppSelector((state) => state.auth.user);
@@ -321,108 +319,105 @@ const SidebarProfile = memo(function SidebarProfile() {
   }, [dispatch, navigate]);
 
   const handleProfile = useCallback(() => {
-    setProfileOpen(true);
-  }, []);
+    navigate('/admin/profile');
+  }, [navigate]);
 
   const handleAccountSettings = useCallback(() => {
     navigate('/admin/settings/account');
   }, [navigate]);
 
   return (
-    <>
-      <UserProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
-      <DropdownMenu>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <SidebarIconButton aria-label="Open profile menu">
-                <Avatar
-                  className={cn(
-                    'size-7 transition-shadow duration-200',
-                    'ring-1 ring-[oklch(1_0_0_/0.12)]',
+    <DropdownMenu>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger asChild>
+            <SidebarIconButton aria-label="Open profile menu">
+              <Avatar
+                className={cn(
+                  'size-7 transition-shadow duration-200',
+                  'ring-1 ring-[oklch(1_0_0_/0.12)]',
+                )}
+              >
+                <AvatarImage src={undefined} alt={user?.firstName ?? 'User'} />
+                <AvatarFallback className="bg-[oklch(0.22_0_0)] text-[oklch(0.72_0_0)] text-[10px] font-semibold">
+                  {initials ?? (
+                    <Crown size={11} strokeWidth={1.8} className="text-[oklch(0.55_0_0)]" />
                   )}
-                >
-                  <AvatarImage src={undefined} alt={user?.firstName ?? 'User'} />
-                  <AvatarFallback className="bg-[oklch(0.22_0_0)] text-[oklch(0.72_0_0)] text-[10px] font-semibold">
-                    {initials ?? (
-                      <Crown size={11} strokeWidth={1.8} className="text-[oklch(0.55_0_0)]" />
-                    )}
-                  </AvatarFallback>
-                </Avatar>
-              </SidebarIconButton>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <SidebarTooltipContent>
-            {user ? `${user.firstName} ${user.lastName ?? ''}` : 'Profile'}
-          </SidebarTooltipContent>
-        </Tooltip>
+                </AvatarFallback>
+              </Avatar>
+            </SidebarIconButton>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <SidebarTooltipContent>
+          {user ? `${user.firstName} ${user.lastName ?? ''}` : 'Profile'}
+        </SidebarTooltipContent>
+      </Tooltip>
 
-        <DropdownMenuContent
-          side="right"
-          align="end"
-          sideOffset={12}
+      <DropdownMenuContent
+        side="right"
+        align="end"
+        sideOffset={12}
+        className={cn(
+          'z-50 min-w-48 rounded-xl p-1.5',
+          'bg-[oklch(0.15_0.005_264_/0.96)] backdrop-blur-2xl',
+          'border border-[oklch(1_0_0_/0.09)]',
+          'shadow-[0_24px_64px_oklch(0_0_0_/0.65),0_0_0_1px_oklch(1_0_0_/0.05)]',
+          'duration-150',
+        )}
+      >
+        {user && (
+          <>
+            <DropdownMenuLabel className="px-2.5 py-2">
+              <p className="text-[11px] font-semibold text-[oklch(0.90_0_0)] truncate">
+                {user.firstName} {user.lastName}
+              </p>
+              <p className="text-[10px] text-[oklch(0.48_0_0)] truncate mt-0.5 font-normal">
+                {user.email}
+              </p>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-[oklch(1_0_0_/0.07)] my-1" />
+          </>
+        )}
+
+        <DropdownMenuItem
+          onClick={handleProfile}
           className={cn(
-            'z-50 min-w-48 rounded-xl p-1.5',
-            'bg-[oklch(0.15_0.005_264_/0.96)] backdrop-blur-2xl',
-            'border border-[oklch(1_0_0_/0.09)]',
-            'shadow-[0_24px_64px_oklch(0_0_0_/0.65),0_0_0_1px_oklch(1_0_0_/0.05)]',
-            'duration-150',
+            'flex items-center gap-2 rounded-lg px-2.5 py-1.5 cursor-pointer outline-none',
+            'text-[11px] font-medium text-[oklch(0.65_0_0)]',
+            'hover:bg-[oklch(1_0_0_/0.07)] hover:text-[oklch(0.88_0_0)]',
           )}
         >
-          {user && (
-            <>
-              <DropdownMenuLabel className="px-2.5 py-2">
-                <p className="text-[11px] font-semibold text-[oklch(0.90_0_0)] truncate">
-                  {user.firstName} {user.lastName}
-                </p>
-                <p className="text-[10px] text-[oklch(0.48_0_0)] truncate mt-0.5 font-normal">
-                  {user.email}
-                </p>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-[oklch(1_0_0_/0.07)] my-1" />
-            </>
+          <User size={12} strokeWidth={1.8} />
+          Profile
+        </DropdownMenuItem>
+
+        <DropdownMenuItem
+          onClick={handleAccountSettings}
+          className={cn(
+            'flex items-center gap-2 rounded-lg px-2.5 py-1.5 cursor-pointer outline-none',
+            'text-[11px] font-medium text-[oklch(0.65_0_0)]',
+            'hover:bg-[oklch(1_0_0_/0.07)] hover:text-[oklch(0.88_0_0)]',
           )}
+        >
+          <Settings size={12} strokeWidth={1.8} />
+          Account Settings
+        </DropdownMenuItem>
 
-          <DropdownMenuItem
-            onClick={handleProfile}
-            className={cn(
-              'flex items-center gap-2 rounded-lg px-2.5 py-1.5 cursor-pointer outline-none',
-              'text-[11px] font-medium text-[oklch(0.65_0_0)]',
-              'hover:bg-[oklch(1_0_0_/0.07)] hover:text-[oklch(0.88_0_0)]',
-            )}
-          >
-            <User size={12} strokeWidth={1.8} />
-            Profile
-          </DropdownMenuItem>
+        <DropdownMenuSeparator className="bg-[oklch(1_0_0_/0.07)] my-1" />
 
-          <DropdownMenuItem
-            onClick={handleAccountSettings}
-            className={cn(
-              'flex items-center gap-2 rounded-lg px-2.5 py-1.5 cursor-pointer outline-none',
-              'text-[11px] font-medium text-[oklch(0.65_0_0)]',
-              'hover:bg-[oklch(1_0_0_/0.07)] hover:text-[oklch(0.88_0_0)]',
-            )}
-          >
-            <Settings size={12} strokeWidth={1.8} />
-            Account Settings
-          </DropdownMenuItem>
-
-          <DropdownMenuSeparator className="bg-[oklch(1_0_0_/0.07)] my-1" />
-
-          <DropdownMenuItem
-            onClick={handleLogout}
-            className={cn(
-              'flex items-center gap-2 rounded-lg px-2.5 py-1.5 cursor-pointer outline-none',
-              'text-[11px] font-medium text-[oklch(0.62_0.18_22)]',
-              'hover:bg-[oklch(0.62_0.18_22_/0.10)] hover:text-[oklch(0.72_0.18_22)]',
-            )}
-          >
-            <LogOut size={12} strokeWidth={1.8} />
-            Logout
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
+        <DropdownMenuItem
+          onClick={handleLogout}
+          className={cn(
+            'flex items-center gap-2 rounded-lg px-2.5 py-1.5 cursor-pointer outline-none',
+            'text-[11px] font-medium text-[oklch(0.62_0.18_22)]',
+            'hover:bg-[oklch(0.62_0.18_22_/0.10)] hover:text-[oklch(0.72_0.18_22)]',
+          )}
+        >
+          <LogOut size={12} strokeWidth={1.8} />
+          Logout
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 });
 

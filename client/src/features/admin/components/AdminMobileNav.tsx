@@ -35,10 +35,9 @@ import {
   ChartBarStacked,
   LifeBuoy,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logout } from '@/features/auth/state/auth.slice';
-import { UserProfileModal } from '@/components/profile';
-import { cn } from '@/lib/utils';
 
 // ─── Motion Constants ─────────────────────────────────────────────────────────
 
@@ -349,14 +348,9 @@ const MenuButton = memo(function MenuButton({ isOpen, isActive, onClick }: MenuB
 interface MobileMenuSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onOpenProfile: () => void;
 }
 
-const MobileMenuSheet = memo(function MobileMenuSheet({
-  isOpen,
-  onClose,
-  onOpenProfile,
-}: MobileMenuSheetProps) {
+const MobileMenuSheet = memo(function MobileMenuSheet({ isOpen, onClose }: MobileMenuSheetProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const user = useAppSelector((state) => state.auth.user);
@@ -369,9 +363,9 @@ const MobileMenuSheet = memo(function MobileMenuSheet({
   }, [dispatch, navigate, onClose]);
 
   const handleProfile = useCallback(() => {
+    navigate('/admin/profile');
     onClose();
-    onOpenProfile();
-  }, [onClose, onOpenProfile]);
+  }, [navigate, onClose]);
 
   // Close on ESC key
   useEffect(() => {
@@ -511,13 +505,10 @@ const MobileMenuSheet = memo(function MobileMenuSheet({
 
 export const AdminMobileNav = memo(function AdminMobileNav() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
   const location = useLocation();
 
   const openMenu = useCallback(() => setMenuOpen(true), []);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
-  const handleOpenProfile = useCallback(() => setProfileOpen(true), []);
-  const handleCloseProfile = useCallback(() => setProfileOpen(false), []);
 
   // True when the current route belongs to MENU_ITEMS (secondary routes)
   const isMenuRouteActive = useMemo(() => {
@@ -550,9 +541,7 @@ export const AdminMobileNav = memo(function AdminMobileNav() {
 
   return (
     <>
-      <MobileMenuSheet isOpen={menuOpen} onClose={closeMenu} onOpenProfile={handleOpenProfile} />
-
-      <UserProfileModal open={profileOpen} onClose={handleCloseProfile} />
+      <MobileMenuSheet isOpen={menuOpen} onClose={closeMenu} />
 
       {/* ── Bottom navigation bar ── */}
       <motion.nav

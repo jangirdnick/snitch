@@ -81,7 +81,7 @@ export default function ReviewsPage() {
         title="Reviews & Moderation"
         description="Monitor product ratings, customer feedback, and user review permissions."
       >
-        <div className="grid max-md:grid-cols-2 grid-cols-3 gap-2 sm:gap-3 w-full sm:w-auto">
+        <div className="grid max-md:grid-cols-2 gap-2 sm:gap-3 w-full sm:w-auto">
           {/* Total Reviews Card */}
           <div className="flex-1 sm:flex-none flex items-center gap-2.5 bg-[oklch(1_0_0/0.03)] border border-[oklch(1_0_0/0.08)] rounded-xl px-3 sm:px-3.5 py-1.5 shadow-xs">
             <div className="bg-blue-500/20 text-blue-400 p-1.5 rounded-lg shrink-0">
