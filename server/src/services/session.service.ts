@@ -64,13 +64,21 @@ export async function validateAndExpireSession(params: {
       .findOne({
         userId,
         deviceId,
-        revoked: false,
-        expiredAt: { $gt: new Date() },
       })
       .exec();
 
     if (!session) {
       throw new SessionNotFoundError(deviceId);
+    }
+
+    // Security Check: If session is already revoked or expired, detect potential token reuse attack
+    if (session.revoked || session.expiredAt.getTime() <= Date.now()) {
+      logger.warn(
+        { data: { userId, deviceId } },
+        'SECURITY ALERT: Revoked or expired session reuse attempt detected. Revoking all active user sessions.',
+      );
+      await sessionModel.updateMany({ userId }, { $set: { revoked: true } });
+      throw new SessionInvalidError();
     }
 
     const isTokenValid = await session.compareHashToken(token);

@@ -62,6 +62,10 @@ export async function tokenChecker({
   const decodedToken = compairJwtToken(token);
   const user = await userFindById(decodedToken.sub);
 
+  if (user.isBlocked) {
+    throw new UnauthorizedError('Your account has been suspended');
+  }
+
   if (sessionExp === 'SINGLE') {
     await validateAndExpireSession({
       userId: decodedToken.sub,
@@ -185,12 +189,14 @@ export class AuthController {
       const OTP = generateOTP();
       const verificationTemplate = verificationMailTemplate(OTP);
 
-      await sendEmail({ to: email, subject: 'Verify your email', html: verificationTemplate });
-
+      // 1. Store OTP in Redis immediately
       await Promise.all([
         redisSet({ key: `otp:${email}`, value: `${OTP}`, ttl: OTP_TTL_SECONDS }),
         redisDel({ key: `otp:attempts:${email}` }),
       ]);
+
+      // 2. Dispatch email asynchronously (non-blocking)
+      sendEmail({ to: email, subject: 'Verify your email', html: verificationTemplate });
 
       return res.status(200).json({
         success: true,
@@ -243,6 +249,10 @@ export class AuthController {
   static refreshToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { user } = await tokenChecker({ sessionExp: 'SINGLE', req });
+
+      const now = new Date();
+      user.lastLoginAt = now;
+      await userModel.updateOne({ _id: user._id }, { lastLoginAt: now });
 
       const deviceId = generateDeviceId();
       const { accessToken, refreshToken } = generateJwtToken({ user, deviceId });
@@ -318,7 +328,7 @@ export class AuthController {
         success: true,
         message: `${user.firstName} fetched successfully`,
         data: {
-          user,
+          user: mapUserResponse(user as unknown as IUser),
         },
       });
     } catch (error) {
@@ -342,8 +352,9 @@ export class AuthController {
       let userDetail: UserWithoutPassword | undefined;
       try {
         userDetail = await userFindByEmail(email);
-        // Update lastLoginAt for existing user
-        await userModel.updateOne({ _id: userDetail._id }, { lastLoginAt: new Date() });
+        const now = new Date();
+        await userModel.updateOne({ _id: userDetail._id }, { lastLoginAt: now });
+        userDetail.lastLoginAt = now;
       } catch (error) {
         const { name } = error as Error;
         const isNewUserError = name === 'InvalidCredentialsError' || name === 'UserNotFoundError';
@@ -368,11 +379,13 @@ export class AuthController {
           });
         } else if (isUnverifiedUser) {
           // Existing user with unverified email — Google has verified it, so mark verified
+          const now = new Date();
           await userModel.updateOne(
             { email: email.toLowerCase().trim() },
-            { emailVerified: true, lastLoginAt: new Date() },
+            { emailVerified: true, lastLoginAt: now },
           );
           userDetail = await userFindByEmail(email);
+          userDetail.lastLoginAt = now;
         } else {
           throw error;
         }
