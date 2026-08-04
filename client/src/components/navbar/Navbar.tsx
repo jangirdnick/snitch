@@ -70,12 +70,15 @@ function IconButton({
  * Handles both User and Admin states with distinguishable styling
  */
 
+import { UserProfileModal } from '@/components/profile';
+
 type ProfileDropdownProps = {
   user: AuthState['user'];
   onLogout: () => void;
+  onOpenProfile: () => void;
 };
 
-function ProfileDropdown({ user, onLogout }: ProfileDropdownProps) {
+function ProfileDropdown({ user, onLogout, onOpenProfile }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
@@ -178,14 +181,17 @@ function ProfileDropdown({ user, onLogout }: ProfileDropdownProps) {
 
             {/* Menu Items */}
             <div className="p-1.5 flex flex-col gap-0.5">
-              <Link
-                to="/profile"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-white/70 transition-colors hover:text-white hover:bg-white/10"
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  onOpenProfile();
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-white/70 transition-colors hover:text-white hover:bg-white/10 w-full text-left cursor-pointer"
               >
                 <User size={16} strokeWidth={1.5} />
                 Profile
-              </Link>
+              </button>
 
               {isAdmin && (
                 <Link
@@ -223,6 +229,7 @@ export function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [profileOpen, setProfileOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
 
   const { isAuthenticated, user } = useAppSelector((s) => s.auth);
@@ -340,7 +347,11 @@ export function Navbar() {
             <div className="hidden sm:flex items-center gap-2 ml-1">
               {isAuthenticated ? (
                 <>
-                  <ProfileDropdown user={user} onLogout={handleLogout} />
+                  <ProfileDropdown
+                    user={user}
+                    onLogout={handleLogout}
+                    onOpenProfile={() => setProfileOpen(true)}
+                  />
                 </>
               ) : (
                 <>
@@ -590,6 +601,8 @@ export function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <UserProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </>
   );
 }
