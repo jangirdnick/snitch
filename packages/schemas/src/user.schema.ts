@@ -84,3 +84,50 @@ export const updateUserReviewPermissionSchema = z.object({
 });
 
 export type UpdateUserReviewPermissionDto = z.infer<typeof updateUserReviewPermissionSchema>;
+
+export const updateProfileSchema = z.object({
+  firstName: nameField('First name'),
+  lastName: z.string().trim().max(50).optional(),
+  avatar: z.string().trim().nullable().optional(),
+  email: emailField,
+  contact: contactSchema,
+});
+
+export type UpdateProfileDto = z.infer<typeof updateProfileSchema>;
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z
+      .string({ required_error: 'Current password is required' })
+      .min(1, 'Current password is required'),
+    newPassword: passwordField,
+    confirmNewPassword: z
+      .string({ required_error: 'Confirm new password is required' })
+      .min(1, 'Confirm new password is required'),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmNewPassword'],
+  });
+
+export type ChangePasswordDto = z.infer<typeof changePasswordSchema>;
+
+export const updatePreferencesSchema = z.object({
+  theme: z.enum(['dark', 'light', 'system']).default('dark'),
+  language: z.enum(['en', 'hi', 'es', 'fr']).default('en'),
+  notifications: z.object({
+    email: z.boolean(),
+    sms: z.boolean(),
+    marketing: z.boolean(),
+  }),
+});
+
+export type UpdatePreferencesDto = z.infer<typeof updatePreferencesSchema>;
+
+export const deleteAccountSchema = z.object({
+  password: z
+    .string({ required_error: 'Password is required to delete your account' })
+    .min(1, 'Password is required to delete your account'),
+});
+
+export type DeleteAccountDto = z.infer<typeof deleteAccountSchema>;

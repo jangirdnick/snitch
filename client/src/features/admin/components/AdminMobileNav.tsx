@@ -38,6 +38,7 @@ import {
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logout } from '@/features/auth/state/auth.slice';
 import { UserProfileModal } from '@/components/profile';
+import { AccountSettingsModal } from '@/components/account-settings';
 import { cn } from '@/lib/utils';
 
 // ─── Motion Constants ─────────────────────────────────────────────────────────
@@ -512,12 +513,14 @@ const MobileMenuSheet = memo(function MobileMenuSheet({
 export const AdminMobileNav = memo(function AdminMobileNav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [accountSettingsOpen, setAccountSettingsOpen] = useState(false);
   const location = useLocation();
 
   const openMenu = useCallback(() => setMenuOpen(true), []);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
   const handleOpenProfile = useCallback(() => setProfileOpen(true), []);
   const handleCloseProfile = useCallback(() => setProfileOpen(false), []);
+  const handleCloseAccountSettings = useCallback(() => setAccountSettingsOpen(false), []);
 
   // True when the current route belongs to MENU_ITEMS (secondary routes)
   const isMenuRouteActive = useMemo(() => {
@@ -553,6 +556,8 @@ export const AdminMobileNav = memo(function AdminMobileNav() {
       <MobileMenuSheet isOpen={menuOpen} onClose={closeMenu} onOpenProfile={handleOpenProfile} />
 
       <UserProfileModal open={profileOpen} onClose={handleCloseProfile} />
+
+      <AccountSettingsModal open={accountSettingsOpen} onClose={handleCloseAccountSettings} />
 
       {/* ── Bottom navigation bar ── */}
       <motion.nav

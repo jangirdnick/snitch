@@ -1,6 +1,7 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router';
 import { UserProfileModal } from '@/components/profile';
+import { AccountSettingsModal } from '@/components/account-settings';
 import { motion, AnimatePresence, useAnimationControls } from 'motion/react';
 import {
   LayoutDashboard,
@@ -271,31 +272,23 @@ const SidebarIconButton = memo(function SidebarIconButton({
   );
 });
 
-// ─── SidebarSettings ─────────────────────────────────────────────────────────
+interface SidebarSettingsProps {
+  onOpenSettings?: () => void;
+}
 
-const SidebarSettings = memo(function SidebarSettings() {
+const SidebarSettings = memo(function SidebarSettings({ onOpenSettings }: SidebarSettingsProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <NavLink to="/admin/settings" aria-label="Settings" className="outline-none">
-          {({ isActive }) => (
-            <motion.div
-              animate={{ rotate: isActive ? 45 : 0 }}
-              whileHover={{ rotate: 45 }}
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-            >
-              <SidebarIconButton
-                id="admin-sidebar-settings"
-                aria-current={isActive ? 'page' : undefined}
-                isActive={isActive}
-              >
-                <Settings size={17} strokeWidth={isActive ? 2 : 1.6} />
-              </SidebarIconButton>
-            </motion.div>
-          )}
-        </NavLink>
+        <SidebarIconButton
+          id="admin-sidebar-settings"
+          aria-label="Account Settings"
+          onClick={onOpenSettings}
+        >
+          <Settings size={17} strokeWidth={1.6} />
+        </SidebarIconButton>
       </TooltipTrigger>
-      <SidebarTooltipContent>Settings</SidebarTooltipContent>
+      <SidebarTooltipContent>Account Settings</SidebarTooltipContent>
     </Tooltip>
   );
 });
@@ -324,9 +317,9 @@ const SidebarProfile = memo(function SidebarProfile() {
     setProfileOpen(true);
   }, []);
 
-  const handleAccountSettings = useCallback(() => {
-    navigate('/admin/settings/account');
-  }, [navigate]);
+  // const handleAccountSettings = useCallback(() => {
+  //   onOpenAccountSettings?.();
+  // }, [onOpenAccountSettings]);
 
   return (
     <>
@@ -395,7 +388,7 @@ const SidebarProfile = memo(function SidebarProfile() {
             Profile
           </DropdownMenuItem>
 
-          <DropdownMenuItem
+          {/* <DropdownMenuItem
             onClick={handleAccountSettings}
             className={cn(
               'flex items-center gap-2 rounded-lg px-2.5 py-1.5 cursor-pointer outline-none',
@@ -405,7 +398,7 @@ const SidebarProfile = memo(function SidebarProfile() {
           >
             <Settings size={12} strokeWidth={1.8} />
             Account Settings
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
 
           <DropdownMenuSeparator className="bg-[oklch(1_0_0_/0.07)] my-1" />
 
@@ -429,45 +422,57 @@ const SidebarProfile = memo(function SidebarProfile() {
 // ─── AdminSidebar ────────────────────────────────────────────────────────────
 
 export const AdminSidebar = memo(function AdminSidebar() {
+  const [accountSettingsOpen, setAccountSettingsOpen] = useState(false);
+
+  const handleOpenAccountSettings = useCallback(() => {
+    setAccountSettingsOpen(true);
+  }, []);
+
   return (
-    <motion.aside
-      role="navigation"
-      aria-label="Admin navigation"
-      initial={{ x: -20, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className={cn(
-        'fixed left-0 top-0 z-40 flex h-screen w-16 flex-col justify-between',
-        'py-5 gap-0',
-        'bg-[oklch(0.12_0.005_264_/0.92)] backdrop-blur-2xl',
-        // Border
-        'border-r border-[oklch(1_0_0_/0.06)]',
-        // Shadow — subtle inner edge glow + outer depth
-        'shadow-[1px_0_0_oklch(1_0_0_/0.04),4px_0_40px_oklch(0_0_0_/0.45)]',
-      )}
-    >
-      {/* ── Top: Brand Logo ─────────────────────────────── */}
-      <div className="flex items-center justify-center pb-5">
-        <SidebarLogo />
-      </div>
-
-      {/* ── Center: Navigation Items ─────────────────────── */}
-      <nav
-        role="list"
-        aria-label="Main admin navigation"
-        className="flex flex-col items-center gap-2.5 py-4 w-full px-4 scrollbar-none bg-secondary/25 rounded-3xl"
+    <>
+      <AccountSettingsModal
+        open={accountSettingsOpen}
+        onClose={() => setAccountSettingsOpen(false)}
+      />
+      <motion.aside
+        role="navigation"
+        aria-label="Admin navigation"
+        initial={{ x: -20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className={cn(
+          'fixed left-0 top-0 z-40 flex h-screen w-16 flex-col justify-between',
+          'py-5 gap-0',
+          'bg-[oklch(0.12_0.005_264_/0.92)] backdrop-blur-2xl',
+          // Border
+          'border-r border-[oklch(1_0_0_/0.06)]',
+          // Shadow — subtle inner edge glow + outer depth
+          'shadow-[1px_0_0_oklch(1_0_0_/0.04),4px_0_40px_oklch(0_0_0_/0.45)]',
+        )}
       >
-        {NAV_ITEMS.map((item) => (
-          <SidebarNavItem key={item.to} item={item} />
-        ))}
-      </nav>
+        {/* ── Top: Brand Logo ─────────────────────────────── */}
+        <div className="flex items-center justify-center pb-5">
+          <SidebarLogo />
+        </div>
 
-      {/* ── Bottom: Settings + Profile ───────────────────── */}
-      <div className="flex flex-col items-center gap-1 px-4 py-4 bg-secondary/25 rounded-3xl">
-        <SidebarSettings />
-        <SidebarProfile />
-      </div>
-    </motion.aside>
+        {/* ── Center: Navigation Items ─────────────────────── */}
+        <nav
+          role="list"
+          aria-label="Main admin navigation"
+          className="flex flex-col items-center gap-2.5 py-4 w-full px-4 scrollbar-none bg-secondary/25 rounded-3xl"
+        >
+          {NAV_ITEMS.map((item) => (
+            <SidebarNavItem key={item.to} item={item} />
+          ))}
+        </nav>
+
+        {/* ── Bottom: Settings + Profile ───────────────────── */}
+        <div className="flex flex-col items-center gap-1 px-4 py-4 bg-secondary/25 rounded-3xl">
+          <SidebarSettings onOpenSettings={handleOpenAccountSettings} />
+          <SidebarProfile />
+        </div>
+      </motion.aside>
+    </>
   );
 });
 

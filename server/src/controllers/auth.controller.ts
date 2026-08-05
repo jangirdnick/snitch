@@ -225,6 +225,8 @@ export class AuthController {
         user: user._id,
         deviceId,
         hashToken: refreshToken,
+        userAgent: req.headers['user-agent'],
+        ipAddress: req.ip,
         expiredAt: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
       });
 
@@ -261,6 +263,8 @@ export class AuthController {
         user: user._id,
         hashToken: refreshToken, // store refreshToken (not accessToken) — consistent with login
         deviceId,
+        userAgent: req.headers['user-agent'],
+        ipAddress: req.ip,
         expiredAt: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
       });
 
@@ -406,6 +410,8 @@ export class AuthController {
         user: userDetail._id,
         deviceId,
         hashToken: refreshToken,
+        userAgent: req.headers['user-agent'],
+        ipAddress: req.ip,
         expiredAt: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
       });
 

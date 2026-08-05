@@ -8,10 +8,25 @@ import {
   setIsAuthenticated,
   logout as setLogout,
 } from '../state/auth.slice';
-import { register, login, verifyEmail, logout, logoutAllDevices, getMe } from '../service/auth.api';
+import {
+  register,
+  login,
+  verifyEmail,
+  logout,
+  logoutAllDevices,
+  getMe,
+  updateProfile,
+  changePassword,
+  deleteAccount,
+} from '../service/auth.api';
 import { useAppDispatch } from '@/store/hooks';
 import { AxiosError } from 'axios';
-import type { CreateUserDto, LoginUserDto } from '@snitch/schemas';
+import type {
+  CreateUserDto,
+  LoginUserDto,
+  UpdateProfileDto,
+  ChangePasswordDto,
+} from '@snitch/schemas';
 
 function getErrorMessage(error: unknown): string {
   // AxiosError must be checked BEFORE Error — AxiosError extends Error,
@@ -159,6 +174,77 @@ export const useAuth = () => {
     }
   }, [dispatch]);
 
+  const handleUpdateProfile = useCallback(
+    async (payload: UpdateProfileDto) => {
+      try {
+        dispatch(setLoading(true));
+        const data = await updateProfile(payload);
+        if (data.success) {
+          dispatch(setUser(data.data.user));
+          dispatch(setMessage(data.message));
+          return { success: true, message: data.message };
+        } else {
+          dispatch(setError(data.error.message));
+          return { success: false, message: data.error.message };
+        }
+      } catch (error: unknown) {
+        const errMsg = getErrorMessage(error);
+        dispatch(setError(errMsg));
+        return { success: false, message: errMsg, error };
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch],
+  );
+
+  const handleChangePassword = useCallback(
+    async (payload: ChangePasswordDto) => {
+      try {
+        dispatch(setLoading(true));
+        const data = await changePassword(payload);
+        if (data.success) {
+          dispatch(setMessage(data.message));
+          return { success: true, message: data.message };
+        } else {
+          dispatch(setError(data.error.message));
+          return { success: false, message: data.error.message };
+        }
+      } catch (error: unknown) {
+        const errMsg = getErrorMessage(error);
+        dispatch(setError(errMsg));
+        return { success: false, message: errMsg, error };
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch],
+  );
+
+  const handleDeleteAccount = useCallback(
+    async (payload: { password: string }) => {
+      try {
+        dispatch(setLoading(true));
+        const data = await deleteAccount(payload);
+        if (data.success) {
+          dispatch(setMessage(data.message));
+          dispatch(setLogout());
+          return { success: true, message: data.message };
+        } else {
+          dispatch(setError(data.error?.message || 'Failed to delete account'));
+          return { success: false, message: data.error?.message || 'Failed to delete account' };
+        }
+      } catch (error: unknown) {
+        const errMsg = getErrorMessage(error);
+        dispatch(setError(errMsg));
+        return { success: false, message: errMsg, error };
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch],
+  );
+
   return {
     handleRegister,
     handleVerifyEmail,
@@ -166,5 +252,8 @@ export const useAuth = () => {
     handleLogout,
     handleLogoutAllDevices,
     handleGetMe,
+    handleUpdateProfile,
+    handleChangePassword,
+    handleDeleteAccount,
   };
 };

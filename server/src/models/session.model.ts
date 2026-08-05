@@ -97,6 +97,8 @@ export interface ISession extends Document {
   user: Types.ObjectId | IUser;
   deviceId: string;
   hashToken: string;
+  userAgent?: string;
+  ipAddress?: string;
   revoked: boolean;
   expiredAt: Date;
   createdAt: Date;
@@ -108,6 +110,8 @@ export interface ISessionCreate {
   user: Types.ObjectId | IUser;
   deviceId: string;
   hashToken: string;
+  userAgent?: string;
+  ipAddress?: string;
   expiredAt: Date;
 }
 
@@ -144,6 +148,8 @@ const sessionSchema: Schema<ISession> = new Schema(
     user: { type: Types.ObjectId, ref: 'User', required: true },
     deviceId: { type: String, required: true },
     hashToken: { type: String, required: true },
+    userAgent: { type: String },
+    ipAddress: { type: String },
     revoked: { type: Boolean, default: false },
     expiredAt: { type: Date, required: true },
   },
