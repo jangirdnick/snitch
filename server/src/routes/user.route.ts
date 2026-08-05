@@ -6,6 +6,14 @@ import { Router } from 'express';
 const router: Router = Router();
 
 router.get('/get/me', AuthUserGuard, AuthController.getMe);
+router.put('/profile', AuthUserGuard, UserController.updateProfile);
+router.put('/change-password', AuthUserGuard, UserController.changePassword);
+
+// Account & Security Center Routes
+router.get('/sessions', AuthUserGuard, UserController.getSessions);
+router.delete('/sessions/:deviceId', AuthUserGuard, UserController.revokeSession);
+router.delete('/account', AuthUserGuard, UserController.deleteAccount);
+router.get('/export', AuthUserGuard, UserController.exportData);
 
 // Admin Routes for Customers Management
 router.get('/admin/all', AuthAdminGuard, UserController.getAll);

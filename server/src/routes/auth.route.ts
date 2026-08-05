@@ -14,7 +14,7 @@ router.post(
 router.post('/login', validate(loginUserSchema), AuthController.login);
 router.post('/session/refresh', AuthController.refreshToken);
 router.post('/logout', AuthController.logout);
-router.post('/logout-all-deviced', AuthController.logoutAllDevices);
+router.post('/logout-all-devices', AuthController.logoutAllDevices);
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 router.get(
   '/google/callback',

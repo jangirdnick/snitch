@@ -5,7 +5,7 @@ import userModel, {
 } from '@/models/user.model.js';
 import sessionModel from '@/models/session.model.js';
 import { createLogger } from '@/utils/logger.js';
-import type { UserQueryDto } from '@snitch/schemas';
+import type { UserQueryDto, UpdateProfileDto, ChangePasswordDto } from '@snitch/schemas';
 import type { PaginatedUsers, UserResponseDto } from '@snitch/types';
 
 const logger = createLogger('USER-SERVICE');
@@ -41,6 +41,14 @@ export class InvalidCredentialsError extends Error {
   constructor() {
     super('Invalid creadentials');
     this.name = 'InvalidCredentialsError';
+  }
+}
+
+export class IncorrectPasswordError extends Error {
+  public readonly statusCode = 400;
+  constructor() {
+    super('Incorrect current password');
+    this.name = 'IncorrectPasswordError';
   }
 }
 
@@ -92,6 +100,7 @@ function isUserError(error: unknown): boolean {
     error instanceof UserAlreadyExistsError ||
     error instanceof EmailNotVerifiedError ||
     error instanceof InvalidCredentialsError ||
+    error instanceof IncorrectPasswordError ||
     error instanceof ValidationError ||
     error instanceof DatabaseOperationError
   );
@@ -421,5 +430,81 @@ export async function userUpdateReviewPermission(
     if (isUserError(error)) throw error;
     logger.error({ err: error, id }, 'Error updating user review permission');
     throw new DatabaseOperationError('userUpdateReviewPermission', error);
+  }
+}
+
+export async function userUpdateProfile(
+  id: string,
+  params: UpdateProfileDto,
+): Promise<UserWithoutPassword> {
+  try {
+    const { firstName, lastName, email, avatar, contact } = params;
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if email changed and is taken by another user
+    const existing = await userModel.findOne({ email: normalizedEmail, id: { $ne: id } });
+    if (existing) {
+      throw new UserAlreadyExistsError();
+    }
+
+    const updatedUser = await userModel
+      .findOneAndUpdate(
+        { id },
+        {
+          $set: {
+            firstName,
+            lastName: lastName || undefined,
+            email: normalizedEmail,
+            avatar: avatar ?? null,
+            contact,
+          },
+        },
+        { new: true, runValidators: true },
+      )
+      .select('-password')
+      .lean()
+      .exec();
+
+    if (!updatedUser) {
+      throw new UserNotFoundError(id);
+    }
+
+    return updatedUser as unknown as UserWithoutPassword;
+  } catch (error) {
+    if (isUserError(error)) throw error;
+    logger.error({ err: error, id }, 'Error updating user profile');
+    throw new DatabaseOperationError('userUpdateProfile', error);
+  }
+}
+
+export async function userChangePassword(
+  id: string,
+  params: ChangePasswordDto,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const user = await userModel.findOne({ id }).select('+password');
+    if (!user) {
+      throw new UserNotFoundError(id);
+    }
+
+    const isValidPassword = await user.comparePassword(params.currentPassword);
+    if (!isValidPassword) {
+      throw new IncorrectPasswordError();
+    }
+
+    user.password = params.newPassword;
+    await user.save();
+
+    // Revoke all existing sessions so user has to re-authenticate on other devices if needed
+    await sessionModel.updateMany({ userId: id }, { $set: { revoked: true } });
+
+    return {
+      success: true,
+      message: 'Password updated successfully',
+    };
+  } catch (error) {
+    if (isUserError(error)) throw error;
+    logger.error({ err: error, id }, 'Error changing user password');
+    throw new DatabaseOperationError('userChangePassword', error);
   }
 }

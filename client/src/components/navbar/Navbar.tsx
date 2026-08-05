@@ -16,12 +16,24 @@
 
 import * as React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
-import { Menu, X, User, LogOut, LayoutDashboard, Search, Heart, ShoppingBag } from 'lucide-react';
+import {
+  Menu,
+  X,
+  User,
+  LogOut,
+  LayoutDashboard,
+  Search,
+  Heart,
+  ShoppingBag,
+  Settings,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { useAppSelector } from '@/store/hooks';
 import { useAuth } from '@/features/auth/hook/useAuth';
 import type { AuthState } from '@/features/auth/state/auth.slice';
+import { UserProfileModal } from '@/components/profile';
+import { AccountSettingsModal } from '@/components/account-settings';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -70,15 +82,16 @@ function IconButton({
  * Handles both User and Admin states with distinguishable styling
  */
 
-import { UserProfileModal } from '@/components/profile';
+// import { UserProfileModal } from '@/components/profile';
 
 type ProfileDropdownProps = {
   user: AuthState['user'];
   onLogout: () => void;
   onOpenProfile: () => void;
+  onOpenSettings: () => void;
 };
 
-function ProfileDropdown({ user, onLogout, onOpenProfile }: ProfileDropdownProps) {
+function ProfileDropdown({ user, onLogout, onOpenProfile, onOpenSettings }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
@@ -193,6 +206,18 @@ function ProfileDropdown({ user, onLogout, onOpenProfile }: ProfileDropdownProps
                 Profile
               </button>
 
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  onOpenSettings();
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-white/70 transition-colors hover:text-white hover:bg-white/10 w-full text-left cursor-pointer"
+              >
+                <Settings size={16} strokeWidth={1.5} />
+                Account Settings
+              </button>
+
               {isAdmin && (
                 <Link
                   to="/admin/dashboard"
@@ -230,6 +255,7 @@ export function Navbar() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [profileOpen, setProfileOpen] = React.useState(false);
+  const [accountSettingsOpen, setAccountSettingsOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
 
   const { isAuthenticated, user } = useAppSelector((s) => s.auth);
@@ -351,6 +377,7 @@ export function Navbar() {
                     user={user}
                     onLogout={handleLogout}
                     onOpenProfile={() => setProfileOpen(true)}
+                    onOpenSettings={() => setAccountSettingsOpen(true)}
                   />
                 </>
               ) : (
@@ -603,6 +630,10 @@ export function Navbar() {
       </AnimatePresence>
 
       <UserProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
+      <AccountSettingsModal
+        open={accountSettingsOpen}
+        onClose={() => setAccountSettingsOpen(false)}
+      />
     </>
   );
 }

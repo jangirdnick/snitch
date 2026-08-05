@@ -7,6 +7,7 @@ import {
   ValidationError,
   UnauthorizedError,
   InvalidCredentialsError,
+  IncorrectPasswordError,
 } from '@/services/user.service.js';
 import { createLogger } from '@/utils/logger.js';
 import { EmailDeliveryError } from '@/services/email.service.js';
@@ -53,6 +54,7 @@ const DOMAIN_ERROR_MAP = new Map<ErrorClass, number>([
   [UserFieldsError, 400],
   [UserRequestError, 400],
   [InvalidCredentialsError, 401],
+  [IncorrectPasswordError, 400],
   [SessionNotFoundError, 404],
   [SessionCompareError, 401],
   [SessionInvalidError, 401],

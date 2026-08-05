@@ -163,3 +163,35 @@ export async function validateAndExpireAllSessions(params: {
     throw new DatabaseOperationError('sessionFindCompareAndExpairAll', error);
   }
 }
+
+export async function getActiveSessions(userId: string): Promise<ISession[]> {
+  try {
+    return await sessionModel
+      .find({
+        userId,
+        revoked: false,
+        expiredAt: { $gt: new Date() },
+      })
+      .sort({ createdAt: -1 })
+      .exec();
+  } catch (error) {
+    logger.error({ err: error, userId }, 'Unexpected error getting active sessions');
+    throw new DatabaseOperationError('getActiveSessions', error);
+  }
+}
+
+export async function revokeSessionByDeviceId(userId: string, deviceId: string): Promise<void> {
+  try {
+    const session = await sessionModel.findOne({ userId, deviceId }).exec();
+    if (!session) {
+      throw new SessionNotFoundError(deviceId);
+    }
+    await session.updateOne({ $set: { revoked: true } });
+  } catch (error) {
+    if (isSessionError(error)) {
+      throw error;
+    }
+    logger.error({ err: error, userId, deviceId }, 'Unexpected error revoking session');
+    throw new DatabaseOperationError('revokeSessionByDeviceId', error);
+  }
+}
