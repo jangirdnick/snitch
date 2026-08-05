@@ -9,3 +9,4 @@ export * from './analytics.type.js';
 export * from './dashboard.type.js';
 export * from './coupon.type.js';
 export * from './support.type.js';
+export * from './category.type.js';

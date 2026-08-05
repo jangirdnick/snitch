@@ -5,11 +5,15 @@ import {
   orderUpdateStatus,
   orderUpdateTracking,
 } from '@/services/order.service.js';
+import { mediaService } from '@/services/media.service.js';
 import {
   orderQuerySchema,
   updateOrderStatusSchema,
   updateOrderTrackingSchema,
 } from '@snitch/schemas';
+import type { Order } from '@snitch/types';
+
+const { generateUrl } = mediaService();
 
 export class OrderFieldsError extends Error {
   public readonly statusCode = 400;
@@ -31,6 +35,71 @@ export class OrderRequestError extends Error {
   }
 }
 
+function toPublicUrl(pathOrUrl?: string | null): string | undefined {
+  if (!pathOrUrl || typeof pathOrUrl !== 'string') return undefined;
+  const trimmed = pathOrUrl.trim();
+  if (!trimmed) return undefined;
+  if (/^(https?:\/\/|data:)/i.test(trimmed)) {
+    return trimmed;
+  }
+  try {
+    return generateUrl({
+      path: trimmed,
+      transformations: { width: 800, height: 800, format: 'webp', quality: 80 },
+    });
+  } catch {
+    return trimmed;
+  }
+}
+
+function formatOrderMedia(order: Order): Order {
+  if (!order) return order;
+
+  if (order.user && typeof order.user === 'object' && order.user.avatar) {
+    order.user.avatar = toPublicUrl(order.user.avatar);
+  }
+
+  order.items?.forEach((item) => {
+    // 1. Process item's direct primaryImage
+    if (item.primaryImage) {
+      item.primaryImage = toPublicUrl(item.primaryImage);
+    }
+
+    // 2. Process populated product color variation images
+    const prod = (item as unknown as Record<string, unknown>).product as
+      Record<string, unknown> | undefined;
+    if (prod && typeof prod === 'object' && Array.isArray(prod.colors)) {
+      (
+        prod.colors as Array<{
+          isDefault?: boolean;
+          images?: Array<{ url: string; isPrimary?: boolean }>;
+        }>
+      ).forEach((color) => {
+        color.images?.forEach((img) => {
+          if (img.url) {
+            const resolvedUrl = toPublicUrl(img.url);
+            if (resolvedUrl) {
+              img.url = resolvedUrl;
+              if (!item.primaryImage && (img.isPrimary || color.isDefault)) {
+                item.primaryImage = resolvedUrl;
+              }
+            }
+          }
+        });
+      });
+
+      if (!item.primaryImage && prod.colors.length > 0) {
+        const firstImg = prod.colors[0]?.images?.[0]?.url;
+        if (firstImg) {
+          item.primaryImage = toPublicUrl(firstImg);
+        }
+      }
+    }
+  });
+
+  return order;
+}
+
 export class OrderController {
   static getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -40,6 +109,7 @@ export class OrderController {
       }
 
       const result = await orderGetAll(queryParsed.data);
+      result.items.forEach((order) => formatOrderMedia(order));
 
       res.status(200).json({
         success: true,
@@ -59,6 +129,8 @@ export class OrderController {
       }
 
       const order = await orderGetById(id);
+      formatOrderMedia(order);
+
       res.status(200).json({
         success: true,
         message: 'Order fetched successfully',
@@ -82,6 +154,8 @@ export class OrderController {
       }
 
       const order = await orderUpdateStatus(id, bodyParsed.data);
+      formatOrderMedia(order);
+
       res.status(200).json({
         success: true,
         message: 'Order status updated successfully',
@@ -105,6 +179,8 @@ export class OrderController {
       }
 
       const order = await orderUpdateTracking(id, bodyParsed.data);
+      formatOrderMedia(order);
+
       res.status(200).json({
         success: true,
         message: 'Order tracking updated successfully',

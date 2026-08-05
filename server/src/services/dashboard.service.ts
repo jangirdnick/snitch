@@ -34,8 +34,6 @@ export async function getDashboardOverview(): Promise<DashboardOverviewResponse>
     const startOfPreviousMonth = now.subtract(1, 'month').startOf('month').toDate();
     const endOfPreviousMonth = now.subtract(1, 'month').endOf('month').toDate();
 
-    // 1. KPI Aggregation (Revenue, Orders, Customers, Products)
-    // Run concurrent queries for efficiency
     const [
       salesAgg,
       customersAgg,
@@ -173,7 +171,6 @@ export async function getDashboardOverview(): Promise<DashboardOverviewResponse>
       ]),
     ]);
 
-    // Parse KPI Data
     const currSales = salesAgg[0]?.currentMonth[0]?.totalRevenue || 0;
     const prevSales = salesAgg[0]?.previousMonth[0]?.totalRevenue || 0;
     const salesChange = calculateChange(currSales, prevSales);
@@ -192,14 +189,12 @@ export async function getDashboardOverview(): Promise<DashboardOverviewResponse>
     const prevProducts = productCountAgg[0]?.previousMonth[0]?.count || 0;
     const productsChange = calculateChange(currProducts, prevProducts);
 
-    // Parse Coupon Summary
     const couponSummary = {
       active: couponSummaryAgg[0]?.active[0]?.count || 0,
       expired: couponSummaryAgg[0]?.expired[0]?.count || 0,
       totalUsed: couponSummaryAgg[0]?.totalUsed[0]?.sum || 0,
     };
 
-    // Parse Category Distribution
     const categoryDistribution = categoryDistributionAgg.map((cat) => ({
       name: cat._id,
       count: cat.count,

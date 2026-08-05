@@ -57,7 +57,7 @@ const pixkit = new PixKit({
   projectId: config.PIXKIT_PROJECT_ID,
 });
 
-// ─── Service ──────────────────────────────────────────────────────────────────
+// ─── Media Service ────────────────────────────────────────────────────────────
 
 export const mediaService = () => {
   const generateUrl = ({
@@ -144,9 +144,54 @@ export const mediaService = () => {
     }
   };
 
+  const deleteMultipleMedia = async (imagePaths: string[]): Promise<void> => {
+    const validPaths = imagePaths.filter((p) => typeof p === 'string' && p.trim().length > 0);
+    if (validPaths.length === 0) return;
+    await Promise.allSettled(validPaths.map((p) => deleteMedia(p)));
+  };
+
+  const uploadMultipleMedia = async ({
+    files,
+    folder,
+    prefix,
+  }: {
+    files: Express.Multer.File[];
+    folder: string;
+    prefix: string;
+  }): Promise<{ imagePath: string; url: string }[]> => {
+    const uploadedPaths: string[] = [];
+    try {
+      const results = await Promise.all(
+        files.map(async (file, index) => {
+          const fileName = `${prefix}-${Date.now()}-${index}-${file.originalname}`;
+          const res = await uploadMedia({
+            file,
+            fileName,
+            fileType: file.mimetype,
+            folder,
+          });
+          uploadedPaths.push(res.data.imagePath);
+          const url = generateUrl({
+            path: res.data.imagePath,
+            transformations: { width: 1200, height: 1200, format: 'webp', quality: 80 },
+          });
+          return { imagePath: res.data.imagePath, url };
+        }),
+      );
+      return results;
+    } catch (error) {
+      if (uploadedPaths.length > 0) {
+        await deleteMultipleMedia(uploadedPaths);
+      }
+      throw error;
+    }
+  };
+
   return {
     generateUrl,
     uploadMedia,
     deleteMedia,
+    uploadMultipleMedia,
+    deleteMultipleMedia,
   };
 };

@@ -10,6 +10,7 @@ import {
   userFindById,
 } from '@/services/user.service.js';
 import { getActiveSessions, revokeSessionByDeviceId } from '@/services/session.service.js';
+import { mediaService } from '@/services/media.service.js';
 import { clearCookie } from '@/utils/cookie.util.js';
 import { REFRESH_COOKIE_NAME } from '@/controllers/auth.controller.js';
 import { compairJwtToken } from '@/utils/jwt.util.js';
@@ -43,6 +44,8 @@ export class UserRequestError extends Error {
   }
 }
 
+const { uploadMedia, deleteMedia, generateUrl } = mediaService();
+
 export class UserController {
   /**
    * GET /api/user/admin/all
@@ -56,6 +59,18 @@ export class UserController {
       }
 
       const result = await getUsers(queryParsed.data);
+      result.items.forEach((user) => {
+        if (user.avatar && !/^(https?:\/\/|data:)/i.test(user.avatar)) {
+          try {
+            user.avatar = generateUrl({
+              path: user.avatar,
+              transformations: { width: 400, height: 400, format: 'webp', quality: 80 },
+            });
+          } catch {
+            // fallback
+          }
+        }
+      });
 
       res.status(200).json({
         success: true,
@@ -164,18 +179,64 @@ export class UserController {
    * Updates personal profile information for the logged in user.
    */
   static updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+    let newlyUploadedPath: string | null = null;
     try {
       const userId = req.userId;
       if (!userId) {
         throw new UserRequestError('User is not authenticated');
       }
 
-      const bodyParsed = updateProfileSchema.safeParse(req.body);
+      const existingUser = await userFindById(userId);
+
+      let rawBody: Record<string, unknown>;
+      if (req.body?.data) {
+        try {
+          rawBody = JSON.parse(req.body.data);
+        } catch {
+          throw new UserFieldsError({ data: ['Contains invalid JSON'] });
+        }
+      } else {
+        rawBody = { ...req.body };
+      }
+
+      const file = req.file as Express.Multer.File | undefined;
+
+      if (file) {
+        const nameSlug = `user-${userId}-${Date.now()}`;
+        const result = await uploadMedia({
+          file,
+          fileName: `${nameSlug}-${file.originalname}`,
+          fileType: file.mimetype,
+          folder: 'avatars',
+        });
+
+        newlyUploadedPath = result.data.imagePath;
+        const avatarUrl = generateUrl({
+          path: newlyUploadedPath,
+          transformations: { width: 400, height: 400, format: 'webp', quality: 80 },
+        });
+
+        rawBody.avatar = avatarUrl;
+      }
+
+      const bodyParsed = updateProfileSchema.safeParse(rawBody);
       if (!bodyParsed.success) {
         throw new UserFieldsError(bodyParsed.error.flatten().fieldErrors);
       }
 
       const updatedUser = await userUpdateProfile(userId, bodyParsed.data);
+
+      // Clean up previous avatar if replaced
+      if (existingUser.avatar && existingUser.avatar !== updatedUser.avatar) {
+        if (existingUser.avatar.includes('avatars/')) {
+          await deleteMedia(existingUser.avatar).catch((err) => {
+            req.logger?.error(
+              { err, oldAvatar: existingUser.avatar },
+              'Failed to delete old avatar image',
+            );
+          });
+        }
+      }
 
       res.status(200).json({
         success: true,
@@ -183,6 +244,11 @@ export class UserController {
         data: { user: mapUserResponse(updatedUser) },
       });
     } catch (error) {
+      if (newlyUploadedPath) {
+        await deleteMedia(newlyUploadedPath).catch((err) => {
+          req.logger?.error({ err, newlyUploadedPath }, 'Failed to rollback uploaded avatar image');
+        });
+      }
       next(error);
     }
   };

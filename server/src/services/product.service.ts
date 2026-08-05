@@ -8,8 +8,6 @@ import type { CreateProductDto, ProductQueryDto, UpdateProductDto } from '@snitc
 
 const logger = createLogger('PRODUCT-SERVICE');
 
-// ─── Custom Errors ─────────────────────────────────────────────────────────────
-
 export class ProductNotFoundError extends Error {
   public readonly statusCode = 404;
   public readonly identifier: string;
@@ -41,13 +39,9 @@ function isProductError(error: unknown): boolean {
   );
 }
 
-// ─── Pagination Result Type ────────────────────────────────────────────────────
-
 export interface PaginatedProducts {
   items: IProduct[];
   pagination: {
-    // page: number;
-    // limit: number;
     totalItems: number;
     totalPages: number;
     currentPage: number;
@@ -57,20 +51,12 @@ export interface PaginatedProducts {
   };
 }
 
-// ─── Service Functions ─────────────────────────────────────────────────────────
-
-/**
- * Paginated, filtered, sorted product list.
- * Matches the full productQuerySchema interface.
- */
 export async function getProducts(query: ProductQueryDto): Promise<PaginatedProducts> {
   try {
     const filter: Record<string, unknown> = {};
 
-    // Full-text search (requires text index on title, description, tags)
     if (query.search) filter.$text = { $search: query.search };
 
-    // Exact-match filters
     if (query.category) filter.category = new mongoose.Types.ObjectId(query.category);
     if (query.gender) filter.gender = query.gender;
     if (query.ageGroup) filter.ageGroup = query.ageGroup;
@@ -78,15 +64,12 @@ export async function getProducts(query: ProductQueryDto): Promise<PaginatedProd
     if (query.pattern) filter.pattern = query.pattern;
     if (query.status) filter.status = query.status;
 
-    // Array membership filters ($in because fields are arrays on the model)
     if (query.occasion) filter.occasion = { $in: [query.occasion] };
     if (query.season) filter.season = { $in: [query.season] };
 
-    // Nested path filters (colors sub-documents)
     if (query.size) filter['colors.sizes.size'] = query.size;
     if (query.color) filter['colors.name'] = { $regex: query.color, $options: 'i' };
 
-    // Price range
     if (query.minPrice !== undefined || query.maxPrice !== undefined) {
       const priceFilter: Record<string, number> = {};
       if (query.minPrice !== undefined) priceFilter.$gte = query.minPrice;
@@ -94,7 +77,6 @@ export async function getProducts(query: ProductQueryDto): Promise<PaginatedProd
       filter['price.amount'] = priceFilter;
     }
 
-    // Sort
     const sortFieldMap: Record<string, string> = {
       price: 'price.amount',
       createdAt: 'createdAt',
@@ -105,7 +87,6 @@ export async function getProducts(query: ProductQueryDto): Promise<PaginatedProd
     const sortField = sortFieldMap[query.sortBy] ?? 'createdAt';
     const sortDir = query.sortOrder === 'asc' ? 1 : -1;
 
-    // Pagination
     const skip = (query.page - 1) * query.limit;
 
     const [items, total] = await Promise.all([
@@ -143,9 +124,6 @@ export async function getProducts(query: ProductQueryDto): Promise<PaginatedProd
   }
 }
 
-/**
- * Single product by URL slug — used for public product detail pages.
- */
 export async function getProductBySlug(slug: string): Promise<IProduct> {
   try {
     const product = (await productModel
@@ -163,9 +141,6 @@ export async function getProductBySlug(slug: string): Promise<IProduct> {
   }
 }
 
-/**
- * Single product by MongoDB _id — used by the admin Edit Product page.
- */
 export async function getProductById(id: string): Promise<IProduct> {
   try {
     const product = (await productModel
@@ -183,9 +158,6 @@ export async function getProductById(id: string): Promise<IProduct> {
   }
 }
 
-/**
- * Fetch a limited set of products — lightweight for homepage / featured strips.
- */
 export async function getLimitProducts(limit: number): Promise<IProduct[]> {
   try {
     const products = (await productModel
@@ -203,29 +175,20 @@ export async function getLimitProducts(limit: number): Promise<IProduct[]> {
   }
 }
 
-/**
- * Full-text search returning lightweight product cards.
- * Bug fixed: $searc → $search.
- * Bug fixed: select now includes `colors` (images live in colors sub-doc).
- */
 export async function getSearchProduct(
   search: string,
   limit = 20,
 ): Promise<Pick<IProduct, '_id' | 'id' | 'title' | 'slug' | 'price' | 'category' | 'colors'>[]> {
   try {
     const products = (await productModel
-      .find(
-        { $text: { $search: search } }, // ← fixed typo ($searc → $search)
-        { score: { $meta: 'textScore' } },
-      )
+      .find({ $text: { $search: search } }, { score: { $meta: 'textScore' } })
       .sort({ score: { $meta: 'textScore' } })
       .limit(limit)
-      .select('id title slug colors price category') // ← fixed: colors not images
+      .select('id title slug colors price category')
       .populate('category', 'name slug')
       .lean()
       .exec()) as unknown as IProduct[];
 
-    // Map to lightweight card shape — safe access on nested colors
     return products.map((product) => ({
       _id: product._id,
       id: product.id,
@@ -234,7 +197,6 @@ export async function getSearchProduct(
       price: product.price,
       category: product.category,
       colors: product.colors,
-      // Convenience: primary image URL derived from default color
       primaryImage:
         product.colors?.find((c) => c.isDefault)?.images?.find((img) => img.isPrimary)?.url ??
         product.colors?.[0]?.images?.[0]?.url,
@@ -246,11 +208,6 @@ export async function getSearchProduct(
   }
 }
 
-/**
- * Create a new product.
- * Caller (controller) is responsible for uploading images first and passing
- * a fully-formed CreateProductDto with URL-based color images.
- */
 export async function productCreate(
   params: CreateProductDto,
   session?: mongoose.ClientSession,
@@ -270,11 +227,6 @@ export async function productCreate(
   }
 }
 
-/**
- * Partial update of a product by MongoDB _id.
- * Bug fixed: was calling updateOne() without await and returning stale data.
- * Now uses findByIdAndUpdate with { new: true, runValidators: true }.
- */
 export async function productUpdate({
   productId,
   product,
@@ -303,10 +255,6 @@ export async function productUpdate({
   }
 }
 
-/**
- * Hard delete a product by MongoDB _id.
- * Bug fixed: was calling deleteOne() without await — document was never removed.
- */
 export async function productDeleteById(productId: string): Promise<void> {
   try {
     const result = await productModel.findByIdAndDelete(productId);

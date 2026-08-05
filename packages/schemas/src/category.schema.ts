@@ -2,6 +2,12 @@ import { z } from 'zod';
 
 export const CATEGORY_STATUS = ['active', 'inactive', 'archived'] as const;
 
+export const categoryImageSchema = z.object({
+  path: z.string(),
+  url: z.string(),
+  alt: z.string().optional(),
+});
+
 // ─── Base Category Schema ─────────────────────────────────
 
 const baseCategorySchema = z.object({
@@ -12,6 +18,8 @@ const baseCategorySchema = z.object({
     .max(100, 'Name must not exceed 100 characters'),
 
   description: z.string().trim().max(500, 'Description must not exceed 500 characters').optional(),
+
+  image: categoryImageSchema.optional().nullable(),
 
   status: z.enum(CATEGORY_STATUS).default('active'),
 });

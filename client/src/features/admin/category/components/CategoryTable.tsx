@@ -18,6 +18,9 @@ import { MoreHorizontal, Edit, Trash, FolderTree, Link2, Clock, Tag } from 'luci
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import type { Category } from '../service/category.api';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTime);
 
 interface CategoryTableProps {
   items: Category[];
@@ -43,22 +46,6 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string; badge: string 
     dot: 'bg-[oklch(0.55_0_0)] shadow-[0_0_6px_oklch(0.55_0_0_/_0.6)]',
     badge: 'bg-[oklch(0.55_0_0_/_0.10)] text-[oklch(0.65_0_0)] border-[oklch(0.55_0_0_/_0.20)]',
   },
-};
-
-const formatDate = (dateString?: string) => {
-  if (!dateString) return '-';
-  try {
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).format(new Date(dateString));
-  } catch {
-    return '-';
-  }
 };
 
 export function CategoryTable({ items, loading, onEdit, onDelete }: CategoryTableProps) {
@@ -158,22 +145,35 @@ export function CategoryTable({ items, loading, onEdit, onDelete }: CategoryTabl
             <TableRow key={cat._id} className={rowClass}>
               {/* CATEGORY INFO */}
               <TableCell className={tdClass}>
-                <div className="flex flex-col gap-0.5 max-w-[280px]">
-                  <span className="font-semibold text-[oklch(0.95_0_0)] truncate text-[13.5px]">
-                    {cat.name}
-                  </span>
-                  {cat.description ? (
-                    <span
-                      className="text-[11.5px] text-[oklch(0.6_0_0)] truncate"
-                      title={cat.description}
-                    >
-                      {cat.description}
-                    </span>
+                <div className="flex items-center gap-3">
+                  {cat.image?.url ? (
+                    <img
+                      src={cat.image.url}
+                      alt={cat.image.alt || cat.name}
+                      className="size-9 rounded-lg object-cover border border-[oklch(1_0_0_/_0.08)] bg-[oklch(1_0_0_/_0.03)] shrink-0"
+                    />
                   ) : (
-                    <span className="text-[11px] font-mono text-[oklch(0.5_0_0)] truncate">
-                      ID: {cat._id}
-                    </span>
+                    <div className="size-9 rounded-lg bg-[oklch(1_0_0_/_0.04)] border border-[oklch(1_0_0_/_0.08)] flex items-center justify-center text-[oklch(0.45_0_0)] shrink-0">
+                      <FolderTree className="size-4" />
+                    </div>
                   )}
+                  <div className="flex flex-col gap-0.5 max-w-[280px]">
+                    <span className="font-semibold text-[oklch(0.95_0_0)] truncate text-[13.5px]">
+                      {cat.name}
+                    </span>
+                    {cat.description ? (
+                      <span
+                        className="text-[11.5px] text-[oklch(0.6_0_0)] truncate"
+                        title={cat.description}
+                      >
+                        {cat.description}
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-mono text-[oklch(0.5_0_0)] truncate">
+                        ID: {cat._id}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </TableCell>
 
@@ -193,7 +193,7 @@ export function CategoryTable({ items, loading, onEdit, onDelete }: CategoryTabl
               {/* CREATED AT */}
               <TableCell className={tdClass}>
                 <span className="text-[oklch(0.65_0_0)] text-[12px]">
-                  {formatDate(cat.createdAt)}
+                  {dayjs(cat.createdAt).fromNow(true)}
                 </span>
               </TableCell>
 
