@@ -41,10 +41,7 @@ export async function orderGetAll(query: OrderQueryDto): Promise<PaginatedOrders
       filter.status = query.status;
     }
     if (query.search) {
-      filter.$or = [
-        { orderNumber: { $regex: query.search, $options: 'i' } },
-        // Could expand search to user names/emails if we aggregate, but for now simple regex on orderNumber is good
-      ];
+      filter.$or = [{ orderNumber: { $regex: query.search, $options: 'i' } }];
     }
 
     const sortDir = query.sortOrder === 'asc' ? 1 : -1;
@@ -54,6 +51,7 @@ export async function orderGetAll(query: OrderQueryDto): Promise<PaginatedOrders
       orderModel
         .find(filter)
         .populate('user', 'id firstName lastName email avatar')
+        .populate('items.product', 'id title slug colors price category')
         .sort({ [query.sortBy]: sortDir, _id: 1 })
         .skip(skip)
         .limit(query.limit)
@@ -83,6 +81,7 @@ export async function orderGetById(id: string): Promise<OrderType> {
     const order = await orderModel
       .findOne({ id })
       .populate('user', 'id firstName lastName email contact avatar')
+      .populate('items.product', 'id title slug colors price category')
       .lean()
       .exec();
 
@@ -116,11 +115,14 @@ export async function orderUpdateStatus(
 
     await order.save();
 
-    return (await orderModel
+    const updated = await orderModel
       .findOne({ id })
       .populate('user', 'id firstName lastName email contact avatar')
+      .populate('items.product', 'id title slug colors price category')
       .lean()
-      .exec()) as unknown as OrderType;
+      .exec();
+
+    return updated as unknown as OrderType;
   } catch (error) {
     if (isOrderError(error)) throw error;
     logger.error({ err: error, id }, 'Error updating order status');
@@ -145,7 +147,6 @@ export async function orderUpdateTracking(
     order.shipping.trackingId = data.trackingId;
     order.shipping.carrier = data.carrier;
 
-    // Automatically transition to shipped if currently new/processing
     if (order.status === 'new' || order.status === 'processing') {
       order.status = 'shipped';
       order.shipping.shippedAt = new Date();
@@ -158,11 +159,14 @@ export async function orderUpdateTracking(
 
     await order.save();
 
-    return (await orderModel
+    const updated = await orderModel
       .findOne({ id })
       .populate('user', 'id firstName lastName email contact avatar')
+      .populate('items.product', 'id title slug colors price category')
       .lean()
-      .exec()) as unknown as OrderType;
+      .exec();
+
+    return updated as unknown as OrderType;
   } catch (error) {
     if (isOrderError(error)) throw error;
     logger.error({ err: error, id }, 'Error updating order tracking');

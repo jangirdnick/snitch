@@ -43,11 +43,9 @@ export async function getDashboardAnalytics(): Promise<AnalyticsDashboardRespons
     const startOfYesterday = now.subtract(1, 'day').startOf('day').toDate();
     const endOfYesterday = now.subtract(1, 'day').endOf('day').toDate();
 
-    // KPI Aggregation
     const kpiAggregation = await orderModel.aggregate([
       {
         $facet: {
-          // Total Sales & Products Sold - Current Month
           currentMonthSales: [
             {
               $match: {
@@ -63,7 +61,6 @@ export async function getDashboardAnalytics(): Promise<AnalyticsDashboardRespons
               },
             },
           ],
-          // Total Sales & Products Sold - Previous Month
           previousMonthSales: [
             {
               $match: {
@@ -79,19 +76,15 @@ export async function getDashboardAnalytics(): Promise<AnalyticsDashboardRespons
               },
             },
           ],
-          // Today's Orders
           todayOrders: [{ $match: { createdAt: { $gte: startOfToday } } }, { $count: 'count' }],
-          // Yesterday's Orders
           yesterdayOrders: [
             { $match: { createdAt: { $gte: startOfYesterday, $lt: endOfYesterday } } },
             { $count: 'count' },
           ],
-          // Cancelled Orders - Current Month
           currentMonthCancelled: [
             { $match: { createdAt: { $gte: startOfCurrentMonth }, status: 'cancelled' } },
             { $count: 'count' },
           ],
-          // Cancelled Orders - Previous Month
           previousMonthCancelled: [
             {
               $match: {
@@ -138,7 +131,6 @@ export async function getDashboardAnalytics(): Promise<AnalyticsDashboardRespons
       },
     };
 
-    // Sales Chart - Last 12 months
     const startOf12MonthsAgo = now.subtract(11, 'month').startOf('month').toDate();
     const salesChartAgg = await orderModel.aggregate([
       {
@@ -157,7 +149,6 @@ export async function getDashboardAnalytics(): Promise<AnalyticsDashboardRespons
       { $sort: { '_id.year': 1, '_id.month': 1 } },
     ]);
 
-    // Format sales chart to guarantee 12 elements
     const monthsArray = Array.from({ length: 12 }).map((_, i) => {
       const d = now.subtract(11 - i, 'month');
       return { year: d.year(), month: d.month() + 1, label: d.format('MMM YYYY') };
@@ -172,7 +163,6 @@ export async function getDashboardAnalytics(): Promise<AnalyticsDashboardRespons
       };
     });
 
-    // Order Overview - Last 3 months status distribution
     const startOf3MonthsAgo = now.subtract(2, 'month').startOf('month').toDate();
     const orderOverviewAgg = await orderModel.aggregate([
       { $match: { createdAt: { $gte: startOf3MonthsAgo } } },

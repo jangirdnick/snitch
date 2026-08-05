@@ -1,32 +1,52 @@
 import { api } from '@/lib/axiosInstance';
-import type { CreateCategoryDto, UpdateCategoryDto, CategoryQueryDto } from '@snitch/schemas';
+import type { CategoryQueryDto } from '@snitch/schemas';
+import type { Category, PaginatedCategories } from '@snitch/types';
+import {
+  type CategoryFormValues,
+  type ExistingImage,
+  isExistingImage,
+} from '../schema/category.form.schema';
 
-export interface Category {
-  _id: string;
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  // status: 'active' | 'inactive' | 'archived';
-  status: 'active' | 'inactive' | 'archived';
-  createdAt: string;
-  updatedAt: string;
-}
+export type { Category, PaginatedCategories as CategoryPaginatedResponse };
 
-export interface CategoryPaginatedResponse {
-  items: Category[];
-  pagination: {
-    totalItems: number;
-    totalPages: number;
-    currentPage: number;
-    itemsPerPage: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
+function buildCategoryFormData(values: CategoryFormValues): {
+  formData: FormData;
+  hasFile: boolean;
+} {
+  const formData = new FormData();
+  const { image, ...rest } = values;
+
+  let imageFile: File | null = null;
+  let existingImage: ExistingImage | null = null;
+
+  if (Array.isArray(image) && image.length > 0) {
+    const img = image[0];
+    if (isExistingImage(img)) {
+      existingImage = img;
+    } else {
+      imageFile = img as File;
+    }
+  }
+
+  const jsonPayload = {
+    ...rest,
+    ...(existingImage
+      ? { image: existingImage }
+      : Array.isArray(image) && image.length === 0
+        ? { image: null }
+        : {}),
   };
+
+  formData.append('data', JSON.stringify(jsonPayload));
+  if (imageFile) {
+    formData.append('image', imageFile);
+  }
+
+  return { formData, hasFile: !!imageFile };
 }
 
 export const categoryService = {
-  getAll: async (params?: CategoryQueryDto): Promise<CategoryPaginatedResponse> => {
+  getAll: async (params?: CategoryQueryDto): Promise<PaginatedCategories> => {
     const res = await api.get('/category', { params });
     return res.data.data;
   },
@@ -41,13 +61,39 @@ export const categoryService = {
     return res.data.data.category;
   },
 
-  create: async (data: CreateCategoryDto): Promise<Category> => {
-    const res = await api.post('/category', data);
+  create: async (values: CategoryFormValues): Promise<Category> => {
+    const { formData, hasFile } = buildCategoryFormData(values);
+    let payload: FormData | Record<string, unknown> = formData;
+    let headers: Record<string, string> = {};
+
+    if (hasFile) {
+      headers = { 'Content-Type': 'multipart/form-data' };
+    } else {
+      const { image, ...rest } = values;
+      const existingImg =
+        Array.isArray(image) && image.length > 0 && isExistingImage(image[0]) ? image[0] : null;
+      payload = { ...rest, image: existingImg };
+    }
+
+    const res = await api.post('/category', payload, { headers });
     return res.data.data.category;
   },
 
-  update: async (id: string, data: UpdateCategoryDto): Promise<Category> => {
-    const res = await api.put(`/category/${id}`, data);
+  update: async (id: string, values: CategoryFormValues): Promise<Category> => {
+    const { formData, hasFile } = buildCategoryFormData(values);
+    let payload: FormData | Record<string, unknown> = formData;
+    let headers: Record<string, string> = {};
+
+    if (hasFile) {
+      headers = { 'Content-Type': 'multipart/form-data' };
+    } else {
+      const { image, ...rest } = values;
+      const existingImg =
+        Array.isArray(image) && image.length > 0 && isExistingImage(image[0]) ? image[0] : null;
+      payload = { ...rest, image: existingImg };
+    }
+
+    const res = await api.put(`/category/${id}`, payload, { headers });
     return res.data.data.category;
   },
 

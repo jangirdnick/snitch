@@ -6,8 +6,6 @@ import type { CreateCategoryDto, CategoryQueryDto, UpdateCategoryDto } from '@sn
 
 const logger = createLogger('CATEGORY-SERVICE');
 
-// ─── Custom Errors ─────────────────────────────────────────────────────────────
-
 export class CategoryNotFoundError extends Error {
   public readonly statusCode = 404;
   public readonly identifier: string;
@@ -39,8 +37,6 @@ function isCategoryError(error: unknown): boolean {
   );
 }
 
-// ─── Pagination Result Type ────────────────────────────────────────────────────
-
 export interface PaginatedCategories {
   items: ICategory[];
   pagination: {
@@ -52,8 +48,6 @@ export interface PaginatedCategories {
     hasPreviousPage: boolean;
   };
 }
-
-// ─── Service Functions ─────────────────────────────────────────────────────────
 
 export async function getCategories(query: CategoryQueryDto): Promise<PaginatedCategories> {
   try {
@@ -70,7 +64,7 @@ export async function getCategories(query: CategoryQueryDto): Promise<PaginatedC
     const [items, total] = await Promise.all([
       categoryModel
         .find(filter)
-        .select('id name slug description status createdAt updatedAt')
+        .select('id name slug description image status createdAt updatedAt')
         .sort({ [sortField]: sortDir, _id: 1 })
         .skip(skip)
         .limit(query.limit)

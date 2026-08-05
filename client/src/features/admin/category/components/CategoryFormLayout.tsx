@@ -1,6 +1,14 @@
 import { memo } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
-import { Loader2, ArrowLeft, SendHorizonal, Layers, Megaphone } from 'lucide-react';
+import {
+  Loader2,
+  ArrowLeft,
+  SendHorizonal,
+  Layers,
+  Megaphone,
+  Image as ImageIcon,
+} from 'lucide-react';
+import { ProductImageUpload } from '@/features/admin/inventory/components/ProductImageUpload';
 import {
   Form,
   FormField,
@@ -295,6 +303,32 @@ function BasicDetailsSection() {
   );
 }
 
+function CategoryImageSection() {
+  const { control } = useFormContext<CategoryFormValues>();
+  return (
+    <FormField
+      control={control}
+      name="image"
+      render={({ field, fieldState }) => (
+        <FormItem>
+          <FormControl>
+            <ProductImageUpload
+              value={field.value || []}
+              onChange={field.onChange}
+              maxFiles={1}
+              aria-invalid={!!fieldState.error}
+            />
+          </FormControl>
+          <FormDescription className={formDescClass}>
+            Upload a thumbnail image for this category (PNG, JPG, WEBP up to 5MB).
+          </FormDescription>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
 function PublishingSection() {
   const { control } = useFormContext<CategoryFormValues>();
   return (
@@ -462,6 +496,15 @@ export const CategoryFormLayout = memo(function CategoryFormLayout({
                     accent
                   >
                     <BasicDetailsSection />
+                  </BentoCard>
+
+                  <BentoCard
+                    id="category-image"
+                    icon={ImageIcon}
+                    title="Category Image"
+                    description="Thumbnail visual representation for navigation and store cards."
+                  >
+                    <CategoryImageSection />
                   </BentoCard>
                 </div>
 

@@ -2,11 +2,18 @@ import mongoose, { type Document, Schema, type Model } from 'mongoose';
 import { randomUUID } from 'node:crypto';
 import { CATEGORY_STATUS } from '@snitch/schemas';
 
+export interface ICategoryImage {
+  path: string;
+  url: string;
+  alt?: string;
+}
+
 export interface ICategory extends Document {
   id: string;
   name: string;
   slug: string;
   description?: string;
+  image?: ICategoryImage | null;
   status: (typeof CATEGORY_STATUS)[number];
   createdAt: Date;
   updatedAt: Date;
@@ -39,6 +46,11 @@ const CategorySchema: Schema<ICategory> = new Schema(
     description: {
       type: String,
       maxlength: [500, 'Description must be under 500 characters'],
+    },
+    image: {
+      path: { type: String },
+      url: { type: String },
+      alt: { type: String, default: '' },
     },
     status: {
       type: String,

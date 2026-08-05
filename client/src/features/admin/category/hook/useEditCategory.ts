@@ -35,6 +35,9 @@ export function useEditCategory(categoryId: string) {
           name: category.name,
           description: category.description || '',
           status: category.status,
+          image: category.image?.url
+            ? [{ url: category.image.url, alt: category.image.alt || '' }]
+            : [],
         });
       } catch (error: unknown) {
         if (!mounted) return;

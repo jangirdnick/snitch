@@ -1,10 +1,12 @@
 import reviewModel, { type IReview } from '@/models/review.model.js';
 import { DatabaseOperationError } from '@/services/user.service.js';
+import { mediaService } from '@/services/media.service.js';
 import { createLogger } from '@/utils/logger.js';
 import type { ReviewQueryDto, UpdateReviewStatusDto } from '@snitch/schemas';
 import type { PaginatedReviews, ReviewResponseDto } from '@snitch/types';
 
 const logger = createLogger('REVIEW-SERVICE');
+const { generateUrl } = mediaService();
 
 export class ReviewNotFoundError extends Error {
   public readonly statusCode = 404;
@@ -31,6 +33,46 @@ function isReviewError(error: unknown): boolean {
     error instanceof ReviewOperationError ||
     error instanceof DatabaseOperationError
   );
+}
+
+function toPublicUrl(pathOrUrl?: string | null): string | undefined {
+  if (!pathOrUrl || typeof pathOrUrl !== 'string') return undefined;
+  const trimmed = pathOrUrl.trim();
+  if (!trimmed) return undefined;
+  if (/^(https?:\/\/|data:)/i.test(trimmed)) {
+    return trimmed;
+  }
+  try {
+    return generateUrl({
+      path: trimmed,
+      transformations: { width: 800, height: 800, format: 'webp', quality: 80 },
+    });
+  } catch {
+    return trimmed;
+  }
+}
+
+function formatReviewMedia(review: Record<string, unknown>): Record<string, unknown> {
+  if (!review) return review;
+  const formatted = { ...review };
+
+  if (formatted.user && typeof formatted.user === 'object') {
+    const u = { ...(formatted.user as Record<string, unknown>) };
+    if (typeof u.avatar === 'string' && u.avatar) {
+      u.avatar = toPublicUrl(u.avatar);
+    }
+    formatted.user = u;
+  }
+
+  if (formatted.product && typeof formatted.product === 'object') {
+    const p = { ...(formatted.product as Record<string, unknown>) };
+    if (typeof p.primaryImage === 'string' && p.primaryImage) {
+      p.primaryImage = toPublicUrl(p.primaryImage);
+    }
+    formatted.product = p;
+  }
+
+  return formatted;
 }
 
 export async function reviewGetAll(query: ReviewQueryDto): Promise<PaginatedReviews> {
@@ -65,19 +107,21 @@ export async function reviewGetAll(query: ReviewQueryDto): Promise<PaginatedRevi
 
     const totalPages = Math.ceil(total / query.limit);
 
-    // Mongoose populate changes _id. We'll map the shape correctly for Dto.
-    const mappedItems = items.map((item: IReview) => ({
-      id: item.id,
-      user: item.user,
-      product: item.product,
-      rating: item.rating,
-      title: item.title,
-      content: item.content,
-      isEdited: item.isEdited,
-      status: item.status,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-    })) as unknown as ReviewResponseDto[];
+    const mappedItems = items.map((item: IReview) => {
+      const formatted = formatReviewMedia(item as unknown as Record<string, unknown>);
+      return {
+        id: formatted.id,
+        user: formatted.user,
+        product: formatted.product,
+        rating: formatted.rating,
+        title: formatted.title,
+        content: formatted.content,
+        isEdited: formatted.isEdited,
+        status: formatted.status,
+        createdAt: formatted.createdAt,
+        updatedAt: formatted.updatedAt,
+      };
+    }) as unknown as ReviewResponseDto[];
 
     return {
       items: mappedItems,
@@ -117,17 +161,19 @@ export async function reviewUpdateStatus(
       throw new ReviewNotFoundError(id);
     }
 
+    const formatted = formatReviewMedia(review as unknown as Record<string, unknown>);
+
     return {
-      id: review.id,
-      user: review.user,
-      product: review.product,
-      rating: review.rating,
-      title: review.title,
-      content: review.content,
-      isEdited: review.isEdited,
-      status: review.status,
-      createdAt: review.createdAt,
-      updatedAt: review.updatedAt,
+      id: formatted.id,
+      user: formatted.user,
+      product: formatted.product,
+      rating: formatted.rating,
+      title: formatted.title,
+      content: formatted.content,
+      isEdited: formatted.isEdited,
+      status: formatted.status,
+      createdAt: formatted.createdAt,
+      updatedAt: formatted.updatedAt,
     } as unknown as ReviewResponseDto;
   } catch (error) {
     if (isReviewError(error)) throw error;
