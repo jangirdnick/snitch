@@ -201,7 +201,9 @@ export async function searchProducts(term: string): Promise<ApiResponse<Products
 }
 
 /** GET /api/product/limited/:limit */
-export async function getLimitedProducts(limit: number): Promise<ApiResponse<ProductsResponse>> {
+export async function getLimitedProducts(
+  limit: number,
+): Promise<ApiResponse<{ products: Product[] }>> {
   const { data } = await api.get(`/product/limited/${limit}`);
   return data;
 }

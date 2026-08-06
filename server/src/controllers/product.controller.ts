@@ -152,6 +152,31 @@ function attachFilesToColors(
   });
 }
 
+function formatProductMedia<T extends { colors?: Array<{ images?: Array<{ url: string }> }> }>(
+  product: T,
+): T {
+  product.colors?.forEach((color) => {
+    color.images?.forEach((img) => {
+      if (img.url && !/^(https?:\/\/|data:)/i.test(img.url)) {
+        try {
+          img.url = generateUrl({
+            path: img.url,
+            transformations: {
+              width: 600,
+              height: 800,
+              format: 'webp',
+              quality: 80,
+            },
+          });
+        } catch {
+          // Keep original url if generation fails
+        }
+      }
+    });
+  });
+  return product;
+}
+
 // ─── Module-scoped media service (avoid re-instantiating per request) ────────
 const { uploadMedia, deleteMedia, generateUrl } = mediaService();
 
@@ -172,22 +197,7 @@ export class ProductController {
       }
 
       const result = await getProducts(queryParsed.data);
-
-      result.items.map((product) => {
-        product.colors.map((color) => {
-          color.images.map((img) => {
-            img.url = generateUrl({
-              path: img.url,
-              transformations: {
-                width: 40,
-                height: 40,
-                format: 'avif',
-                quality: 10,
-              },
-            });
-          });
-        });
-      });
+      result.items.forEach((product) => formatProductMedia(product));
 
       res.status(200).json({
         success: true,
@@ -214,22 +224,7 @@ export class ProductController {
       }
 
       const products = await getLimitProducts(Math.min(limitNum, 100));
-
-      products.map((product) => {
-        product.colors.map((color) => {
-          color.images.map((img) => {
-            img.url = generateUrl({
-              path: img.url,
-              transformations: {
-                width: 40,
-                height: 40,
-                format: 'avif',
-                quality: 10,
-              },
-            });
-          });
-        });
-      });
+      products.forEach((product) => formatProductMedia(product));
 
       res.status(200).json({
         success: true,
@@ -252,22 +247,7 @@ export class ProductController {
       }
 
       const products = await getSearchProduct(search);
-
-      products.map((product) => {
-        product.colors.map((color) => {
-          color.images.map((img) => {
-            img.url = generateUrl({
-              path: img.url,
-              transformations: {
-                width: 40,
-                height: 40,
-                format: 'avif',
-                quality: 10,
-              },
-            });
-          });
-        });
-      });
+      products.forEach((product) => formatProductMedia(product));
 
       res.status(200).json({
         success: true,
@@ -290,20 +270,7 @@ export class ProductController {
       }
 
       const product = await getProductById(id);
-
-      product.colors.map((color) => {
-        color.images.map((img) => {
-          img.url = generateUrl({
-            path: img.url,
-            transformations: {
-              width: 40,
-              height: 40,
-              format: 'avif',
-              quality: 10,
-            },
-          });
-        });
-      });
+      formatProductMedia(product);
 
       res.status(200).json({
         success: true,
@@ -326,20 +293,7 @@ export class ProductController {
       }
 
       const product = await getProductBySlug(slug);
-
-      product.colors.map((color) => {
-        color.images.map((img) => {
-          img.url = generateUrl({
-            path: img.url,
-            transformations: {
-              width: 40,
-              height: 40,
-              format: 'avif',
-              quality: 10,
-            },
-          });
-        });
-      });
+      formatProductMedia(product);
 
       res.status(200).json({
         success: true,
