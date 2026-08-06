@@ -46,7 +46,7 @@ function buildCategoryFormData(values: CategoryFormValues): {
 }
 
 export const categoryService = {
-  getAll: async (params?: Partial<CategoryQueryDto>): Promise<PaginatedCategories> => {
+  getAll: async (params?: CategoryQueryDto): Promise<PaginatedCategories> => {
     const res = await api.get('/category', { params });
     return res.data.data;
   },
