@@ -116,7 +116,7 @@ export const useProduct = () => {
         dispatch(clearError());
         const response = await getLimitedProducts(limit);
         if (response.success) {
-          dispatch(setProducts(response.data));
+          dispatch(setProducts({ items: response.data.products }));
           return true;
         } else {
           dispatch(setError(response.error.message));
