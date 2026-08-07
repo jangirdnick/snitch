@@ -1,4 +1,6 @@
+import mongoose from 'mongoose';
 import reviewModel, { type IReview } from '@/models/review.model.js';
+import productModel from '@/models/product.model.js';
 import { DatabaseOperationError } from '@/services/user.service.js';
 import { mediaService } from '@/services/media.service.js';
 import { createLogger } from '@/utils/logger.js';
@@ -161,6 +163,11 @@ export async function reviewUpdateStatus(
       throw new ReviewNotFoundError(id);
     }
 
+    // Sync rating after status update
+    await syncProductReview(String(review.product)).catch((err: unknown) =>
+      logger.error({ err }, 'Failed to sync rating after status update'),
+    );
+
     const formatted = formatReviewMedia(review as unknown as Record<string, unknown>);
 
     return {
@@ -188,9 +195,99 @@ export async function reviewDeleteById(id: string): Promise<void> {
     if (!review) {
       throw new ReviewNotFoundError(id);
     }
+
+    // Sync rating after deletion
+    await syncProductReview(String(review.product)).catch((err: unknown) =>
+      logger.error({ err }, 'Failed to sync rating after deletion'),
+    );
   } catch (error) {
     if (isReviewError(error)) throw error;
     logger.error({ err: error, id }, 'Error deleting review');
     throw new DatabaseOperationError('reviewDeleteById', error);
+  }
+}
+
+export async function reviewGetByProductId(
+  productId: string,
+  page: number = 1,
+  limit: number = 10,
+): Promise<PaginatedReviews> {
+  try {
+    const filter: Record<string, unknown> = { product: productId, status: 'active' };
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      reviewModel
+        .find(filter)
+        .populate('user', 'id firstName lastName avatar')
+        .sort({ createdAt: -1, _id: 1 })
+        .skip(skip)
+        .limit(limit)
+        .lean()
+        .exec(),
+      reviewModel.countDocuments(filter),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    const mappedItems = items.map((item: IReview) => {
+      const formatted = formatReviewMedia(item as unknown as Record<string, unknown>);
+      return {
+        id: formatted.id,
+        user: formatted.user,
+        product: formatted.product,
+        rating: formatted.rating,
+        title: formatted.title,
+        content: formatted.content,
+        isEdited: formatted.isEdited,
+        status: formatted.status,
+        createdAt: formatted.createdAt,
+        updatedAt: formatted.updatedAt,
+      };
+    }) as unknown as ReviewResponseDto[];
+
+    return {
+      items: mappedItems,
+      pagination: {
+        currentPage: page,
+        itemsPerPage: limit,
+        totalItems: total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    };
+  } catch (error) {
+    if (isReviewError(error)) throw error;
+    logger.error({ err: error, productId }, 'Error fetching reviews by product ID');
+    throw new DatabaseOperationError('reviewGetByProductId', error);
+  }
+}
+
+export async function syncProductReview(productId: string): Promise<void> {
+  try {
+    const filter = { product: new mongoose.Types.ObjectId(productId), status: 'active' as const };
+
+    const result = await reviewModel.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: '$product',
+          average: { $avg: '$rating' },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const reviewStats =
+      result.length > 0
+        ? { average: Number(result[0].average.toFixed(1)), count: result[0].count }
+        : { average: 0, count: 0 };
+
+    await productModel.findByIdAndUpdate(productId, {
+      $set: { review: reviewStats },
+    });
+  } catch (error) {
+    logger.error({ error, productId }, 'Failed to sync product review stats');
   }
 }

@@ -4,6 +4,9 @@ import { CouponController } from '@/controllers/coupon.controller.js';
 
 const router: Router = Router();
 
+// Public Routes
+router.post('/validate', CouponController.validate);
+
 // Admin Routes
 router.use('/admin', AuthAdminGuard);
 

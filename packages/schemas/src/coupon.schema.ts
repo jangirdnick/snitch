@@ -27,3 +27,10 @@ export const couponQuerySchema = z.object({
 export type CreateCouponDto = z.infer<typeof createCouponSchema>;
 export type UpdateCouponDto = z.infer<typeof updateCouponSchema>;
 export type CouponQueryDto = z.infer<typeof couponQuerySchema>;
+
+export const validateCouponSchema = z.object({
+  code: z.string().trim().toUpperCase(),
+  orderAmount: z.number().positive(),
+});
+
+export type ValidateCouponDto = z.infer<typeof validateCouponSchema>;

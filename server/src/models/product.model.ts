@@ -177,6 +177,7 @@ export interface IProduct extends Document {
   sleeveType?: (typeof SLEEVE_TYPE)[number];
   clothingLength?: (typeof CLOTHING_LENGTH)[number];
   countryOfOrigin: string; // "India"
+  careInstructions?: string[];
 
   // ─── Pricing ────────────────────────────────────────────
   price: IPrice;
@@ -185,6 +186,11 @@ export interface IProduct extends Document {
   lowStockThreshold: number;
 
   status: 'draft' | 'active' | 'inactive' | 'out_of_stock';
+
+  review?: {
+    average: number;
+    count: number;
+  };
 
   // ─── SEO ────────────────────────────────────────────────
   seo?: {
@@ -315,6 +321,7 @@ const ProductSchema: Schema<IProduct> = new Schema(
     sleeveType: { type: String, enum: SLEEVE_TYPE },
     clothingLength: { type: String, enum: CLOTHING_LENGTH },
     countryOfOrigin: { type: String, trim: true, default: 'India' },
+    careInstructions: [{ type: String, trim: true }],
 
     // ─── Pricing ────────────────────────────────────────────
     price: {
@@ -337,6 +344,11 @@ const ProductSchema: Schema<IProduct> = new Schema(
       enum: ['draft', 'active', 'inactive', 'out_of_stock'],
       default: 'draft',
       index: true,
+    },
+
+    review: {
+      average: { type: Number, default: 0, min: 0, max: 5 },
+      count: { type: Number, default: 0, min: 0 },
     },
 
     seo: {

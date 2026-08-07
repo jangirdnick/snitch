@@ -117,10 +117,10 @@ export function ReviewTable({
                 <TableCell className="px-4 py-3.5">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-[oklch(0.18_0.005_260)] border border-[oklch(1_0_0_/_0.1)] overflow-hidden shrink-0 flex items-center justify-center shadow-xs group-hover:border-[oklch(1_0_0_/_0.2)] transition-colors">
-                      {review.product.primaryImage ? (
+                      {review.product?.primaryImage ? (
                         <img
                           src={review.product.primaryImage}
-                          alt={review.product.title}
+                          alt={review.product.title || 'Product Image'}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
                         />
@@ -130,10 +130,10 @@ export function ReviewTable({
                     </div>
                     <div className="flex flex-col min-w-0">
                       <span className="text-[13px] font-semibold text-[oklch(0.95_0_0)] truncate leading-tight">
-                        {review.product.title}
+                        {review.product?.title || 'Unknown Product'}
                       </span>
                       <span className="text-[11px] text-[oklch(0.5_0_0)] truncate mt-0.5 font-mono">
-                        {review.product.slug}
+                        {review.product?.slug || 'deleted-product'}
                       </span>
                     </div>
                   </div>
@@ -143,19 +143,21 @@ export function ReviewTable({
                 <TableCell className="px-4 py-3.5">
                   <div className="flex items-center gap-2.5">
                     <Avatar className="h-8 w-8 border border-[oklch(1_0_0_/_0.12)] shrink-0">
-                      <AvatarImage src={review.user.avatar || undefined} />
+                      <AvatarImage src={review.user?.avatar || undefined} />
                       <AvatarFallback className="bg-[oklch(0.2_0.02_260)] text-[10px] font-bold text-[oklch(0.9_0_0)]">
-                        {review.user.firstName.charAt(0).toUpperCase()}
+                        {review.user?.firstName?.charAt(0).toUpperCase() || '?'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col min-w-0">
                       <span className="text-[13px] font-medium text-[oklch(0.95_0_0)] truncate leading-tight">
-                        {review.user.firstName} {review.user.lastName}
+                        {review.user
+                          ? `${review.user.firstName} ${review.user.lastName}`
+                          : 'Deleted User'}
                       </span>
                       <span className="text-[11px] text-[oklch(0.5_0_0)] truncate">
-                        {review.user.email}
+                        {review.user?.email || 'N/A'}
                       </span>
-                      {!review.user.canReview && (
+                      {review.user && !review.user.canReview && (
                         <span className="text-[9px] text-[oklch(0.65_0.20_22)] font-semibold mt-0.5 tracking-wide">
                           [Review Blocked]
                         </span>
@@ -234,16 +236,22 @@ export function ReviewTable({
                         </DropdownMenuItem>
                       )}
 
-                      <DropdownMenuSeparator className="bg-[oklch(1_0_0_/_0.08)] my-1" />
-                      <DropdownMenuItem
-                        onClick={() =>
-                          onToggleUserPermission(review.user.id, review.user.canReview)
-                        }
-                        className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)] cursor-pointer gap-2 rounded-lg px-2 py-2 text-xs font-medium"
-                      >
-                        <ShieldOff className="h-3.5 w-3.5 text-amber-400" />
-                        {review.user.canReview ? 'Block User from Reviews' : 'Allow User to Review'}
-                      </DropdownMenuItem>
+                      {review.user && (
+                        <>
+                          <DropdownMenuSeparator className="bg-[oklch(1_0_0_/_0.08)] my-1" />
+                          <DropdownMenuItem
+                            onClick={() =>
+                              onToggleUserPermission(review.user.id, review.user.canReview)
+                            }
+                            className="focus:bg-[oklch(1_0_0_/_0.06)] focus:text-[oklch(0.95_0_0)] cursor-pointer gap-2 rounded-lg px-2 py-2 text-xs font-medium"
+                          >
+                            <ShieldOff className="h-3.5 w-3.5 text-amber-400" />
+                            {review.user.canReview
+                              ? 'Block User from Reviews'
+                              : 'Allow User to Review'}
+                          </DropdownMenuItem>
+                        </>
+                      )}
 
                       <DropdownMenuSeparator className="bg-[oklch(1_0_0_/_0.08)] my-1" />
                       <DropdownMenuItem
@@ -278,10 +286,10 @@ export function ReviewTable({
             <div className="flex items-start justify-between gap-2 pb-2.5 border-b border-[oklch(1_0_0/0.05)]">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="w-10 h-10 rounded-md bg-[oklch(0.18_0.005_260)] border border-[oklch(1_0_0_/_0.08)] overflow-hidden shrink-0 flex items-center justify-center">
-                  {review.product.primaryImage ? (
+                  {review.product?.primaryImage ? (
                     <img
                       src={review.product.primaryImage}
-                      alt={review.product.title}
+                      alt={review.product.title || 'Product Image'}
                       className="w-full h-full object-cover"
                       loading="lazy"
                     />
@@ -291,10 +299,10 @@ export function ReviewTable({
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-sm font-semibold text-[oklch(0.95_0_0)] truncate">
-                    {review.product.title}
+                    {review.product?.title || 'Unknown Product'}
                   </span>
                   <span className="text-[11px] text-[oklch(0.5_0_0)] truncate">
-                    {review.product.slug}
+                    {review.product?.slug || 'deleted-product'}
                   </span>
                 </div>
               </div>
@@ -336,14 +344,22 @@ export function ReviewTable({
                       </DropdownMenuItem>
                     )}
 
-                    <DropdownMenuSeparator className="bg-[oklch(1_0_0_/_0.08)]" />
-                    <DropdownMenuItem
-                      onClick={() => onToggleUserPermission(review.user.id, review.user.canReview)}
-                      className="cursor-pointer gap-2 py-2.5"
-                    >
-                      <ShieldOff className="h-3.5 w-3.5 text-amber-400" />
-                      {review.user.canReview ? 'Block User from Reviews' : 'Allow User to Review'}
-                    </DropdownMenuItem>
+                    {review.user && (
+                      <>
+                        <DropdownMenuSeparator className="bg-[oklch(1_0_0_/_0.08)]" />
+                        <DropdownMenuItem
+                          onClick={() =>
+                            onToggleUserPermission(review.user.id, review.user.canReview)
+                          }
+                          className="cursor-pointer gap-2 py-2.5"
+                        >
+                          <ShieldOff className="h-3.5 w-3.5 text-amber-400" />
+                          {review.user.canReview
+                            ? 'Block User from Reviews'
+                            : 'Allow User to Review'}
+                        </DropdownMenuItem>
+                      </>
+                    )}
 
                     <DropdownMenuSeparator className="bg-[oklch(1_0_0_/_0.08)]" />
                     <DropdownMenuItem
@@ -388,21 +404,23 @@ export function ReviewTable({
             <div className="flex items-center justify-between pt-2 border-t border-[oklch(1_0_0/0.05)]">
               <div className="flex items-center gap-2 min-w-0">
                 <Avatar className="h-7 w-7 border border-[oklch(1_0_0_/_0.1)] shrink-0">
-                  <AvatarImage src={review.user.avatar || undefined} />
+                  <AvatarImage src={review.user?.avatar || undefined} />
                   <AvatarFallback className="bg-[oklch(0.2_0.02_260)] text-[9px]">
-                    {review.user.firstName.charAt(0).toUpperCase()}
+                    {review.user?.firstName?.charAt(0).toUpperCase() || '?'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col min-w-0 text-[11px]">
                   <span className="text-[oklch(0.9_0_0)] font-medium truncate">
-                    {review.user.firstName} {review.user.lastName}
+                    {review.user
+                      ? `${review.user.firstName} ${review.user.lastName}`
+                      : 'Deleted User'}
                   </span>
                   <span className="text-[oklch(0.5_0_0)] truncate text-[10px]">
-                    {review.user.email}
+                    {review.user?.email || 'N/A'}
                   </span>
                 </div>
               </div>
-              {!review.user.canReview && (
+              {review.user && !review.user.canReview && (
                 <span className="text-[9px] text-[oklch(0.65_0.20_22)] font-semibold bg-[oklch(0.65_0.20_22_/_0.1)] px-2 py-0.5 rounded-md shrink-0">
                   [Review Blocked]
                 </span>

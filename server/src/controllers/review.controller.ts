@@ -1,5 +1,10 @@
 import type { NextFunction, Request, Response } from 'express';
-import { reviewGetAll, reviewUpdateStatus, reviewDeleteById } from '@/services/review.service.js';
+import {
+  reviewGetAll,
+  reviewUpdateStatus,
+  reviewDeleteById,
+  reviewGetByProductId,
+} from '@/services/review.service.js';
 import { mediaService } from '@/services/media.service.js';
 import { reviewQuerySchema, updateReviewStatusSchema } from '@snitch/schemas';
 import type { ReviewResponseDto } from '@snitch/types';
@@ -85,6 +90,29 @@ export class ReviewController {
       res.status(200).json({
         success: true,
         message: 'Reviews fetched successfully',
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static getByProductId = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { productId } = req.params;
+      const page = parseInt(req.query.page as string, 10) || 1;
+      const limit = parseInt(req.query.limit as string, 10) || 10;
+
+      if (!productId || typeof productId !== 'string') {
+        throw new ReviewRequestError('Product ID is required');
+      }
+
+      const result = await reviewGetByProductId(productId, page, limit);
+      result.items.forEach((review) => formatReviewMedia(review));
+
+      res.status(200).json({
+        success: true,
+        message: 'Product reviews fetched successfully',
         data: result,
       });
     } catch (error) {

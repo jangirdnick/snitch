@@ -4,6 +4,7 @@ import HomePage from '@/pages/HomePage';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
 import NotFoundPage from '@/pages/404Page';
+import ProductDetailsPage from '@/pages/ProductDetailsPage';
 import Dashboard from '@/pages/(admin)/Dashboard';
 import AdminLayout from '@/layouts/AdminLayout';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
             element: <RegisterPage />,
           },
         ],
+      },
+      {
+        path: 'product/:slug',
+        element: <ProductDetailsPage />,
       },
     ],
   },

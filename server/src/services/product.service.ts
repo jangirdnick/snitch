@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import type { IProduct } from '@/models/product.model.js';
 import productModel from '@/models/product.model.js';
 import categoryModel from '@/models/category.model.js';
+import reviewModel from '@/models/review.model.js';
+import { CouponModel } from '@/models/coupon.model.js';
 import { createLogger } from '@/utils/logger.js';
 import { DatabaseOperationError } from './user.service.js';
 import type { CreateProductDto, ProductQueryDto, UpdateProductDto } from '@snitch/schemas';
@@ -81,7 +83,7 @@ export async function getProducts(query: ProductQueryDto): Promise<PaginatedProd
       price: 'price.amount',
       createdAt: 'createdAt',
       soldCount: 'soldCount',
-      ratings: 'ratings.average',
+      ratings: 'review.average',
       viewCount: 'viewCount',
     };
     const sortField = sortFieldMap[query.sortBy] ?? 'createdAt';
@@ -259,6 +261,17 @@ export async function productDeleteById(productId: string): Promise<void> {
   try {
     const result = await productModel.findByIdAndDelete(productId);
     if (!result) throw new ProductNotFoundError(productId);
+
+    // Cascading deletions/updates for connected models
+    await Promise.all([
+      // Delete all reviews associated with this product
+      reviewModel.deleteMany({ product: productId }),
+      // Remove this product from any coupons that apply to it
+      CouponModel.updateMany(
+        { applicableProducts: productId },
+        { $pull: { applicableProducts: productId } },
+      ),
+    ]);
   } catch (error) {
     if (isProductError(error)) throw error;
     logger.error({ err: error, productId }, 'Error deleting product');

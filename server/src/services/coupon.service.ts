@@ -129,3 +129,24 @@ export const deleteCoupon = async (id: string): Promise<void> => {
   const coupon = await CouponModel.findByIdAndDelete(id).exec();
   if (!coupon) throw new CouponNotFoundError();
 };
+
+export const validateCoupon = async (code: string, orderAmount: number): Promise<Coupon> => {
+  const coupon = await CouponModel.findOne({ code: code.toUpperCase() }).exec();
+  if (!coupon) throw new CouponNotFoundError('Invalid coupon code');
+
+  if (!coupon.isActive) throw new CouponOperationError('Coupon is not active');
+
+  const now = new Date();
+  if (coupon.validFrom > now) throw new CouponOperationError('Coupon is not yet valid');
+  if (coupon.validUntil < now) throw new CouponOperationError('Coupon has expired');
+
+  if (coupon.minOrder !== undefined && orderAmount < coupon.minOrder) {
+    throw new CouponOperationError(`Minimum order amount of ${coupon.minOrder} is required`);
+  }
+
+  if (coupon.usageLimit !== undefined && coupon.usedCount >= coupon.usageLimit) {
+    throw new CouponOperationError('Coupon usage limit has been reached');
+  }
+
+  return mapCouponToResponse(coupon);
+};
