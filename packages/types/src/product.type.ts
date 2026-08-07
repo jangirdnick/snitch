@@ -129,10 +129,16 @@ export interface Product {
   sleeveType?: ProductSleeveType;
   clothingLength?: ProductLength;
   countryOfOrigin: string;
+  careInstructions?: string[];
 
   price: ProductPrice;
   lowStockThreshold: number;
   status: ProductStatus;
+
+  review?: {
+    average: number;
+    count: number;
+  };
 
   seo?: ProductSeo;
 

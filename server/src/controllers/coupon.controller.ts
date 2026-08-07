@@ -5,8 +5,14 @@ import {
   createCoupon,
   updateCoupon,
   deleteCoupon,
+  validateCoupon,
 } from '@/services/coupon.service.js';
-import { couponQuerySchema, createCouponSchema, updateCouponSchema } from '@snitch/schemas';
+import {
+  couponQuerySchema,
+  createCouponSchema,
+  updateCouponSchema,
+  validateCouponSchema,
+} from '@snitch/schemas';
 
 export class CouponRequestError extends Error {
   public readonly statusCode = 400;
@@ -84,6 +90,19 @@ export const CouponController = {
       const id = req.params.id as string;
       await deleteCoupon(id);
       res.status(200).json({ success: true, message: 'Coupon deleted successfully' });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  validate: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const parsed = validateCouponSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new CouponFieldsError(parsed.error.flatten().fieldErrors);
+      }
+      const data = await validateCoupon(parsed.data.code, parsed.data.orderAmount);
+      res.status(200).json({ success: true, data });
     } catch (err) {
       next(err);
     }

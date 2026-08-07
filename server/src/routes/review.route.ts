@@ -4,6 +4,9 @@ import { AuthAdminGuard } from '@/middlewares/auth.middleware.js';
 
 const router: Router = Router();
 
+// Public Routes
+router.get('/product/:productId', ReviewController.getByProductId);
+
 // Admin Routes for Reviews
 router.get('/admin', AuthAdminGuard, ReviewController.getAll);
 router.patch('/admin/:id/status', AuthAdminGuard, ReviewController.updateStatus);

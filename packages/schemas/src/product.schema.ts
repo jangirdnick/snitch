@@ -255,6 +255,13 @@ const baseProductSchema = z.object({
   // ─── Status & Flags ───────────────────────────────────
   status: z.enum(['draft', 'active', 'inactive', 'out_of_stock']).default('draft'),
 
+  review: z
+    .object({
+      average: z.number().min(0).max(5).default(0),
+      count: z.number().int().min(0).default(0),
+    })
+    .optional(),
+
   // ─── SEO ──────────────────────────────────────────────
   seo: seoSchema.optional(),
 
